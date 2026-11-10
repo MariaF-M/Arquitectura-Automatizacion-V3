@@ -1,0 +1,50 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Seguridad y Auditor\u00eda",
+    "version": "1.0.0",
+    "description": "Contrato generado desde el modelo ArchiMate. Contexto D-05 GENERIC."
+  },
+  "servers": [{"url": "http://localhost:8005"}],
+  "paths": {
+    "/arquitectura": {
+      "get": {
+        "summary": "componentes, funciones y cach\u00e9",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/eventos": {
+      "get": {
+        "summary": "eventos de dominio publicados",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/funciones/autenticacion-y-autorizacion-por-perfil": {
+      "post": {
+        "summary": "funci\u00f3n \u00abAutenticaci\u00f3n y autorizaci\u00f3n por perfil\u00bb (pendiente, 501)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/funciones/envio-de-alertas-y-notificaciones": {
+      "post": {
+        "summary": "funci\u00f3n \u00abEnv\u00edo de alertas y notificaciones\u00bb (pendiente, 501)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/funciones/registro-de-eventos-de-auditoria": {
+      "post": {
+        "summary": "funci\u00f3n \u00abRegistro de eventos de auditor\u00eda\u00bb (pendiente, 501)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/salud": {
+      "get": {
+        "summary": "estado del servicio",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    }
+  }
+}

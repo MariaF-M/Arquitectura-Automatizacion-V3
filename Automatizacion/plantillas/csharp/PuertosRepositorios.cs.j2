@@ -1,0 +1,13 @@
+using {{ N.modelo }};
+
+namespace {{ N.puertos }};
+{% for a in ctx.agregados %}
+
+/// <summary>Puerto de persistencia de {{ a.nombre }} (DIP: el dominio no conoce la base de datos).</summary>
+public interface IRepositorio{{ a.clase }}
+{
+    void Guardar({{ a.clase }} agregado);
+    {{ a.clase }}? Obtener(string id);
+    IReadOnlyList<{{ a.clase }}> Listar();
+}
+{% endfor %}

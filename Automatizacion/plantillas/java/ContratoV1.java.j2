@@ -1,0 +1,7 @@
+package {{ P.contratos }};
+
+/**
+ * Lenguaje publicado de {{ ctx.nombre }}: evento de integración «{{ ev.nombre }}», versión 1.
+ * Solo tipos primitivos y sin dependencias del dominio, para que otro contexto lo use sin arrastrarlo.
+ */
+public record {{ ev.clase }}V1(String eventoId, String ocurridoEn, String {{ a.clase[0] | lower }}{{ a.clase[1:] }}Id{% for at in a.atributos %}, {{ {"texto": "String", "entero": "Integer", "decimal": "Double", "fecha": "String", "booleano": "Boolean"}[at.tipo] }} {{ at.camel }}{% endfor %}) { }

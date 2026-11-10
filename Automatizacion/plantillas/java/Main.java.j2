@@ -1,0 +1,94 @@
+package {{ P.base }};
+
+import {{ P.api }}.ServidorHttp;
+import {{ P.clientes }}.ClienteHttp;
+{% for r in ctx.proveedores %}
+import {{ P.clientes }}.Cliente{{ r.proveedor | pascal }}Http;
+{% endfor %}
+{% if ctx.integraciones %}
+import {{ P.clientes }}.ClienteAnticorrupcionHttp;
+{% endif %}
+import {{ P.memento }}.Caretaker;
+{% for a in ctx.agregados %}
+import {{ P.comandos }}.Manejador{{ a.clase }};
+import {{ P.persistencia }}.Repositorio{{ a.clase }}BaseDatos;
+import {{ P.persistencia }}.Repositorio{{ a.clase }}Cache;
+import {{ P.persistencia }}.Repositorio{{ a.clase }}Memoria;
+{% endfor %}
+{% for c in ctx.componentes %}
+import {{ P.servicios }}.{{ c.clase }}Servicio;
+{% endfor %}
+import {{ P.bus }}.BusEventos;
+import {{ P.transversal }}.Cifrador;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
+/**
+ * Punto de entrada de {{ ctx.nombre }} — raíz de composición.
+ * Contexto: {{ ctx.dominio }} {{ ctx.titulo_dominio }} ({{ ctx.clasificacion }}) · Arquitectura: {{ ctx.arquitectura }} · Puerto: {{ ctx.puerto }}
+{% for r in ctx.proveedores %}
+ * <br>Consume a {{ r.proveedor }}: «{{ r.etiqueta }}»
+{% endfor %}
+{% for r in ctx.consumidores %}
+ * <br>Le sirve a {{ r.cliente }}: «{{ r.etiqueta }}»
+{% endfor %}
+{% for i in ctx.integraciones %}
+ * <br>{{ i.codigo }} {{ i.nombre }} ({{ i.direccion }}) vía ACL-01
+{% endfor %}
+ * Generado automáticamente desde el modelo ArchiMate.
+ */
+public class Main {
+    private static String env(String clave, String defecto) { return System.getenv().getOrDefault(clave, defecto); }
+
+    public static void main(String[] args) throws Exception {
+        BusEventos bus = new BusEventos();
+        Cifrador cifrador = new Cifrador();
+        boolean usarBd = env("PERSISTENCIA", "memoria").equals("bd");
+        Map<String, Object> manejadores = new LinkedHashMap<>();
+        Map<String, Object> caches = new LinkedHashMap<>();
+{% for a in ctx.agregados %}
+
+        Repositorio{{ a.clase }}Cache repo{{ a.clase }} = new Repositorio{{ a.clase }}Cache(
+                usarBd ? new Repositorio{{ a.clase }}BaseDatos(cifrador) : new Repositorio{{ a.clase }}Memoria(cifrador));
+        caches.put("{{ a.recurso }}", repo{{ a.clase }});
+        manejadores.put("{{ a.recurso }}", new Manejador{{ a.clase }}(repo{{ a.clase }}, bus, new Caretaker<>()));
+{% endfor %}
+        Map<String, Object> clientes = new LinkedHashMap<>();
+{% for r in ctx.proveedores %}
+        // {{ r.patron }}: «{{ r.etiqueta }}»
+        clientes.put("{{ r.proveedor }}", new Cliente{{ r.proveedor | pascal }}Http(new ClienteHttp(env("{{ r.proveedor | snake | upper }}_URL", "http://localhost:{{ sistema.contexto(r.proveedor).puerto }}"))));
+{% endfor %}
+{% if ctx.integraciones %}
+        ClienteAnticorrupcionHttp acl = new ClienteAnticorrupcionHttp(new ClienteHttp(env("ACL_URL", "http://localhost:{{ sistema.acl.puerto }}")));
+        clientes.put("ACL-01", acl);
+{% for i in ctx.integraciones if i.direccion == "salida" %}
+        // {{ i.codigo }}: cuando ocurre «{{ i.evento }}» se envía a {{ i.externo }} por la ACL
+        bus.suscribir("{{ i.evento | pascal }}", e -> acl.enviar("{{ i.codigo }}", e.datos()));
+{% endfor %}
+{% endif %}
+
+        Map<String, Object> arquitectura = new LinkedHashMap<>();
+        arquitectura.put("contexto", "{{ ctx.nombre }}");
+        arquitectura.put("dominio", "{{ ctx.dominio }} {{ ctx.titulo_dominio }}");
+        arquitectura.put("clasificacion", "{{ ctx.clasificacion }}");
+        arquitectura.put("arquitectura", "{{ ctx.arquitectura }}");
+        arquitectura.put("componentes", List.of({% for c in ctx.componentes %}{{ c.clase }}Servicio.NOMBRE{{ ", " if not loop.last }}{% endfor %}));
+        arquitectura.put("funciones", List.of({% for f in ctx.funciones %}"{{ f.ruta }}"{{ ", " if not loop.last }}{% endfor %}));
+        arquitectura.put("clientes", List.copyOf(clientes.keySet()));
+
+        int puerto = Integer.parseInt(env("PUERTO", "{{ ctx.puerto }}"));
+        new ServidorHttp(bus, manejadores, () -> {
+            Map<String, Object> r = new LinkedHashMap<>(arquitectura);
+            Map<String, Object> cache = new LinkedHashMap<>();
+{% for a in ctx.agregados %}
+            cache.put("{{ a.recurso }}", repo{{ a.clase }}.estadisticas());
+{% endfor %}
+            r.put("cache", cache);
+            return r;
+        }).iniciar(puerto);
+        Logger.getLogger("main").info("{{ ctx.nombre }} escuchando en el puerto " + puerto);
+    }
+}

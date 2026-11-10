@@ -1,0 +1,22 @@
+namespace {{ N.eventos }};
+
+/// <summary>Base de los eventos de dominio de {{ ctx.nombre }} (Application Events de V6).</summary>
+public abstract class EventoDominio(string agregadoId, Dictionary<string, object?> datos)
+{
+    public string AgregadoId { get; } = agregadoId;
+    public Dictionary<string, object?> Datos { get; } = datos;
+    public string OcurridoEn { get; } = DateTimeOffset.UtcNow.ToString("o");
+    public string Nombre => GetType().Name;
+
+    public Dictionary<string, object?> AMapa() => new()
+    {
+        ["evento"] = Nombre, ["agregado_id"] = AgregadoId, ["datos"] = Datos, ["ocurrido_en"] = OcurridoEn,
+    };
+}
+{% for a in ctx.agregados %}
+{% for e in a.eventos %}
+
+/// <summary>Evento «{{ e.nombre }}» del agregado {{ a.nombre }}.</summary>
+public class {{ e.clase }}(string agregadoId, Dictionary<string, object?> datos) : EventoDominio(agregadoId, datos);
+{% endfor %}
+{% endfor %}

@@ -1,0 +1,13 @@
+package {{ P.clientes }};
+
+import {{ P.puertos }}.Puerto{{ r.proveedor | pascal }};
+
+/** Adaptador HTTP hacia {{ r.proveedor }} ({{ r.patron }}). */
+public class Cliente{{ r.proveedor | pascal }}Http implements Puerto{{ r.proveedor | pascal }} {
+    private final ClienteHttp http;
+
+    public Cliente{{ r.proveedor | pascal }}Http(ClienteHttp http) { this.http = http; }
+
+    @Override
+    public Object consultar(String ruta) { return http.get(ruta); }
+}

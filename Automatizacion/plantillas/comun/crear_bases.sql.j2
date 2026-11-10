@@ -1,0 +1,5 @@
+-- Se ejecuta una sola vez, la primera vez que arranca el contenedor de PostgreSQL.
+-- Una base de datos por contexto delimitado (database-per-service). Las tablas las crea cada servicio al arrancar.
+{% for ctx in sistema.contextos if ctx.base_datos.tipo | upper == "SQL" %}
+CREATE DATABASE {{ ctx.snake }};   -- {{ ctx.nombre }} ({{ ctx.dominio }})
+{% endfor %}

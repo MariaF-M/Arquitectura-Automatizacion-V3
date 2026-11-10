@@ -1,0 +1,21 @@
+{
+  "name": "farmacia-frontend",
+  "private": true,
+  "description": "Shell + microfrontends generados desde el modelo ArchiMate. Cada app se construye y despliega sola; esto es solo una comodidad para desarrollo local.",
+  "workspaces": [
+    "shell",
+    "mf-inventario",
+    "mf-vencimientos",
+    "mf-planificacion-de-demanda",
+    "mf-abastecimiento",
+    "mf-seguridad-y-auditoria",
+    "mf-integraciones"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "iniciar": "npm run build && concurrently -k -n shell,mf-inventario,mf-vencimientos,mf-planificacion-de-demanda,mf-abastecimiento,mf-seguridad-y-auditoria,mf-integraciones \"npm run preview -w shell\" \"npm run preview -w mf-inventario\" \"npm run preview -w mf-vencimientos\" \"npm run preview -w mf-planificacion-de-demanda\" \"npm run preview -w mf-abastecimiento\" \"npm run preview -w mf-seguridad-y-auditoria\" \"npm run preview -w mf-integraciones\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

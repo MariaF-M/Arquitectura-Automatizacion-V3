@@ -1,0 +1,21 @@
+"""Puertos de persistencia de {{ ctx.nombre }}. El dominio depende de estas abstracciones (DIP), no de una base de datos."""
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+{% for a in ctx.agregados %}
+
+from {{ L.modelo }}.{{ a.snake }} import {{ a.clase }}
+{% endfor %}
+{% for a in ctx.agregados %}
+
+
+class Repositorio{{ a.clase }}(ABC):
+    @abstractmethod
+    def guardar(self, agregado: {{ a.clase }}) -> None: ...
+
+    @abstractmethod
+    def obtener(self, id: str) -> {{ a.clase }} | None: ...
+
+    @abstractmethod
+    def listar(self) -> list[{{ a.clase }}]: ...
+{% endfor %}

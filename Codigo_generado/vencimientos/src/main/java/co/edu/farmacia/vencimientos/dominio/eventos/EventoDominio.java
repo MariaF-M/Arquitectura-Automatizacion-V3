@@ -1,0 +1,30 @@
+package co.edu.farmacia.vencimientos.dominio.eventos;
+
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/** Base de los eventos de dominio de Vencimientos (Application Events de V6). */
+public abstract class EventoDominio {
+    private final String agregadoId;
+    private final Map<String, Object> datos;
+    private final String ocurridoEn = Instant.now().toString();
+
+    protected EventoDominio(String agregadoId, Map<String, Object> datos) {
+        this.agregadoId = agregadoId;
+        this.datos = datos;
+    }
+
+    public String nombre() { return getClass().getSimpleName(); }
+    public String agregadoId() { return agregadoId; }
+    public Map<String, Object> datos() { return datos; }
+
+    public Map<String, Object> aMapa() {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("evento", nombre());
+        m.put("agregado_id", agregadoId);
+        m.put("datos", datos);
+        m.put("ocurrido_en", ocurridoEn);
+        return m;
+    }
+}

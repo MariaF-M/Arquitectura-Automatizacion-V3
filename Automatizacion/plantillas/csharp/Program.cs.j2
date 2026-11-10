@@ -1,0 +1,88 @@
+// Punto de entrada de {{ ctx.nombre }} — raíz de composición (inyección de dependencias de ASP.NET Core).
+// Contexto: {{ ctx.dominio }} {{ ctx.titulo_dominio }} ({{ ctx.clasificacion }}) · Arquitectura: {{ ctx.arquitectura }} · Puerto: {{ ctx.puerto }}
+{% for r in ctx.proveedores %}
+// Consume a {{ r.proveedor }}: «{{ r.etiqueta }}»
+{% endfor %}
+{% for r in ctx.consumidores %}
+// Le sirve a {{ r.cliente }}: «{{ r.etiqueta }}»
+{% endfor %}
+{% for i in ctx.integraciones %}
+// {{ i.codigo }} {{ i.nombre }} ({{ i.direccion }}) vía ACL-01
+{% endfor %}
+// Generado automáticamente desde el modelo ArchiMate.
+using {{ N.api }};
+using {{ N.clientes }};
+using {{ N.comandos }};
+using {{ N.memento }};
+using {{ N.modelo }};
+using {{ N.persistencia }};
+using {{ N.puertos }};
+using {{ N.servicios }};
+{% if N.bus != N.transversal %}
+using {{ N.bus }};
+{% endif %}
+using {{ N.transversal }};
+
+string Env(string clave, string defecto) => Environment.GetEnvironmentVariable(clave) ?? defecto;
+
+var builder = WebApplication.CreateBuilder(args);
+var puerto = Env("PUERTO", "{{ ctx.puerto }}");
+builder.WebHost.UseUrls($"http://0.0.0.0:{puerto}");
+var usarBd = Env("PERSISTENCIA", "memoria") == "bd";
+
+builder.Services.AddSingleton(new Cifrador());
+builder.Services.AddSingleton<BusEventos>();
+{% for a in ctx.agregados %}
+builder.Services.AddSingleton(sp => new Repositorio{{ a.clase }}Cache(
+    usarBd ? new Repositorio{{ a.clase }}BaseDatos(sp.GetRequiredService<Cifrador>()) : new Repositorio{{ a.clase }}Memoria(sp.GetRequiredService<Cifrador>())));
+builder.Services.AddSingleton<IRepositorio{{ a.clase }}>(sp => sp.GetRequiredService<Repositorio{{ a.clase }}Cache>());
+builder.Services.AddSingleton(new Caretaker<{{ a.clase }}Memento>());
+builder.Services.AddSingleton<Manejador{{ a.clase }}>();
+{% endfor %}
+{% for r in ctx.proveedores %}
+// {{ r.patron }}: «{{ r.etiqueta }}»
+builder.Services.AddHttpClient<IPuerto{{ r.proveedor | pascal }}, Cliente{{ r.proveedor | pascal }}Http>(c =>
+    c.BaseAddress = new Uri(Env("{{ r.proveedor | snake | upper }}_URL", "http://localhost:{{ sistema.contexto(r.proveedor).puerto }}")));
+{% endfor %}
+{% if ctx.integraciones %}
+builder.Services.AddHttpClient<IPuertoAnticorrupcion, ClienteAnticorrupcionHttp>(c =>
+    c.BaseAddress = new Uri(Env("ACL_URL", "http://localhost:{{ sistema.acl.puerto }}")));
+{% endif %}
+
+// CORS: permite que los microfrontends (otro origen) llamen a esta API
+var origenes = Env("CORS_ORIGENES", "*");
+builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
+{
+    if (origenes == "*") p.AllowAnyOrigin(); else p.WithOrigins(origenes.Split(','));
+    p.AllowAnyHeader().AllowAnyMethod();
+}));
+
+var app = builder.Build();
+app.UseCors();
+{% if ctx.integraciones | selectattr("direccion", "equalto", "salida") | list %}
+
+var bus = app.Services.GetRequiredService<BusEventos>();
+{% for i in ctx.integraciones if i.direccion == "salida" %}
+// {{ i.codigo }}: cuando ocurre «{{ i.evento }}» se envía a {{ i.externo }} por la ACL
+bus.Suscribir("{{ i.evento | pascal }}", e =>
+    _ = app.Services.CreateScope().ServiceProvider.GetRequiredService<IPuertoAnticorrupcion>().Enviar("{{ i.codigo }}", e.Datos));
+{% endfor %}
+{% endif %}
+
+Rutas.Mapear(app, () => new Dictionary<string, object?>
+{
+    ["contexto"] = "{{ ctx.nombre }}",
+    ["dominio"] = "{{ ctx.dominio }} {{ ctx.titulo_dominio }}",
+    ["clasificacion"] = "{{ ctx.clasificacion }}",
+    ["arquitectura"] = "{{ ctx.arquitectura }}",
+    ["componentes"] = Catalogo.Componentes,
+    ["funciones"] = Catalogo.Funciones.Keys,
+    ["cache"] = new Dictionary<string, object?>
+    {
+{% for a in ctx.agregados %}
+        ["{{ a.recurso }}"] = new { aciertos = app.Services.GetRequiredService<Repositorio{{ a.clase }}Cache>().Aciertos, fallos = app.Services.GetRequiredService<Repositorio{{ a.clase }}Cache>().Fallos },
+{% endfor %}
+    },
+});
+
+app.Run();

@@ -1,0 +1,23 @@
+using System.Collections.Concurrent;
+using {{ N.modelo }};
+using {{ N.puertos }};
+using {{ N.transversal }};
+
+namespace {{ N.persistencia }};
+{% for a in ctx.agregados %}
+{% set campos = a.atributos | map(attribute="snake") | select("in", ctx.cifrado | map("snake") | list) | list %}
+
+/// <summary>Persistencia en memoria (por defecto). Cifra en reposo: {{ campos | join(", ") or "ningún campo" }}.</summary>
+public class Repositorio{{ a.clase }}Memoria(Cifrador cifrador) : IRepositorio{{ a.clase }}
+{
+    private static readonly string[] CamposCifrados = [{% for c in campos %}"{{ c }}"{{ ", " if not loop.last }}{% endfor %}];
+    private readonly ConcurrentDictionary<string, Dictionary<string, object?>> _datos = new();
+
+    public void Guardar({{ a.clase }} agregado) => _datos[agregado.Id] = cifrador.CifrarCampos(agregado.AMapa(), CamposCifrados);
+
+    public {{ a.clase }}? Obtener(string id) =>
+        _datos.TryGetValue(id, out var fila) ? {{ a.clase }}.DesdeMapa(cifrador.DescifrarCampos(fila, CamposCifrados)) : null;
+
+    public IReadOnlyList<{{ a.clase }}> Listar() => _datos.Keys.Select(k => Obtener(k)!).ToList();
+}
+{% endfor %}

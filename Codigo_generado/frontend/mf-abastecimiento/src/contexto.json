@@ -1,0 +1,156 @@
+{
+  "tipo": "contexto",
+  "nombre": "Abastecimiento",
+  "carpeta": "abastecimiento",
+  "puerto": 8004,
+  "dominio": "D-04",
+  "tituloDominio": "Abastecimiento y requerimientos de compra",
+  "clasificacion": "SUPPORTING",
+  "lenguaje": "C#",
+  "arquitectura": "hexagonal",
+  "baseDatos": "SQL · postgresql",
+  "agregados": [
+    {
+      "nombre": "RequerimientoCompra",
+      "recurso": "requerimiento-compra",
+      "atributos": [
+        {
+          "nombre": "principio_activo",
+          "etiqueta": "Principio activo",
+          "tipo": "texto",
+          "obligatorio": true,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "concentracion",
+          "etiqueta": "Concentracion",
+          "tipo": "texto",
+          "obligatorio": true,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "cantidad",
+          "etiqueta": "Cantidad",
+          "tipo": "entero",
+          "obligatorio": true,
+          "noNegativo": true,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "nivel_urgencia",
+          "etiqueta": "Nivel urgencia",
+          "tipo": "texto",
+          "obligatorio": true,
+          "noNegativo": false,
+          "opciones": [
+            "Baja",
+            "Media",
+            "Alta",
+            "Critica"
+          ],
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "estado",
+          "etiqueta": "Estado",
+          "tipo": "texto",
+          "obligatorio": false,
+          "noNegativo": false,
+          "opciones": [
+            "Sugerido",
+            "Autorizado"
+          ],
+          "cifrado": false,
+          "inicial": "Sugerido"
+        },
+        {
+          "nombre": "autorizado_por",
+          "etiqueta": "Autorizado por",
+          "tipo": "texto",
+          "obligatorio": false,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": true,
+          "inicial": null
+        }
+      ],
+      "invariantes": [
+        "El requerimiento contiene principio activo (DCI), concentración, cantidad y nivel de urgencia.",
+        "Ningún requerimiento viaja a Compras (ERP) sin autorización técnica previa del Químico Farmacéutico."
+      ],
+      "comandos": [
+        {
+          "nombre": "Generar Requisición",
+          "ruta": "generar-requisicion",
+          "crea": true,
+          "evento": "Requisición Sugerida",
+          "restar": null,
+          "estado": null,
+          "requiere": [],
+          "desdeEstados": [],
+          "fechaFutura": []
+        },
+        {
+          "nombre": "Autorizar Requisición",
+          "ruta": "autorizar-requisicion",
+          "crea": false,
+          "evento": "Requerimiento Autorizado",
+          "restar": null,
+          "estado": "Autorizado",
+          "requiere": [
+            "autorizado_por"
+          ],
+          "desdeEstados": [
+            "Sugerido"
+          ],
+          "fechaFutura": []
+        }
+      ]
+    }
+  ],
+  "funciones": [
+    {
+      "nombre": "Seguimiento del abastecimiento",
+      "ruta": "seguimiento-del-abastecimiento"
+    },
+    {
+      "nombre": "Cálculo de cantidad requerida",
+      "ruta": "calculo-de-cantidad-requerida"
+    }
+  ],
+  "componentes": [
+    "Gestión de requerimientos de compra",
+    "Gestión de autorización técnica"
+  ],
+  "entidades": [
+    "Medicamento",
+    "Requerimiento de compra",
+    "Autorización técnica"
+  ],
+  "relaciones": [
+    {
+      "con": "Planificación de Demanda",
+      "patron": "Customer / Supplier",
+      "sentido": "consume"
+    },
+    {
+      "con": "Seguridad y Auditoría",
+      "patron": "Open Host Service",
+      "sentido": "consume"
+    },
+    {
+      "con": "Inventario",
+      "patron": "Customer / Supplier",
+      "sentido": "consume"
+    }
+  ]
+}

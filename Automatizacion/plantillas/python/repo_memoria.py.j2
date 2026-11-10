@@ -1,0 +1,29 @@
+"""Adaptador de persistencia en memoria (por defecto). Cifra en reposo los campos sensibles: {{ ctx.cifrado | tojson }}."""
+from __future__ import annotations
+
+from {{ L.transversal }}.cifrado import Cifrador
+{% for a in ctx.agregados %}
+from {{ L.modelo }}.{{ a.snake }} import {{ a.clase }}
+from {{ L.puertos }}.repositorios import Repositorio{{ a.clase }}
+{% endfor %}
+{% for a in ctx.agregados %}
+{% set campos = a.atributos | map(attribute="snake") | select("in", ctx.cifrado | map("snake") | list) | list %}
+
+
+class Repositorio{{ a.clase }}Memoria(Repositorio{{ a.clase }}):
+    CAMPOS_CIFRADOS = {{ campos | tojson }}
+
+    def __init__(self, cifrador: Cifrador):
+        self._datos: dict[str, dict] = {}
+        self._cifrador = cifrador
+
+    def guardar(self, agregado: {{ a.clase }}) -> None:
+        self._datos[agregado.id] = self._cifrador.cifrar_campos(agregado.a_dict(), self.CAMPOS_CIFRADOS)
+
+    def obtener(self, id: str) -> {{ a.clase }} | None:
+        fila = self._datos.get(id)
+        return {{ a.clase }}.desde_dict(self._cifrador.descifrar_campos(fila, self.CAMPOS_CIFRADOS)) if fila else None
+
+    def listar(self) -> list[{{ a.clase }}]:
+        return [self.obtener(i) for i in self._datos]
+{% endfor %}

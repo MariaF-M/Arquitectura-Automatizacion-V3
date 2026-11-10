@@ -1,0 +1,158 @@
+# Despliegue completo del sistema. Generado desde el modelo ArchiMate + spec.yaml.
+#   docker compose up --build
+#
+#   Gateway (API única para el frontend) ... http://localhost:8080/api/<contexto>/...
+#   Aplicación web (shell + microfrontends)  http://localhost:5100
+#   Cada servicio también queda expuesto en su propio puerto (ver abajo).
+services:
+  inventario:
+    build: ./inventario
+    ports: ["8001:8001"]
+    environment:
+      PUERTO: "8001"
+      PERSISTENCIA: bd
+      BD_URL: "postgresql://farmacia:farmacia@postgres:5432/inventario"
+      CLAVE_CIFRADO: ${CLAVE_CIFRADO:-farmacia-2026}
+      SEGURIDAD_Y_AUDITORIA_URL: http://seguridad-y-auditoria:8005
+      ACL_URL: http://acl-01-anticorrupcion:8010
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
+  vencimientos:
+    build: ./vencimientos
+    ports: ["8002:8002"]
+    environment:
+      PUERTO: "8002"
+      PERSISTENCIA: bd
+      BD_URL: "mongodb://mongo:27017/vencimientos"
+      CLAVE_CIFRADO: ${CLAVE_CIFRADO:-farmacia-2026}
+      SEGURIDAD_Y_AUDITORIA_URL: http://seguridad-y-auditoria:8005
+      INVENTARIO_URL: http://inventario:8001
+      ACL_URL: http://acl-01-anticorrupcion:8010
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: on-failure
+
+  planificacion-de-demanda:
+    build: ./planificacion-de-demanda
+    ports: ["8003:8003"]
+    environment:
+      PUERTO: "8003"
+      PERSISTENCIA: bd
+      BD_URL: "mongodb://mongo:27017/planificacion_de_demanda"
+      CLAVE_CIFRADO: ${CLAVE_CIFRADO:-farmacia-2026}
+      INVENTARIO_URL: http://inventario:8001
+      ACL_URL: http://acl-01-anticorrupcion:8010
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: on-failure
+
+  abastecimiento:
+    build: ./abastecimiento
+    ports: ["8004:8004"]
+    environment:
+      PUERTO: "8004"
+      PERSISTENCIA: bd
+      BD_URL: "Host=postgres;Database=abastecimiento;Username=farmacia;Password=farmacia"
+      CLAVE_CIFRADO: ${CLAVE_CIFRADO:-farmacia-2026}
+      PLANIFICACION_DE_DEMANDA_URL: http://planificacion-de-demanda:8003
+      SEGURIDAD_Y_AUDITORIA_URL: http://seguridad-y-auditoria:8005
+      INVENTARIO_URL: http://inventario:8001
+      ACL_URL: http://acl-01-anticorrupcion:8010
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
+  seguridad-y-auditoria:
+    build: ./seguridad-y-auditoria
+    ports: ["8005:8005"]
+    environment:
+      PUERTO: "8005"
+      PERSISTENCIA: bd
+      BD_URL: "postgresql://farmacia:farmacia@postgres:5432/seguridad_y_auditoria"
+      CLAVE_CIFRADO: ${CLAVE_CIFRADO:-farmacia-2026}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
+  acl-01-anticorrupcion:
+    build: ./acl-01-anticorrupcion
+    ports: ["8010:8010"]
+    environment:
+      PUERTO: "8010"
+      INVENTARIO_URL: http://inventario:8001
+      VENCIMIENTOS_URL: http://vencimientos:8002
+      PLANIFICACION_DE_DEMANDA_URL: http://planificacion-de-demanda:8003
+      ABASTECIMIENTO_URL: http://abastecimiento:8004
+    restart: on-failure
+
+  gateway:
+    image: nginx:1.27-alpine
+    ports: ["8080:80"]
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on: [inventario, vencimientos, planificacion-de-demanda, abastecimiento, seguridad-y-auditoria, acl-01-anticorrupcion]
+
+  # ---------------- Frontend: un contenedor por microfrontend (despliegue independiente)
+  mf-inventario:
+    build: ./frontend/mf-inventario
+    ports: ["5101:80"]
+
+  mf-vencimientos:
+    build: ./frontend/mf-vencimientos
+    ports: ["5102:80"]
+
+  mf-planificacion-de-demanda:
+    build: ./frontend/mf-planificacion-de-demanda
+    ports: ["5103:80"]
+
+  mf-abastecimiento:
+    build: ./frontend/mf-abastecimiento
+    ports: ["5104:80"]
+
+  mf-seguridad-y-auditoria:
+    build: ./frontend/mf-seguridad-y-auditoria
+    ports: ["5105:80"]
+
+  mf-integraciones:
+    build: ./frontend/mf-integraciones
+    ports: ["5106:80"]
+
+  shell:
+    build: ./frontend/shell
+    ports: ["5100:80"]
+    depends_on: [mf-inventario, mf-vencimientos, mf-planificacion-de-demanda, mf-abastecimiento, mf-seguridad-y-auditoria, mf-integraciones]
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: farmacia
+      POSTGRES_PASSWORD: farmacia
+    ports: ["5432:5432"]
+    volumes:
+      - ./bd/postgres:/docker-entrypoint-initdb.d:ro
+      - datos-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U farmacia"]
+      interval: 5s
+      retries: 20
+
+  mongo:
+    image: mongo:7
+    ports: ["27017:27017"]
+    volumes:
+      - datos-mongo:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      retries: 20
+
+volumes:
+  datos-postgres:
+  datos-mongo:

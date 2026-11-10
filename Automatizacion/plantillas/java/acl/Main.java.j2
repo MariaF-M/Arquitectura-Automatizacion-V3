@@ -1,0 +1,24 @@
+package {{ P.base }};
+
+import {{ P.adaptadores }}.AdaptadorContextoHttp;
+import {{ P.adaptadores }}.AdaptadorSistemaExternoHttp;
+import {{ P.api }}.ServidorHttp;
+import {{ P.servicios }}.ServicioIntegracion;
+
+import java.util.logging.Logger;
+
+/**
+ * {{ acl.nombre }} — raíz de composición. Arquitectura hexagonal:
+ * dominio (DTO + traductores) · aplicación (ServicioIntegracion) · infraestructura (HTTP).
+{% for i in acl.integraciones %}
+ * <br>{{ i.codigo }} {{ i.nombre }}: {{ i.externo }} {{ "→" if i.direccion == "entrada" else "←" }} {{ i.contexto }}
+{% endfor %}
+ */
+public class Main {
+    public static void main(String[] args) throws Exception {
+        ServicioIntegracion servicio = new ServicioIntegracion(new AdaptadorContextoHttp(), new AdaptadorSistemaExternoHttp());
+        int puerto = Integer.parseInt(System.getenv().getOrDefault("PUERTO", "{{ acl.puerto }}"));
+        new ServidorHttp(servicio).iniciar(puerto);
+        Logger.getLogger("main").info("ACL-01 escuchando en el puerto " + puerto);
+    }
+}

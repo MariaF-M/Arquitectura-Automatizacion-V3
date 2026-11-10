@@ -1,0 +1,12 @@
+namespace {{ N.kernel }};
+{% for e in ctx.entidades if e.compartida %}
+
+/// <summary>Shared Kernel «{{ e.nombre }}» (V8). Contrato: contratos/shared-kernel/{{ e.snake }}.schema.json</summary>
+public class {{ e.clase }}
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+{% for at in e.atributos %}
+    public {{ tipo_cs(at.tipo) }}? {{ at.pascal }} { get; set; }
+{% endfor %}
+}
+{% endfor %}

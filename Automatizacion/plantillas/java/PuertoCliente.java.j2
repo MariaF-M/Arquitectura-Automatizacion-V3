@@ -1,0 +1,6 @@
+package {{ P.puertos }};
+
+/** {{ ctx.nombre }} consume a {{ r.proveedor }} — «{{ r.etiqueta }}» ({{ r.patron }}). */
+public interface Puerto{{ r.proveedor | pascal }} {
+    Object consultar(String ruta);
+}

@@ -1,0 +1,76 @@
+package {{ P.servicios }};
+
+import {{ P.puertos }}.PuertoContextoInterno;
+import {{ P.puertos }}.PuertoSistemaExterno;
+import {{ P.traductores }}.Traductor;
+{% for i in acl.integraciones %}
+import {{ P.traductores }}.Traductor{{ i.clase }};
+{% endfor %}
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Caso de uso de la ACL «{{ acl.nombre }}»: recibir un mensaje, traducirlo y entregarlo al otro lado.
+ * Ningún contexto interno conoce el formato de un sistema externo, ni al revés.
+ */
+public class ServicioIntegracion {
+    private final Map<String, Traductor> traductores = new LinkedHashMap<>();
+    private final Map<String, String[]> destinos = new LinkedHashMap<>();
+    private final PuertoContextoInterno contextos;
+    private final PuertoSistemaExterno externos;
+
+    public ServicioIntegracion(PuertoContextoInterno contextos, PuertoSistemaExterno externos) {
+        this.contextos = contextos;
+        this.externos = externos;
+{% for i in acl.integraciones %}
+        traductores.put("{{ i.ruta }}", new Traductor{{ i.clase }}());
+{% if i.direccion == "entrada" %}
+        destinos.put("{{ i.ruta }}", new String[] {
+                System.getenv().getOrDefault(Traductor{{ i.clase }}.VARIABLE_URL, Traductor{{ i.clase }}.URL_DEFECTO),
+                Traductor{{ i.clase }}.RUTA_COMANDO});
+{% endif %}
+{% endfor %}
+    }
+
+    private Traductor traductor(String codigo, String direccion) {
+        Traductor t = traductores.get(codigo);
+        if (t == null || !t.direccion().equals(direccion))
+            throw new IllegalArgumentException("No existe la integración " + direccion + " " + codigo);
+        return t;
+    }
+
+    /** Externo -> contexto interno. */
+    public Object recibirEntrante(String codigo, Map<String, Object> mensajeExterno) {
+        Traductor t = traductor(codigo, "entrada");
+        Map<String, Object> interno = t.traducir(mensajeExterno);
+        String[] destino = destinos.get(codigo);
+        String ruta = destino[1];
+        if (ruta.contains("{id}")) {
+            Object id = interno.remove("id");
+            if (id == null) throw new IllegalArgumentException(t.codigo() + ": el mapeo no produce el campo 'id' que necesita el comando");
+            ruta = ruta.replace("{id}", String.valueOf(id));
+        }
+        return contextos.ejecutarComando(destino[0], ruta, interno);
+    }
+
+    /** Contexto interno -> externo. */
+    public Object recibirSaliente(String codigo, Map<String, Object> mensajeInterno) {
+        Traductor t = traductor(codigo, "salida");
+        return externos.enviar(t.codigo(), t.externo(), t.traducir(mensajeInterno));
+    }
+
+    public List<Map<String, Object>> catalogo() {
+        return traductores.values().stream().map(t -> {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("codigo", t.codigo());
+            m.put("nombre", t.nombre());
+            m.put("direccion", t.direccion());
+            m.put("contexto", t.contexto());
+            m.put("externo", t.externo());
+            m.put("mapeo", t.mapeo());
+            return m;
+        }).toList();
+    }
+}

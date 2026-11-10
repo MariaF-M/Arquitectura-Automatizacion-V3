@@ -1,0 +1,31 @@
+# {{ acl.nombre }}
+
+> Generado automáticamente desde V9 (Interoperabilidad y anticorrupción) y V8 (relaciones «ACL»).
+
+Interfaz: **{{ acl.interfaz }}** · Lenguaje: Java 17 · Arquitectura: {{ acl.arquitectura }} · Puerto: {{ acl.puerto }}
+
+La ACL es el único punto de contacto con sistemas externos. Recibe el formato del externo (DTO),
+lo **traduce** al lenguaje ubicuo de la farmacia y lo entrega como un comando del contexto interno;
+o al revés, toma un evento interno y lo traduce al formato del externo. Así el modelo de los
+sistemas externos no contamina los dominios.
+
+| Código | Integración (V9) | Sistema externo (V8) | Objeto (V9) | Dirección | Contexto | Comando / evento | Mapeo |
+|---|---|---|---|---|---|---|---|
+{% for i in acl.integraciones %}
+| {{ i.codigo }} | {{ i.nombre }} | {{ i.externo }} | {{ i.objeto }} | {{ i.direccion }} | {{ i.contexto }} | {{ i.comando or i.evento or "—" }} | {% for k, v in i.mapeo.items() %}`{{ k }}→{{ v }}`{{ " " }}{% endfor %} |
+{% endfor %}
+
+## API
+| Método | Ruta | Qué hace |
+|---|---|---|
+{% for r in rutas %}
+| {{ r.metodo }} | `{{ r.ruta }}` | {{ r.que }} |
+{% endfor %}
+
+## Ejecutar
+```bash
+mvn -q package && java -jar target/{{ acl.carpeta }}.jar
+# o sin Maven:
+javac -d out $(find src -name "*.java") && java -cp out {{ sistema.paquete_base }}.{{ acl.paquete }}.Main
+```
+Variables: `PUERTO`{% for c in sistema.contextos if c.integraciones %}, `{{ c.variable_url }}`{% endfor %}, y `EXT_INT_0X_URL` para cada sistema externo (si no está, la salida se registra en el log).

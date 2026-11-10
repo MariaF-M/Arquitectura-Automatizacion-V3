@@ -1,0 +1,17 @@
+{
+  "name": "farmacia-frontend",
+  "private": true,
+  "description": "Shell + microfrontends generados desde el modelo ArchiMate. Cada app se construye y despliega sola; esto es solo una comodidad para desarrollo local.",
+  "workspaces": [
+    "shell"{% for r in fe.remotos %},
+    "{{ r.carpeta }}"{% endfor %}
+
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "iniciar": "npm run build && concurrently -k -n {{ ([fe.shell] + fe.remotos) | map(attribute='carpeta') | join(',') }} \"npm run preview -w shell\"{% for r in fe.remotos %} \"npm run preview -w {{ r.carpeta }}\"{% endfor %}"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

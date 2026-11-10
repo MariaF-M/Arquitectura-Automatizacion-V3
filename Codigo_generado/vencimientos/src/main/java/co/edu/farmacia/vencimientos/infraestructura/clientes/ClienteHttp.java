@@ -1,0 +1,36 @@
+package co.edu.farmacia.vencimientos.infraestructura.clientes;
+
+import co.edu.farmacia.vencimientos.infraestructura.transversal.Json;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.Map;
+
+/** Cliente HTTP genérico hacia otros servicios (java.net.http). */
+public class ClienteHttp {
+    private final String url;
+    private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+
+    public ClienteHttp(String url) { this.url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url; }
+
+    public Object get(String ruta) {
+        return enviar(HttpRequest.newBuilder(URI.create(url + ruta)).GET().build());
+    }
+
+    public Object post(String ruta, Map<String, Object> datos) {
+        return enviar(HttpRequest.newBuilder(URI.create(url + ruta))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(Json.escribir(datos))).build());
+    }
+
+    private Object enviar(HttpRequest req) {
+        try {
+            return Json.leer(http.send(req, HttpResponse.BodyHandlers.ofString()).body());
+        } catch (Exception e) {
+            throw new IllegalStateException("No se pudo llamar a " + req.uri() + ": " + e.getMessage(), e);
+        }
+    }
+}

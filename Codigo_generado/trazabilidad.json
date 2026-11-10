@@ -1,0 +1,906 @@
+[
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationComponent",
+    "nombre": "Cálculo de necesidad estimada de medicamentos",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/aplicacion/servicios/servicios.py",
+      "Codigo_generado/contratos/planificacion-de-demanda.openapi.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationComponent",
+    "nombre": "Gestión de alertas de vencimiento",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/servicios/GestionDeAlertasDeVencimientoServicio.java",
+      "Codigo_generado/contratos/vencimientos.openapi.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationComponent",
+    "nombre": "Gestión de autorización técnica",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Dominio/Servicios/Servicios.cs",
+      "Codigo_generado/contratos/abastecimiento.openapi.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationComponent",
+    "nombre": "Gestión de consumo histórico",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/aplicacion/servicios/servicios.py",
+      "Codigo_generado/contratos/planificacion-de-demanda.openapi.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationComponent",
+    "nombre": "Gestión de identidades, perfiles y permisos",
+    "archivos": [
+      "Codigo_generado/seguridad-y-auditoria/aplicacion/servicios/servicios.py",
+      "Codigo_generado/contratos/seguridad-y-auditoria.openapi.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationComponent",
+    "nombre": "Gestión de lotes de medicamentos",
+    "archivos": [
+      "Codigo_generado/inventario/dominio/servicios/servicios.py",
+      "Codigo_generado/contratos/inventario.openapi.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationComponent",
+    "nombre": "Gestión de medicamentos",
+    "archivos": [
+      "Codigo_generado/inventario/dominio/servicios/servicios.py",
+      "Codigo_generado/contratos/inventario.openapi.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationComponent",
+    "nombre": "Gestión de programación hospitalaria",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/aplicacion/servicios/servicios.py",
+      "Codigo_generado/contratos/planificacion-de-demanda.openapi.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationComponent",
+    "nombre": "Gestión de requerimientos de compra",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Dominio/Servicios/Servicios.cs",
+      "Codigo_generado/contratos/abastecimiento.openapi.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationComponent",
+    "nombre": "Registro de auditoría y trazabilidad de acciones",
+    "archivos": [
+      "Codigo_generado/seguridad-y-auditoria/aplicacion/servicios/servicios.py",
+      "Codigo_generado/contratos/seguridad-y-auditoria.openapi.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationComponent",
+    "nombre": "Servicio de notificaciones",
+    "archivos": [
+      "Codigo_generado/seguridad-y-auditoria/aplicacion/servicios/servicios.py",
+      "Codigo_generado/contratos/seguridad-y-auditoria.openapi.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationFunction",
+    "nombre": "Autenticación y autorización por perfil",
+    "archivos": [
+      "Codigo_generado/seguridad-y-auditoria/aplicacion/servicios/servicios.py",
+      "Codigo_generado/seguridad-y-auditoria/api/http.py",
+      "Codigo_generado/frontend/mf-seguridad-y-auditoria/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationFunction",
+    "nombre": "Control de existencias por lote",
+    "archivos": [
+      "Codigo_generado/inventario/dominio/servicios/servicios.py",
+      "Codigo_generado/inventario/adaptadores/entrada/http.py",
+      "Codigo_generado/frontend/mf-inventario/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationFunction",
+    "nombre": "Cálculo de cantidad requerida",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Dominio/Servicios/Servicios.cs",
+      "Codigo_generado/abastecimiento/Adaptadores/Entrada/Rutas.cs",
+      "Codigo_generado/frontend/mf-abastecimiento/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationFunction",
+    "nombre": "Envío de alertas y notificaciones",
+    "archivos": [
+      "Codigo_generado/seguridad-y-auditoria/aplicacion/servicios/servicios.py",
+      "Codigo_generado/seguridad-y-auditoria/api/http.py",
+      "Codigo_generado/frontend/mf-seguridad-y-auditoria/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationFunction",
+    "nombre": "Gestión del estado del lote",
+    "archivos": [
+      "Codigo_generado/inventario/dominio/servicios/servicios.py",
+      "Codigo_generado/inventario/adaptadores/entrada/http.py",
+      "Codigo_generado/frontend/mf-inventario/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationFunction",
+    "nombre": "Notificación de lotes críticos",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/servicios/NotificacionDeLotesCriticos.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/api/ServidorHttp.java",
+      "Codigo_generado/frontend/mf-vencimientos/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationFunction",
+    "nombre": "Predicción de demanda",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/aplicacion/servicios/servicios.py",
+      "Codigo_generado/planificacion-de-demanda/api/http.py",
+      "Codigo_generado/frontend/mf-planificacion-de-demanda/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationFunction",
+    "nombre": "Prioridad de uso de lotes (FEFO)",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/servicios/PrioridadDeUsoDeLotesFefo.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/api/ServidorHttp.java",
+      "Codigo_generado/frontend/mf-vencimientos/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationFunction",
+    "nombre": "Registro de eventos de auditoría",
+    "archivos": [
+      "Codigo_generado/seguridad-y-auditoria/aplicacion/servicios/servicios.py",
+      "Codigo_generado/seguridad-y-auditoria/api/http.py",
+      "Codigo_generado/frontend/mf-seguridad-y-auditoria/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationFunction",
+    "nombre": "Registros de movimientos del inventario",
+    "archivos": [
+      "Codigo_generado/inventario/dominio/servicios/servicios.py",
+      "Codigo_generado/inventario/adaptadores/entrada/http.py",
+      "Codigo_generado/frontend/mf-inventario/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationFunction",
+    "nombre": "Seguimiento del abastecimiento",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Dominio/Servicios/Servicios.cs",
+      "Codigo_generado/abastecimiento/Adaptadores/Entrada/Rutas.cs",
+      "Codigo_generado/frontend/mf-abastecimiento/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V5_Dominios",
+    "tipo": "ApplicationFunction",
+    "nombre": "Validación de restricciones de uso",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/servicios/ValidacionDeRestriccionesDeUso.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/api/ServidorHttp.java",
+      "Codigo_generado/frontend/mf-vencimientos/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationEvent",
+    "nombre": "Demanda Estimada",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/contratos/eventos_v1.py",
+      "Codigo_generado/planificacion-de-demanda/dominio/eventos/eventos.py"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationEvent",
+    "nombre": "Existencias Descontadas",
+    "archivos": [
+      "Codigo_generado/inventario/contratos/eventos_v1.py",
+      "Codigo_generado/inventario/dominio/eventos/eventos.py"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationEvent",
+    "nombre": "Lote Bloqueado",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/eventos/LoteBloqueado.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/contratos/LoteBloqueadoV1.java"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationEvent",
+    "nombre": "Lote Ingresado",
+    "archivos": [
+      "Codigo_generado/inventario/contratos/eventos_v1.py",
+      "Codigo_generado/inventario/dominio/eventos/eventos.py"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationEvent",
+    "nombre": "Predicción Ajustada",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/contratos/eventos_v1.py",
+      "Codigo_generado/planificacion-de-demanda/dominio/eventos/eventos.py"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationEvent",
+    "nombre": "Prioridad FEFO Calculada",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/eventos/PrioridadFefoCalculada.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/contratos/PrioridadFefoCalculadaV1.java"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationEvent",
+    "nombre": "Requerimiento Autorizado",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Contratos/EventosV1.cs",
+      "Codigo_generado/abastecimiento/Dominio/Eventos/Eventos.cs"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationEvent",
+    "nombre": "Requisición Sugerida",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Contratos/EventosV1.cs",
+      "Codigo_generado/abastecimiento/Dominio/Eventos/Eventos.cs"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationProcess",
+    "nombre": "Ajustar Predicción",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/dominio/modelo/estimacion_demanda.py",
+      "Codigo_generado/planificacion-de-demanda/aplicacion/comandos/comandos.py",
+      "Codigo_generado/planificacion-de-demanda/api/http.py",
+      "Codigo_generado/frontend/mf-planificacion-de-demanda/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationProcess",
+    "nombre": "Autorizar Requisición",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Dominio/Modelo/RequerimientoCompra.cs",
+      "Codigo_generado/abastecimiento/Puertos/Entrada/Comandos.cs",
+      "Codigo_generado/abastecimiento/Adaptadores/Entrada/Rutas.cs",
+      "Codigo_generado/frontend/mf-abastecimiento/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationProcess",
+    "nombre": "Bloquear Lote Vencido",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/modelo/AlertaVencimiento.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/comandos/BloquearLoteVencido.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/comandos/ManejadorAlertaVencimiento.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/api/ServidorHttp.java",
+      "Codigo_generado/frontend/mf-vencimientos/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationProcess",
+    "nombre": "Calcular Demanda",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/dominio/modelo/estimacion_demanda.py",
+      "Codigo_generado/planificacion-de-demanda/aplicacion/comandos/comandos.py",
+      "Codigo_generado/planificacion-de-demanda/api/http.py",
+      "Codigo_generado/frontend/mf-planificacion-de-demanda/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationProcess",
+    "nombre": "Descontar Existencias",
+    "archivos": [
+      "Codigo_generado/inventario/dominio/modelo/lote_medicamento.py",
+      "Codigo_generado/inventario/puertos/entrada/comandos.py",
+      "Codigo_generado/inventario/adaptadores/entrada/http.py",
+      "Codigo_generado/frontend/mf-inventario/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationProcess",
+    "nombre": "Evaluar Prioridad FEFO",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/modelo/AlertaVencimiento.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/comandos/EvaluarPrioridadFefo.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/comandos/ManejadorAlertaVencimiento.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/api/ServidorHttp.java",
+      "Codigo_generado/frontend/mf-vencimientos/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationProcess",
+    "nombre": "Generar Requisición",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Dominio/Modelo/RequerimientoCompra.cs",
+      "Codigo_generado/abastecimiento/Puertos/Entrada/Comandos.cs",
+      "Codigo_generado/abastecimiento/Adaptadores/Entrada/Rutas.cs",
+      "Codigo_generado/frontend/mf-abastecimiento/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "ApplicationProcess",
+    "nombre": "Registrar Ingreso",
+    "archivos": [
+      "Codigo_generado/inventario/dominio/modelo/lote_medicamento.py",
+      "Codigo_generado/inventario/puertos/entrada/comandos.py",
+      "Codigo_generado/inventario/adaptadores/entrada/http.py",
+      "Codigo_generado/frontend/mf-inventario/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "DataObject",
+    "nombre": "AlertaVencimiento",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/memento/Caretaker.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/modelo/AlertaVencimiento.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/modelo/AlertaVencimientoMemento.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/puertos/RepositorioAlertaVencimiento.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/infraestructura/persistencia/RepositorioAlertaVencimientoMemoria.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/infraestructura/persistencia/RepositorioAlertaVencimientoBaseDatos.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/infraestructura/persistencia/RepositorioAlertaVencimientoCache.java",
+      "Codigo_generado/frontend/mf-vencimientos/src/contexto.json",
+      "Codigo_generado/vencimientos/db/colecciones.json"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "DataObject",
+    "nombre": "EstimacionDemanda",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/dominio/modelo/estimacion_demanda.py",
+      "Codigo_generado/planificacion-de-demanda/dominio/puertos/repositorios.py",
+      "Codigo_generado/planificacion-de-demanda/aplicacion/memento/memento.py",
+      "Codigo_generado/planificacion-de-demanda/infraestructura/persistencia/memoria.py",
+      "Codigo_generado/planificacion-de-demanda/infraestructura/persistencia/base_datos.py",
+      "Codigo_generado/frontend/mf-planificacion-de-demanda/src/contexto.json",
+      "Codigo_generado/planificacion-de-demanda/db/colecciones.json"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "DataObject",
+    "nombre": "LoteMedicamento",
+    "archivos": [
+      "Codigo_generado/inventario/dominio/modelo/lote_medicamento.py",
+      "Codigo_generado/inventario/puertos/salida/repositorios.py",
+      "Codigo_generado/inventario/dominio/memento/memento.py",
+      "Codigo_generado/inventario/adaptadores/salida/persistencia/memoria.py",
+      "Codigo_generado/inventario/adaptadores/salida/persistencia/base_datos.py",
+      "Codigo_generado/frontend/mf-inventario/src/contexto.json",
+      "Codigo_generado/inventario/db/esquema.sql"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "DataObject",
+    "nombre": "RequerimientoCompra",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Dominio/Modelo/RequerimientoCompra.cs",
+      "Codigo_generado/abastecimiento/Puertos/Salida/Repositorios.cs",
+      "Codigo_generado/abastecimiento/Dominio/Memento/Caretaker.cs",
+      "Codigo_generado/abastecimiento/Adaptadores/Salida/Persistencia/RepositoriosMemoria.cs",
+      "Codigo_generado/abastecimiento/Adaptadores/Salida/Persistencia/RepositoriosBaseDatos.cs",
+      "Codigo_generado/abastecimiento/Adaptadores/Salida/Persistencia/Cache.cs",
+      "Codigo_generado/frontend/mf-abastecimiento/src/contexto.json",
+      "Codigo_generado/abastecimiento/db/esquema.sql"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "Grouping",
+    "nombre": "D-01. Gestión de inventario farmacéutico",
+    "archivos": [
+      "Codigo_generado/inventario/README.md"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "Grouping",
+    "nombre": "D-02. Gestión de vencimientos y priorización",
+    "archivos": [
+      "Codigo_generado/vencimientos/README.md"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "Grouping",
+    "nombre": "D-03. Planificación y predicción de demanda",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/README.md"
+    ]
+  },
+  {
+    "vista": "V6 - Agregados, Comandos y Eventos",
+    "tipo": "Grouping",
+    "nombre": "D-04. Abastecimiento y requerimientos de compra",
+    "archivos": [
+      "Codigo_generado/abastecimiento/README.md"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "ApplicationComponent",
+    "nombre": "Abastecimiento",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Program.cs",
+      "Codigo_generado/abastecimiento/Abastecimiento.csproj",
+      "Codigo_generado/abastecimiento/Dockerfile",
+      "Codigo_generado/frontend/mf-abastecimiento/src/contexto.json",
+      "Codigo_generado/frontend/mf-abastecimiento/vite.config.ts",
+      "Codigo_generado/frontend/shell/vite.config.ts",
+      "Codigo_generado/frontend/shell/src/remotos.ts",
+      "Codigo_generado/abastecimiento/README.md",
+      "Codigo_generado/gateway/nginx.conf"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "ApplicationComponent",
+    "nombre": "Historia Clínica (HCE)",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/PrescripcionMedica.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt02HistoriaClinicaElectronica.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorSistemaExternoHttp.java"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "ApplicationComponent",
+    "nombre": "INVIMA (Vigilancia)",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/AlertaRegulatoriaORetiroDeLote.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt06EntidadDeVigilanciaFarmaceutica.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorSistemaExternoHttp.java"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "ApplicationComponent",
+    "nombre": "Inventario",
+    "archivos": [
+      "Codigo_generado/inventario/main.py",
+      "Codigo_generado/inventario/Dockerfile",
+      "Codigo_generado/frontend/mf-inventario/src/contexto.json",
+      "Codigo_generado/frontend/mf-inventario/vite.config.ts",
+      "Codigo_generado/frontend/shell/vite.config.ts",
+      "Codigo_generado/frontend/shell/src/remotos.ts",
+      "Codigo_generado/inventario/README.md",
+      "Codigo_generado/gateway/nginx.conf"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "ApplicationComponent",
+    "nombre": "Planificación de Demanda",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/main.py",
+      "Codigo_generado/planificacion-de-demanda/Dockerfile",
+      "Codigo_generado/frontend/mf-planificacion-de-demanda/src/contexto.json",
+      "Codigo_generado/frontend/mf-planificacion-de-demanda/vite.config.ts",
+      "Codigo_generado/frontend/shell/vite.config.ts",
+      "Codigo_generado/frontend/shell/src/remotos.ts",
+      "Codigo_generado/planificacion-de-demanda/README.md",
+      "Codigo_generado/gateway/nginx.conf"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "ApplicationComponent",
+    "nombre": "Programación Quirúrgica",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/AgendaQuirurgicaConfirmada.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt01ProgramacionQuirurgica.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorSistemaExternoHttp.java"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "ApplicationComponent",
+    "nombre": "Proveedores Externos",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/DatosDeEntregaYLote.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt05ProveedorDeMedicamentos.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorSistemaExternoHttp.java"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "ApplicationComponent",
+    "nombre": "Seguridad y Auditoría",
+    "archivos": [
+      "Codigo_generado/seguridad-y-auditoria/main.py",
+      "Codigo_generado/seguridad-y-auditoria/Dockerfile",
+      "Codigo_generado/frontend/mf-seguridad-y-auditoria/src/contexto.json",
+      "Codigo_generado/frontend/mf-seguridad-y-auditoria/vite.config.ts",
+      "Codigo_generado/frontend/shell/vite.config.ts",
+      "Codigo_generado/frontend/shell/src/remotos.ts",
+      "Codigo_generado/seguridad-y-auditoria/README.md",
+      "Codigo_generado/gateway/nginx.conf"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "ApplicationComponent",
+    "nombre": "Servicio de Urgencias",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/NecesidadAsistencialNoProgramada.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt03ServicioDeUrgencias.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorSistemaExternoHttp.java"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "ApplicationComponent",
+    "nombre": "Sistema ERP (Compras)",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/RequerimientoYEstadoDeCompra.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt04ErpDeComprasYContabilidad.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorSistemaExternoHttp.java"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "ApplicationComponent",
+    "nombre": "Vencimientos",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/Main.java",
+      "Codigo_generado/vencimientos/pom.xml",
+      "Codigo_generado/vencimientos/Dockerfile",
+      "Codigo_generado/frontend/mf-vencimientos/src/contexto.json",
+      "Codigo_generado/frontend/mf-vencimientos/vite.config.ts",
+      "Codigo_generado/frontend/shell/vite.config.ts",
+      "Codigo_generado/frontend/shell/src/remotos.ts",
+      "Codigo_generado/vencimientos/README.md",
+      "Codigo_generado/gateway/nginx.conf"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Agenda quirúrgica",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/dominio/modelo/entidades.py"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Alerta de vencimiento",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/modelo/AlertaDeVencimiento.java"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Autorización técnica",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Dominio/Modelo/Entidades.cs"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Consumo histórico",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/dominio/modelo/entidades.py"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Estimación de demanda",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/dominio/modelo/entidades.py"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Lote",
+    "archivos": [
+      "Codigo_generado/inventario/shared_kernel/__init__.py",
+      "Codigo_generado/contratos/shared-kernel/lote.schema.json"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Lote",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/sharedkernel/Lote.java",
+      "Codigo_generado/contratos/shared-kernel/lote.schema.json"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Medicamento",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/dominio/modelo/entidades.py"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Medicamento",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Dominio/Modelo/Entidades.cs"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Medicamento",
+    "archivos": [
+      "Codigo_generado/inventario/dominio/modelo/entidades.py"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Movimiento de inventario",
+    "archivos": [
+      "Codigo_generado/inventario/dominio/modelo/entidades.py"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Perfil / rol",
+    "archivos": [
+      "Codigo_generado/seguridad-y-auditoria/dominio/modelo/entidades.py"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Registro de auditoría",
+    "archivos": [
+      "Codigo_generado/seguridad-y-auditoria/dominio/modelo/entidades.py"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Requerimiento de compra",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Dominio/Modelo/Entidades.cs"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Restricción de uso",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/modelo/RestriccionDeUso.java"
+    ]
+  },
+  {
+    "vista": "V8 - Mapa de Contextos",
+    "tipo": "DataObject",
+    "nombre": "Usuario",
+    "archivos": [
+      "Codigo_generado/seguridad-y-auditoria/dominio/modelo/entidades.py"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "ApplicationComponent",
+    "nombre": "ACL-01 Adaptador anticorrupción e interoperabilidad",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/aplicacion/ServicioIntegracion.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/Main.java",
+      "Codigo_generado/acl-01-anticorrupcion/pom.xml",
+      "Codigo_generado/acl-01-anticorrupcion/Dockerfile",
+      "Codigo_generado/frontend/mf-integraciones/src/contexto.json",
+      "Codigo_generado/frontend/mf-integraciones/vite.config.ts",
+      "Codigo_generado/frontend/shell/vite.config.ts",
+      "Codigo_generado/frontend/shell/src/remotos.ts",
+      "Codigo_generado/contratos/acl-01-anticorrupcion.openapi.json",
+      "Codigo_generado/acl-01-anticorrupcion/README.md",
+      "Codigo_generado/gateway/nginx.conf"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "ApplicationInterface",
+    "nombre": "IF-ACL-01 - Interfaz de integración",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "BusinessActor",
+    "nombre": "INT-05. Proveedor de medicamentos",
+    "archivos": [
+      "Codigo_generado/inventario/puertos/salida/clientes.py",
+      "Codigo_generado/inventario/adaptadores/salida/clientes/http.py",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/DatosDeEntregaYLote.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt05ProveedorDeMedicamentos.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorContextoHttp.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+      "Codigo_generado/frontend/mf-integraciones/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "BusinessActor",
+    "nombre": "INT-06. Entidad de vigilancia farmacéutica",
+    "archivos": [
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/puertos/PuertoAnticorrupcion.java",
+      "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/infraestructura/clientes/ClienteAnticorrupcionHttp.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/AlertaRegulatoriaORetiroDeLote.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt06EntidadDeVigilanciaFarmaceutica.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorContextoHttp.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+      "Codigo_generado/frontend/mf-integraciones/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "BusinessObject",
+    "nombre": "OBJ-01 — Agenda quirúrgica confirmada",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/AgendaQuirurgicaConfirmada.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt01ProgramacionQuirurgica.java"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "BusinessObject",
+    "nombre": "OBJ-02 — Prescripción médica",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/PrescripcionMedica.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt02HistoriaClinicaElectronica.java"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "BusinessObject",
+    "nombre": "OBJ-03 — Necesidad asistencial no programada",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/NecesidadAsistencialNoProgramada.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt03ServicioDeUrgencias.java"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "BusinessObject",
+    "nombre": "OBJ-04 — Requerimiento y estado de compra",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/RequerimientoYEstadoDeCompra.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt04ErpDeComprasYContabilidad.java"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "BusinessObject",
+    "nombre": "OBJ-05 — Datos de entrega y lote",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/DatosDeEntregaYLote.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt05ProveedorDeMedicamentos.java"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "BusinessObject",
+    "nombre": "OBJ-06 — Alerta regulatoria o retiro de lote",
+    "archivos": [
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/AlertaRegulatoriaORetiroDeLote.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt06EntidadDeVigilanciaFarmaceutica.java"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "BusinessService",
+    "nombre": "INT-01. Programación quirúrgica",
+    "archivos": [
+      "Codigo_generado/planificacion-de-demanda/dominio/puertos/clientes.py",
+      "Codigo_generado/planificacion-de-demanda/infraestructura/clientes/http.py",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/AgendaQuirurgicaConfirmada.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt01ProgramacionQuirurgica.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorContextoHttp.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+      "Codigo_generado/frontend/mf-integraciones/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "BusinessService",
+    "nombre": "INT-02. Historia clínica electrónica",
+    "archivos": [
+      "Codigo_generado/inventario/puertos/salida/clientes.py",
+      "Codigo_generado/inventario/adaptadores/salida/clientes/http.py",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/PrescripcionMedica.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt02HistoriaClinicaElectronica.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorContextoHttp.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+      "Codigo_generado/frontend/mf-integraciones/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "BusinessService",
+    "nombre": "INT-03. Servicio de urgencias",
+    "archivos": [
+      "Codigo_generado/inventario/puertos/salida/clientes.py",
+      "Codigo_generado/inventario/adaptadores/salida/clientes/http.py",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/NecesidadAsistencialNoProgramada.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt03ServicioDeUrgencias.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorContextoHttp.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+      "Codigo_generado/frontend/mf-integraciones/src/contexto.json"
+    ]
+  },
+  {
+    "vista": "V9_Interoperabilidad_anticorrupcion",
+    "tipo": "BusinessService",
+    "nombre": "INT-04. ERP de compras y contabilidad",
+    "archivos": [
+      "Codigo_generado/abastecimiento/Puertos/Salida/Clientes.cs",
+      "Codigo_generado/abastecimiento/Adaptadores/Salida/Clientes/ClientesHttp.cs",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/RequerimientoYEstadoDeCompra.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt04ErpDeComprasYContabilidad.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorContextoHttp.java",
+      "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+      "Codigo_generado/frontend/mf-integraciones/src/contexto.json"
+    ]
+  }
+]

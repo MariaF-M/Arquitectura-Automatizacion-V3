@@ -1,2 +1,0 @@
-# Microservicio: Inventario
-# Arquitectura: Hexagonal

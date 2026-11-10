@@ -1,0 +1,33 @@
+# Gateway: una sola URL para todo el backend (la usan los microfrontends).
+#   http://localhost:8080/api/<contexto>/...  ->  servicio del contexto
+# Generado desde V8 (contextos) y V9 (ACL).
+server {
+    listen 80;
+
+    add_header Access-Control-Allow-Origin * always;
+    add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
+    add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
+    if ($request_method = OPTIONS) { return 204; }
+
+    location = /api/salud { default_type application/json; return 200 '{"gateway":"ok"}'; }
+{% for ctx in sistema.contextos %}
+
+    # {{ ctx.nombre }} ({{ ctx.dominio }} {{ ctx.clasificacion }}) — {{ ctx.lenguaje }}
+    location /api/{{ ctx.carpeta }}/ {
+        proxy_pass http://{{ ctx.carpeta }}:{{ ctx.puerto }}/;
+        proxy_hide_header Access-Control-Allow-Origin;
+        proxy_hide_header Access-Control-Allow-Methods;
+        proxy_hide_header Access-Control-Allow-Headers;
+    }
+{% endfor %}
+{% if sistema.acl %}
+
+    # {{ sistema.acl.nombre }}
+    location /api/{{ sistema.acl.carpeta }}/ {
+        proxy_pass http://{{ sistema.acl.carpeta }}:{{ sistema.acl.puerto }}/;
+        proxy_hide_header Access-Control-Allow-Origin;
+        proxy_hide_header Access-Control-Allow-Methods;
+        proxy_hide_header Access-Control-Allow-Headers;
+    }
+{% endif %}
+}

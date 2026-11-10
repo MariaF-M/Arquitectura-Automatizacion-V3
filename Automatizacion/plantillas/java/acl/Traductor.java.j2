@@ -1,0 +1,25 @@
+package {{ P.traductores }};
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/** Contrato de todo traductor de la capa anticorrupción (uno por integración INT-xx de V9). */
+public interface Traductor {
+    String codigo();
+    String nombre();
+    String direccion();          // entrada | salida
+    String contexto();           // contexto interno involucrado (V8)
+    String externo();            // sistema externo (V8)
+    Map<String, String> mapeo(); // campo origen -> campo destino
+
+    /** Traduce un mensaje cambiando los nombres de campo según el mapeo; exige todos los campos del mapeo. */
+    default Map<String, Object> traducir(Map<String, Object> origen) {
+        Map<String, Object> destino = new LinkedHashMap<>();
+        for (Map.Entry<String, String> m : mapeo().entrySet()) {
+            if (!origen.containsKey(m.getKey()))
+                throw new IllegalArgumentException(codigo() + ": falta el campo '" + m.getKey() + "' del mensaje de " + (direccion().equals("entrada") ? externo() : contexto()));
+            destino.put(m.getValue(), origen.get(m.getKey()));
+        }
+        return destino;
+    }
+}

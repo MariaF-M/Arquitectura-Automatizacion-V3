@@ -1,0 +1,103 @@
+"""Adaptador de persistencia para {{ ctx.base_datos.motor }} ({{ ctx.base_datos.tipo }}). Se activa con PERSISTENCIA=bd.
+
+Justificación de la base de datos (spec.yaml):
+  {{ ctx.base_datos.justificacion | default("") | trim | wordwrap(90) | indent(2) }}
+
+Los campos sensibles {{ ctx.cifrado | tojson }} se guardan cifrados; la base de datos nunca ve el texto plano.
+"""
+from __future__ import annotations
+
+import os
+{% set sql = ctx.base_datos.tipo | upper == "SQL" %}
+{% if sql %}
+from datetime import date
+
+import psycopg
+from psycopg.rows import dict_row
+{% else %}
+
+from pymongo import MongoClient
+{% endif %}
+
+from {{ L.transversal }}.cifrado import Cifrador
+{% for a in ctx.agregados %}
+from {{ L.modelo }}.{{ a.snake }} import {{ a.clase }}
+from {{ L.puertos }}.repositorios import Repositorio{{ a.clase }}
+{% endfor %}
+{% from "ddl.j2" import tabla %}
+
+CADENA_CONEXION = os.getenv("BD_URL", "{{ ('postgresql://farmacia:farmacia@localhost:5432/' if sql else 'mongodb://localhost:27017/') ~ ctx.snake }}")
+{% for a in ctx.agregados %}
+{% set cifrados = a.atributos | map(attribute="snake") | select("in", ctx.cifrado | map("snake") | list) | list %}
+
+
+class Repositorio{{ a.clase }}BaseDatos(Repositorio{{ a.clase }}):
+{% if sql %}
+    """Tabla «{{ a.snake }}». Upsert por id; la tabla se crea al arrancar si no existe."""
+    TABLA = "{{ a.snake }}"
+    CAMPOS = {{ a.atributos | map(attribute="snake") | list | tojson }}
+    FECHAS = {{ a.atributos | selectattr("tipo", "equalto", "fecha") | map(attribute="snake") | reject("in", cifrados) | list | tojson }}
+    CAMPOS_CIFRADOS = {{ cifrados | tojson }}
+    DDL = """
+{{ tabla(ctx, a) | indent(4, true) }}
+    """
+
+    def __init__(self, cifrador: Cifrador, cadena: str = CADENA_CONEXION):
+        self._cifrador = cifrador
+        self._cadena = cadena
+        with self._conectar() as conexion:
+            conexion.execute(self.DDL)
+
+    def _conectar(self):
+        return psycopg.connect(self._cadena, row_factory=dict_row, autocommit=True)
+
+    def guardar(self, agregado: {{ a.clase }}) -> None:
+        fila = self._cifrador.cifrar_campos(agregado.a_dict(), self.CAMPOS_CIFRADOS)
+        for campo in self.FECHAS:
+            if fila[campo]:
+                fila[campo] = date.fromisoformat(fila[campo])
+        columnas = ["id"] + self.CAMPOS
+        sql = (f"INSERT INTO {self.TABLA} ({', '.join(columnas)}) VALUES ({', '.join(['%s'] * len(columnas))}) "
+               f"ON CONFLICT (id) DO UPDATE SET {', '.join(f'{c} = EXCLUDED.{c}' for c in self.CAMPOS)}")
+        with self._conectar() as conexion:
+            conexion.execute(sql, [fila[c] for c in columnas])
+
+    def _desde_fila(self, fila: dict) -> {{ a.clase }}:
+        return {{ a.clase }}.desde_dict(self._cifrador.descifrar_campos(dict(fila), self.CAMPOS_CIFRADOS))
+
+    def obtener(self, id: str) -> {{ a.clase }} | None:
+        with self._conectar() as conexion:
+            fila = conexion.execute(f"SELECT * FROM {self.TABLA} WHERE id = %s", (id,)).fetchone()
+        return self._desde_fila(fila) if fila else None
+
+    def listar(self) -> list[{{ a.clase }}]:
+        with self._conectar() as conexion:
+            filas = conexion.execute(f"SELECT * FROM {self.TABLA} ORDER BY id").fetchall()
+        return [self._desde_fila(f) for f in filas]
+{% else %}
+    """Colección «{{ a.snake }}». Un documento por agregado; _id = id del agregado."""
+    COLECCION = "{{ a.snake }}"
+    CAMPOS_CIFRADOS = {{ cifrados | tojson }}
+
+    def __init__(self, cifrador: Cifrador, cadena: str = CADENA_CONEXION):
+        self._cifrador = cifrador
+        self._coleccion = MongoClient(cadena).get_default_database()[self.COLECCION]
+
+    def guardar(self, agregado: {{ a.clase }}) -> None:
+        documento = self._cifrador.cifrar_campos(agregado.a_dict(), self.CAMPOS_CIFRADOS)
+        documento["_id"] = documento.pop("id")
+        self._coleccion.replace_one({"_id": documento["_id"]}, documento, upsert=True)
+
+    def _desde_documento(self, documento: dict) -> {{ a.clase }}:
+        documento = dict(documento)
+        documento["id"] = documento.pop("_id")
+        return {{ a.clase }}.desde_dict(self._cifrador.descifrar_campos(documento, self.CAMPOS_CIFRADOS))
+
+    def obtener(self, id: str) -> {{ a.clase }} | None:
+        documento = self._coleccion.find_one({"_id": id})
+        return self._desde_documento(documento) if documento else None
+
+    def listar(self) -> list[{{ a.clase }}]:
+        return [self._desde_documento(d) for d in self._coleccion.find()]
+{% endif %}
+{% endfor %}

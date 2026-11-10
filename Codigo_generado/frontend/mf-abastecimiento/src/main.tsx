@@ -1,0 +1,10 @@
+// Modo independiente: permite desarrollar y probar este microfrontend sin el shell.
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);

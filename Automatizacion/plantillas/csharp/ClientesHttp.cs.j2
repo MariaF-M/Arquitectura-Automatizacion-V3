@@ -1,0 +1,24 @@
+using System.Net.Http.Json;
+using {{ N.puertos }};
+
+namespace {{ N.clientes }};
+{% for r in ctx.proveedores %}
+
+/// <summary>Adaptador HTTP hacia {{ r.proveedor }} ({{ r.patron }}).</summary>
+public class Cliente{{ r.proveedor | pascal }}Http(HttpClient http) : IPuerto{{ r.proveedor | pascal }}
+{
+    public Task<string> Consultar(string ruta) => http.GetStringAsync(ruta);
+}
+{% endfor %}
+{% if ctx.integraciones %}
+
+/// <summary>Envía datos a la ACL-01, que los traduce al formato del sistema externo.</summary>
+public class ClienteAnticorrupcionHttp(HttpClient http, ILogger<ClienteAnticorrupcionHttp> log) : IPuertoAnticorrupcion
+{
+    public async Task Enviar(string codigo, Dictionary<string, object?> datos)
+    {
+        try { (await http.PostAsJsonAsync($"/salientes/{codigo.ToLowerInvariant()}", datos)).EnsureSuccessStatusCode(); }
+        catch (Exception e) { log.LogWarning("ACL no disponible para {Codigo}: {Error}", codigo, e.Message); }
+    }
+}
+{% endif %}

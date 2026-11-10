@@ -1,0 +1,19 @@
+# Frontend — shell + microfrontends
+
+Generado desde el modelo ArchiMate. Ver la sección de microfrontends del README principal.
+
+| App | Rol | Puerto |
+|---|---|---|
+| `shell` | Host: compone los microfrontends en tiempo de ejecución | {{ fe.shell.puerto }} |
+{% for r in fe.remotos %}
+| `{{ r.carpeta }}` | Remoto: {{ r.nombre }} ({{ r.dominio }} {{ r.clasificacion }}) | {{ r.puerto }} |
+{% endfor %}
+
+```bash
+npm install          # una vez (workspaces)
+npm run iniciar      # construye todo y sirve las {{ fe.remotos | length + 1 }} apps
+# abrir http://localhost:{{ fe.shell.puerto }}
+```
+
+Por defecto cada microfrontend llama directo al puerto de su servicio. Para pasar por el gateway:
+`VITE_API_URL=http://localhost:8080/api npm run iniciar` (así lo hace docker-compose).

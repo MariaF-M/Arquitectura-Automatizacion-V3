@@ -1,0 +1,32 @@
+"""Caché con expiración (TTL = 300 s) como decorador de cualquier repositorio (patrón Decorator).
+Se ubica en infraestructura: el dominio no sabe que existe."""
+from __future__ import annotations
+
+import time
+
+
+class RepositorioConCache:
+    def __init__(self, repositorio, ttl_segundos: int = 300):
+        self._repo = repositorio
+        self._ttl = ttl_segundos
+        self._cache: dict[str, tuple[float, object]] = {}
+        self.aciertos = 0
+        self.fallos = 0
+
+    def guardar(self, agregado) -> None:
+        self._repo.guardar(agregado)
+        self._cache.pop(agregado.id, None)   # invalidación al escribir
+
+    def obtener(self, id: str):
+        entrada = self._cache.get(id)
+        if entrada and time.monotonic() - entrada[0] < self._ttl:
+            self.aciertos += 1
+            return entrada[1]
+        self.fallos += 1
+        valor = self._repo.obtener(id)
+        if valor is not None:
+            self._cache[id] = (time.monotonic(), valor)
+        return valor
+
+    def listar(self):
+        return self._repo.listar()

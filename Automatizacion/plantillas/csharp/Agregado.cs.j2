@@ -1,0 +1,158 @@
+using {{ N.eventos }};
+
+namespace {{ N.modelo }};
+
+/// <summary>Memento (GoF): foto inmutable del estado de {{ a.clase }}.</summary>
+public sealed record {{ a.clase }}Memento(string Id{% for at in a.atributos %}, {{ tipo_cs(at.tipo) }}? {{ at.pascal }}{% endfor %});
+
+/// <summary>
+/// Agregado raíz «{{ a.nombre }}» del contexto {{ ctx.nombre }} ({{ ctx.dominio }}). Generado desde V6.
+{% for c in a.comandos %}
+/// Comando «{{ c.nombre }}» -> {{ c.clase }}(){% if c.evento %} emite «{{ c.evento.nombre }}»{% endif %}.
+{% endfor %}
+/// Invariantes:
+{% for i in a.invariantes %}
+/// - {{ i }}
+{% endfor %}
+/// </summary>
+public class {{ a.clase }}
+{
+{% for campo, valores in a.valores_permitidos.items() %}
+    public static readonly HashSet<string> {{ campo | pascal }}Permitidos = [{% for x in valores %}"{{ x }}"{{ ", " if not loop.last }}{% endfor %}];
+{% endfor %}
+
+    public string Id { get; }
+{% for at in a.atributos %}
+    public {{ tipo_cs(at.tipo) }}? {{ at.pascal }} { get; private set; }
+{% endfor %}
+    private readonly List<EventoDominio> _eventos = [];
+
+    public {{ a.clase }}(string? id, IDictionary<string, object?> datos)
+    {
+        Id = string.IsNullOrWhiteSpace(id) ? Guid.NewGuid().ToString() : id;
+{% for k, val in a.valores_iniciales.items() %}
+        Aplicar(new Dictionary<string, object?> { ["{{ k | snake }}"] = {{ val | tojson }} });
+{% endfor %}
+        Aplicar(datos);
+    }
+
+    // ------------------------------------------------------------ comandos (V6)
+{% for c in a.comandos %}
+{% if c.crea %}
+    /// <summary>Comando «{{ c.nombre }}»: crea el agregado.</summary>
+    public static {{ a.clase }} {{ c.clase }}(IDictionary<string, object?> datos)
+    {
+        var agregado = new {{ a.clase }}(null, datos.Where(kv => kv.Key != "id").ToDictionary(kv => kv.Key, kv => kv.Value));
+{% for f in c.fecha_futura %}
+{% set at = a.atributos | selectattr("nombre", "equalto", f) | first %}
+        if (agregado.{{ at.pascal }} is not null && agregado.{{ at.pascal }} <= DateOnly.FromDateTime(DateTime.Today))
+            throw new ReglaNegocioException("«{{ c.nombre }}»: '{{ at.snake }}' debe ser posterior a hoy");
+{% endfor %}
+{% if c.nuevo_estado %}
+        agregado.Estado = "{{ c.nuevo_estado }}";
+{% endif %}
+        agregado.Validar();
+{% if c.evento %}
+        agregado._eventos.Add(new {{ c.evento.clase }}(agregado.Id, agregado.AMapa()));
+{% endif %}
+        return agregado;
+    }
+
+{% else %}
+    /// <summary>Comando «{{ c.nombre }}».</summary>
+    public void {{ c.clase }}(IDictionary<string, object?> datos)
+    {
+{% if c.desde_estados %}
+        if (!new[] { {% for x in c.desde_estados %}"{{ x }}"{{ ", " if not loop.last }}{% endfor %} }.Contains(Estado))
+            throw new ReglaNegocioException($"«{{ c.nombre }}» no se permite con estado '{Estado}'");
+{% endif %}
+{% for r in c.requiere %}
+        if (!datos.TryGetValue("{{ r | snake }}", out var v{{ loop.index }}) || string.IsNullOrWhiteSpace(v{{ loop.index }}?.ToString()))
+            throw new ReglaNegocioException("«{{ c.nombre }}» requiere '{{ r | snake }}'");
+{% endfor %}
+{% if c.restar %}
+{% set at = a.atributos | selectattr("nombre", "equalto", c.restar) | first %}
+        if (!datos.TryGetValue("{{ at.snake }}", out var resta))
+            throw new ReglaNegocioException("«{{ c.nombre }}» requiere '{{ at.snake }}'");
+        {{ at.pascal }} = ({{ at.pascal }} ?? 0) - (Conversion.{{ "Entero" if at.tipo == "entero" else "Decimal" }}("{{ at.snake }}", resta) ?? 0);
+{% else %}
+        Aplicar(datos.Where(kv => kv.Key != "id").ToDictionary(kv => kv.Key, kv => kv.Value));
+{% endif %}
+{% for f in c.fecha_futura %}
+{% set at = a.atributos | selectattr("nombre", "equalto", f) | first %}
+        if ({{ at.pascal }} is not null && {{ at.pascal }} <= DateOnly.FromDateTime(DateTime.Today))
+            throw new ReglaNegocioException("«{{ c.nombre }}»: '{{ at.snake }}' debe ser posterior a hoy");
+{% endfor %}
+{% if c.nuevo_estado %}
+        Estado = "{{ c.nuevo_estado }}";
+{% endif %}
+        Validar();
+{% if c.evento %}
+        _eventos.Add(new {{ c.evento.clase }}(Id, AMapa()));
+{% endif %}
+    }
+
+{% endif %}
+{% endfor %}
+    // ------------------------------------------------------------ invariantes
+    public void Validar()
+    {
+{% for x in a.obligatorios %}
+{% set at = a.atributos | selectattr("nombre", "equalto", x) | first %}
+        if ({{ at.pascal }} is null{% if at.tipo == "texto" %} || string.IsNullOrWhiteSpace({{ at.pascal }}){% endif %})
+            throw new ReglaNegocioException("El campo '{{ at.snake }}' es obligatorio en {{ a.clase }}");
+{% endfor %}
+{% for x in a.no_negativos %}
+{% set at = a.atributos | selectattr("nombre", "equalto", x) | first %}
+        if ({{ at.pascal }} < 0)
+            throw new ReglaNegocioException($"'{{ at.snake }}' no puede ser negativo (valor: {{ '{' }}{{ at.pascal }}{{ '}' }})");
+{% endfor %}
+{% for campo in a.valores_permitidos %}
+{% set at = a.atributos | selectattr("nombre", "equalto", campo) | first %}
+        if ({{ at.pascal }} is not null && !{{ campo | pascal }}Permitidos.Contains({{ at.pascal }}))
+            throw new ReglaNegocioException($"'{{ at.snake }}' = '{{ '{' }}{{ at.pascal }}{{ '}' }}' no es válido. Permitidos: {string.Join(", ", {{ campo | pascal }}Permitidos)}");
+{% endfor %}
+    }
+
+    // ------------------------------------------------------------ memento
+    public {{ a.clase }}Memento CrearMemento() => new(Id{% for at in a.atributos %}, {{ at.pascal }}{% endfor %});
+
+    public void Restaurar({{ a.clase }}Memento m)
+    {
+{% for at in a.atributos %}
+        {{ at.pascal }} = m.{{ at.pascal }};
+{% endfor %}
+    }
+
+    // ------------------------------------------------------------ utilidades
+    private void Aplicar(IDictionary<string, object?> datos)
+    {
+        foreach (var (campo, valor) in datos)
+        {
+            switch (campo)
+            {
+{% for at in a.atributos %}
+                case "{{ at.snake }}": {{ at.pascal }} = Conversion.{{ {"texto": "Texto", "entero": "Entero", "decimal": "Decimal", "fecha": "Fecha", "booleano": "Booleano"}[at.tipo] }}(campo, valor); break;
+{% endfor %}
+            }
+        }
+    }
+
+    public IReadOnlyList<EventoDominio> ExtraerEventos()
+    {
+        var r = _eventos.ToList();
+        _eventos.Clear();
+        return r;
+    }
+
+    public Dictionary<string, object?> AMapa() => new()
+    {
+        ["id"] = Id,
+{% for at in a.atributos %}
+        ["{{ at.snake }}"] = {{ at.pascal }}{% if at.tipo == "fecha" %}?.ToString("yyyy-MM-dd"){% endif %},
+{% endfor %}
+    };
+
+    public static {{ a.clase }} DesdeMapa(IDictionary<string, object?> m) =>
+        new(m["id"]?.ToString(), m.Where(kv => kv.Key != "id").ToDictionary(kv => kv.Key, kv => kv.Value));
+}

@@ -1,0 +1,86 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Inventario",
+    "version": "1.0.0",
+    "description": "Contrato generado desde el modelo ArchiMate. Contexto D-01 CORE."
+  },
+  "servers": [{"url": "http://localhost:8001"}],
+  "paths": {
+    "/arquitectura": {
+      "get": {
+        "summary": "componentes, funciones y cach\u00e9",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/eventos": {
+      "get": {
+        "summary": "eventos de dominio publicados",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/funciones/control-de-existencias-por-lote": {
+      "post": {
+        "summary": "funci\u00f3n \u00abControl de existencias por lote\u00bb (pendiente, 501)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/funciones/gestion-del-estado-del-lote": {
+      "post": {
+        "summary": "funci\u00f3n \u00abGesti\u00f3n del estado del lote\u00bb (pendiente, 501)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/funciones/registros-de-movimientos-del-inventario": {
+      "post": {
+        "summary": "funci\u00f3n \u00abRegistros de movimientos del inventario\u00bb (pendiente, 501)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/lote-medicamento": {
+      "get": {
+        "summary": "lista de LoteMedicamento",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/lote-medicamento/registrar-ingreso": {
+      "post": {
+        "summary": "comando \u00abRegistrar Ingreso\u00bb \u2192 evento \u00abLote Ingresado\u00bb",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "LoteMedicamento"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/lote-medicamento/{id}": {
+      "get": {
+        "summary": "un LoteMedicamento",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/lote-medicamento/{id}/descontar-existencias": {
+      "post": {
+        "summary": "comando \u00abDescontar Existencias\u00bb \u2192 evento \u00abExistencias Descontadas\u00bb",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "LoteMedicamento"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/lote-medicamento/{id}/deshacer": {
+      "post": {
+        "summary": "deshace el \u00faltimo comando (memento)",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/salud": {
+      "get": {
+        "summary": "estado del servicio",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    }
+  }
+}

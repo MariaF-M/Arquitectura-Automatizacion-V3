@@ -1,0 +1,29 @@
+{
+  "_comentario": "Validadores de colección mongodb para Vencimientos (D-02). Generado desde V6 + spec.yaml.",
+  "colecciones": [
+    {
+      "nombre": "alerta_vencimiento",
+      "validator": {
+        "$jsonSchema": {
+          "bsonType": "object",
+          "required": ["_id", "lote_codigo", "fecha_vencimiento"],
+          "properties": {
+            "_id": {"bsonType": "string"},
+            "lote_codigo": {"bsonType": ["string","null"]},
+            "fecha_vencimiento": {"bsonType": ["string","null"]},
+            "dias_para_vencer": {"bsonType": ["int","null"]},
+            "prioridad_fefo": {"bsonType": ["int","null"], "minimum": 0},
+            "semaforo": {"bsonType": ["string","null"], "enum": ["Verde", "Amarillo", "Rojo"]},
+            "estado": {"bsonType": ["string","null"], "enum": ["Activa", "Atendida", "LoteBloqueado"]},
+            "motivo": {"bsonType": ["string","null"]}
+          }
+        }
+      },
+      "indices": [{"campos": {"estado": 1}}]
+    },
+    {
+      "nombre": "alerta_vencimiento_eventos",
+      "eventos_permitidos": ["PrioridadFefoCalculada", "LoteBloqueado"]
+    }
+  ]
+}

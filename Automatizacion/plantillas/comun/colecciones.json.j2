@@ -1,0 +1,27 @@
+{
+  "_comentario": "Validadores de colección {{ ctx.base_datos.motor }} para {{ ctx.nombre }} ({{ ctx.dominio }}). Generado desde V6 + spec.yaml.",
+  "colecciones": [
+{% set tipos = {"texto": "string", "entero": "int", "decimal": "double", "fecha": "string", "booleano": "bool"} %}
+{% for a in ctx.agregados %}
+    {
+      "nombre": "{{ a.snake }}",
+      "validator": {
+        "$jsonSchema": {
+          "bsonType": "object",
+          "required": {{ (["_id"] + (a.obligatorios | map("snake") | list)) | tojson }},
+          "properties": {
+            "_id": {"bsonType": "string"}{% for at in a.atributos %},
+            "{{ at.snake }}": {"bsonType": {{ '["string","null"]' if at.snake in (ctx.cifrado | map("snake") | list) else ('["' ~ tipos[at.tipo] ~ '","null"]') }}{% if at.nombre in a.no_negativos %}, "minimum": 0{% endif %}{% if at.nombre in a.valores_permitidos %}, "enum": {{ a.valores_permitidos[at.nombre] | tojson }}{% endif %}}{% endfor %}
+
+          }
+        }
+      },
+      "indices": [{"campos": {"estado": 1}}]
+    },
+    {
+      "nombre": "{{ a.snake }}_eventos",
+      "eventos_permitidos": {{ a.eventos | map(attribute="clase") | list | tojson }}
+    }{{ "," if not loop.last }}
+{% endfor %}
+  ]
+}

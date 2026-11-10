@@ -1,0 +1,49 @@
+package {{ P.persistencia }};
+
+import {{ P.modelo }}.{{ a.clase }};
+import {{ P.puertos }}.Repositorio{{ a.clase }};
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/** Caché con TTL ({{ ctx.cache.ttl_segundos | default(30) }} s) como decorador del repositorio (patrón Decorator). */
+public class Repositorio{{ a.clase }}Cache implements Repositorio{{ a.clase }} {
+    private record Entrada({{ a.clase }} valor, long momento) { }
+
+    private final Repositorio{{ a.clase }} repo;
+    private final long ttlMs;
+    private final Map<String, Entrada> cache = new ConcurrentHashMap<>();
+    private int aciertos;
+    private int fallos;
+
+    public Repositorio{{ a.clase }}Cache(Repositorio{{ a.clase }} repo) { this(repo, {{ ctx.cache.ttl_segundos | default(30) }}); }
+
+    public Repositorio{{ a.clase }}Cache(Repositorio{{ a.clase }} repo, int ttlSegundos) {
+        this.repo = repo;
+        this.ttlMs = ttlSegundos * 1000L;
+    }
+
+    @Override
+    public void guardar({{ a.clase }} a) {
+        repo.guardar(a);
+        cache.remove(a.getId());
+    }
+
+    @Override
+    public {{ a.clase }} obtener(String id) {
+        Entrada e = cache.get(id);
+        if (e != null && System.currentTimeMillis() - e.momento() < ttlMs) {
+            aciertos++;
+            return e.valor();
+        }
+        fallos++;
+        {{ a.clase }} v = repo.obtener(id);
+        if (v != null) cache.put(id, new Entrada(v, System.currentTimeMillis()));
+        return v;
+    }
+
+    @Override public List<{{ a.clase }}> listar() { return repo.listar(); }
+
+    public Map<String, Integer> estadisticas() { return Map.of("aciertos", aciertos, "fallos", fallos); }
+}

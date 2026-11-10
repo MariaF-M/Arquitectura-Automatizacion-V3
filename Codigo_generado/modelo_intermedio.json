@@ -1,0 +1,2204 @@
+{
+  "proyecto": "farmacia-hospitalaria",
+  "paquete_base": "co.edu.farmacia",
+  "contextos": [
+    {
+      "nombre": "Inventario",
+      "origen": "id-cac88af7b537472997fd25876082498e",
+      "dominio": "D-01",
+      "titulo_dominio": "Gestión de inventario farmacéutico",
+      "clasificacion": "CORE",
+      "lenguaje": "python",
+      "arquitectura": "hexagonal",
+      "puerto": 8001,
+      "base_datos": {
+        "tipo": "SQL",
+        "motor": "postgresql",
+        "justificacion": "El inventario exige consistencia fuerte (ACID): una dispensación no puede dejar existencias negativas ni dos movimientos pueden pisarse. Los lotes, medicamentos y movimientos tienen estructura fija y relaciones claras.\n"
+      },
+      "cache": {
+        "ttl_segundos": 30
+      },
+      "cifrado": [
+        "proveedor"
+      ],
+      "componentes": [
+        {
+          "nombre": "Gestión de medicamentos",
+          "origen": "id-88b6385f820e45108828246754e2093e"
+        },
+        {
+          "nombre": "Gestión de lotes de medicamentos",
+          "origen": "id-2f8ff2dd47fb4fa3af0990d5c9279b0f"
+        }
+      ],
+      "funciones": [
+        {
+          "nombre": "Control de existencias por lote",
+          "origen": "id-c5fa88b05b5047afaf4582f3e889a733"
+        },
+        {
+          "nombre": "Gestión del estado del lote",
+          "origen": "id-e7d588ab967341bdab264fafd4e2f066"
+        },
+        {
+          "nombre": "Registros de movimientos del inventario",
+          "origen": "id-ff61d10a4a7846e1a1dc665655b53649"
+        }
+      ],
+      "entidades": [
+        {
+          "nombre": "Medicamento",
+          "origen": "id-03937a6239954ff290d547fada70dbc0",
+          "atributos": [
+            {
+              "nombre": "codigo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "principio_activo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "concentracion",
+              "tipo": "texto"
+            }
+          ],
+          "compartida": false
+        },
+        {
+          "nombre": "Lote",
+          "origen": "id-6cd2ac9559aa49f399e4eecc10479f6b",
+          "atributos": [
+            {
+              "nombre": "codigo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "fecha_vencimiento",
+              "tipo": "fecha"
+            },
+            {
+              "nombre": "estado",
+              "tipo": "texto"
+            }
+          ],
+          "compartida": true
+        },
+        {
+          "nombre": "Movimiento de inventario",
+          "origen": "id-37f39cf7ffc149a7bb43913b252c7ab6",
+          "atributos": [
+            {
+              "nombre": "lote_codigo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "tipo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "cantidad",
+              "tipo": "entero"
+            },
+            {
+              "nombre": "fecha",
+              "tipo": "fecha"
+            }
+          ],
+          "compartida": false
+        }
+      ],
+      "agregados": [
+        {
+          "nombre": "LoteMedicamento",
+          "origen": "id-2655a7f9a43d4073998cb591cfc415b3",
+          "atributos": [
+            {
+              "nombre": "codigo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "descripcion",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "proveedor",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "fecha_vencimiento",
+              "tipo": "fecha"
+            },
+            {
+              "nombre": "registro_sanitario",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "cantidad",
+              "tipo": "entero"
+            },
+            {
+              "nombre": "estado",
+              "tipo": "texto"
+            }
+          ],
+          "comandos": [
+            {
+              "nombre": "Registrar Ingreso",
+              "origen": "id-725738c8a5084d5fbdedd4f72fe83b16",
+              "evento": {
+                "nombre": "Lote Ingresado",
+                "origen": "id-fd3c164e2bf243d999661ac25f9e7ff9"
+              },
+              "crea": true,
+              "restar": null,
+              "nuevo_estado": null,
+              "requiere": [],
+              "desde_estados": [],
+              "fecha_futura": [
+                "fecha_vencimiento"
+              ]
+            },
+            {
+              "nombre": "Descontar Existencias",
+              "origen": "id-be3fe8675f75498f8417b5961013e61d",
+              "evento": {
+                "nombre": "Existencias Descontadas",
+                "origen": "id-24a9ddfb227047c8b55d35d52aafe6ac"
+              },
+              "crea": false,
+              "restar": "cantidad",
+              "nuevo_estado": null,
+              "requiere": [],
+              "desde_estados": [
+                "Disponible"
+              ],
+              "fecha_futura": []
+            }
+          ],
+          "eventos": [
+            {
+              "nombre": "Lote Ingresado",
+              "origen": "id-fd3c164e2bf243d999661ac25f9e7ff9"
+            },
+            {
+              "nombre": "Existencias Descontadas",
+              "origen": "id-24a9ddfb227047c8b55d35d52aafe6ac"
+            }
+          ],
+          "valores_iniciales": {
+            "estado": "Disponible"
+          },
+          "obligatorios": [
+            "codigo",
+            "descripcion",
+            "proveedor",
+            "fecha_vencimiento",
+            "registro_sanitario"
+          ],
+          "no_negativos": [
+            "cantidad"
+          ],
+          "valores_permitidos": {
+            "estado": [
+              "Disponible",
+              "Cuarentena",
+              "Vencido",
+              "Bloqueado"
+            ]
+          },
+          "invariantes": [
+            "La cantidad de existencias nunca puede ser negativa.",
+            "Todo lote tiene Código, Descripción, Proveedor, Fecha de vencimiento y Registro sanitario desde la recepción técnica.",
+            "Un lote solo puede estar Disponible, en Cuarentena, Vencido o Bloqueado.",
+            "No se recibe un lote vencido o que vence hoy (la fecha de vencimiento debe ser posterior a la recepción)."
+          ]
+        }
+      ],
+      "proveedores": [
+        {
+          "patron": "open-host-service",
+          "etiqueta": "Open Host Service",
+          "proveedor": "Seguridad y Auditoría",
+          "cliente": "Inventario",
+          "origen": "id-937050e7b0634aafb7ef5472b88ebc54",
+          "detalle": ""
+        }
+      ],
+      "consumidores": [
+        {
+          "patron": "customer-supplier",
+          "etiqueta": "Customer / Supplier",
+          "proveedor": "Inventario",
+          "cliente": "Abastecimiento",
+          "origen": "id-70ed4f9c7fe3404990ef898d980bdcc7",
+          "detalle": ""
+        },
+        {
+          "patron": "customer-supplier",
+          "etiqueta": "Customer / Supplier",
+          "proveedor": "Inventario",
+          "cliente": "Planificación de Demanda",
+          "origen": "id-1ad2c5cce33c4929a7c0c6aa87426e89",
+          "detalle": ""
+        },
+        {
+          "patron": "shared-kernel",
+          "etiqueta": "Shared Kernel (núcleo compartido: Lote)",
+          "proveedor": "Inventario",
+          "cliente": "Vencimientos",
+          "origen": "id-23eaa013741c4782be957276b2f88db5",
+          "detalle": "Lote"
+        }
+      ],
+      "integraciones": [
+        {
+          "codigo": "INT-02",
+          "nombre": "Historia clínica electrónica",
+          "origen": "id-a423dc26ca144a119a49bdf0b760c06b",
+          "objeto": "OBJ-02 — Prescripción médica",
+          "objeto_origen": "id-36f5432b51704dad8af9e7cae4f21395",
+          "externo": "Historia Clínica (HCE)",
+          "contexto": "Inventario",
+          "direccion": "entrada",
+          "comando": "Descontar Existencias",
+          "evento": null,
+          "mapeo": {
+            "id_lote": "id",
+            "unidades_prescritas": "cantidad"
+          },
+          "externo_origen": "id-045e36d02f8a43af94cc7975155f4dac",
+          "relacion_v8": "id-bdca25249719406fb9b97efce1ffe159"
+        },
+        {
+          "codigo": "INT-03",
+          "nombre": "Servicio de urgencias",
+          "origen": "id-556dc860c2aa46229383b2fa8b915759",
+          "objeto": "OBJ-03 — Necesidad asistencial no programada",
+          "objeto_origen": "id-c6c283fe1a8f480a89cbb756fc12b35b",
+          "externo": "Servicio de Urgencias",
+          "contexto": "Inventario",
+          "direccion": "entrada",
+          "comando": "Descontar Existencias",
+          "evento": null,
+          "mapeo": {
+            "id_lote": "id",
+            "unidades_despachadas": "cantidad"
+          },
+          "externo_origen": "id-bc1e92e87d584e428a24bf0e80eddae5",
+          "relacion_v8": "id-9bed88af98ba47279948060d16e7051d"
+        },
+        {
+          "codigo": "INT-05",
+          "nombre": "Proveedor de medicamentos",
+          "origen": "id-3bd137cce500451697570fb310bd822f",
+          "objeto": "OBJ-05 — Datos de entrega y lote",
+          "objeto_origen": "id-7fc8b6bbae4b4e1b936a16cf601a9c82",
+          "externo": "Proveedores Externos",
+          "contexto": "Inventario",
+          "direccion": "entrada",
+          "comando": "Registrar Ingreso",
+          "evento": null,
+          "mapeo": {
+            "numero_lote": "codigo",
+            "nombre_comercial": "descripcion",
+            "nit_proveedor": "proveedor",
+            "vence": "fecha_vencimiento",
+            "registro_invima": "registro_sanitario",
+            "unidades": "cantidad"
+          },
+          "externo_origen": "id-669fc7a03c494e59ad8cbd263efd94ed",
+          "relacion_v8": "id-1483527edc2946d38e7c8493a19cdbe0"
+        }
+      ],
+      "grupo_v6": "id-3e384a7f35e94769a4a2161ebd464f90"
+    },
+    {
+      "nombre": "Vencimientos",
+      "origen": "id-6d07ead32f9c4ffdbe80f360d3ceb05e",
+      "dominio": "D-02",
+      "titulo_dominio": "Gestión de vencimientos y priorización",
+      "clasificacion": "CORE",
+      "lenguaje": "java",
+      "arquitectura": "microservicios",
+      "puerto": 8002,
+      "base_datos": {
+        "tipo": "NoSQL",
+        "motor": "mongodb",
+        "justificacion": "Las alertas son documentos de vida corta, con semaforización y metadatos que cambian según el tipo de alerta (vencimiento, retiro regulatorio). Se escriben mucho y se consultan por lote o semáforo; un documento por alerta evita joins y permite evolucionar el esquema sin migraciones.\n"
+      },
+      "cache": {
+        "ttl_segundos": 60
+      },
+      "cifrado": [
+        "motivo"
+      ],
+      "componentes": [
+        {
+          "nombre": "Gestión de alertas de vencimiento",
+          "origen": "id-cadf763e917b4044829588786de70675"
+        }
+      ],
+      "funciones": [
+        {
+          "nombre": "Prioridad de uso de lotes (FEFO)",
+          "origen": "id-eb08505eba1b4de08eaf2a5fafe1f463"
+        },
+        {
+          "nombre": "Validación de restricciones de uso",
+          "origen": "id-a75df21c0c144d89823bf2996c9a3999"
+        },
+        {
+          "nombre": "Notificación de lotes críticos",
+          "origen": "id-40103258ad9944248a47ad67cd2afa03"
+        }
+      ],
+      "entidades": [
+        {
+          "nombre": "Lote",
+          "origen": "id-a0c6e580e89947f3ae90e93586486bc9",
+          "atributos": [
+            {
+              "nombre": "codigo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "fecha_vencimiento",
+              "tipo": "fecha"
+            },
+            {
+              "nombre": "estado",
+              "tipo": "texto"
+            }
+          ],
+          "compartida": true
+        },
+        {
+          "nombre": "Alerta de vencimiento",
+          "origen": "id-7fc20f0a20f44ec8842b0dea3c5e5ff1",
+          "atributos": [
+            {
+              "nombre": "lote_codigo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "semaforo",
+              "tipo": "texto"
+            }
+          ],
+          "compartida": false
+        },
+        {
+          "nombre": "Restricción de uso",
+          "origen": "id-c8f0bedd183c4529bbb0ff53a09235f5",
+          "atributos": [
+            {
+              "nombre": "lote_codigo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "motivo",
+              "tipo": "texto"
+            }
+          ],
+          "compartida": false
+        }
+      ],
+      "agregados": [
+        {
+          "nombre": "AlertaVencimiento",
+          "origen": "id-789b967f16be4048a93670cdeb82c68f",
+          "atributos": [
+            {
+              "nombre": "lote_codigo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "fecha_vencimiento",
+              "tipo": "fecha"
+            },
+            {
+              "nombre": "dias_para_vencer",
+              "tipo": "entero"
+            },
+            {
+              "nombre": "prioridad_fefo",
+              "tipo": "entero"
+            },
+            {
+              "nombre": "semaforo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "estado",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "motivo",
+              "tipo": "texto"
+            }
+          ],
+          "comandos": [
+            {
+              "nombre": "Evaluar Prioridad FEFO",
+              "origen": "id-6666e2972a544a4daa8c80083a064179",
+              "evento": {
+                "nombre": "Prioridad FEFO Calculada",
+                "origen": "id-199e4efdaa234116b1f441efaf1c17e1"
+              },
+              "crea": true,
+              "restar": null,
+              "nuevo_estado": null,
+              "requiere": [],
+              "desde_estados": [],
+              "fecha_futura": []
+            },
+            {
+              "nombre": "Bloquear Lote Vencido",
+              "origen": "id-ef24000900c84a40b01ec1905a31e1ad",
+              "evento": {
+                "nombre": "Lote Bloqueado",
+                "origen": "id-fcc0f44f0ffa4d379fbaf8992e3b042a"
+              },
+              "crea": false,
+              "restar": null,
+              "nuevo_estado": "LoteBloqueado",
+              "requiere": [],
+              "desde_estados": [
+                "Activa"
+              ],
+              "fecha_futura": []
+            }
+          ],
+          "eventos": [
+            {
+              "nombre": "Prioridad FEFO Calculada",
+              "origen": "id-199e4efdaa234116b1f441efaf1c17e1"
+            },
+            {
+              "nombre": "Lote Bloqueado",
+              "origen": "id-fcc0f44f0ffa4d379fbaf8992e3b042a"
+            }
+          ],
+          "valores_iniciales": {
+            "estado": "Activa"
+          },
+          "obligatorios": [
+            "lote_codigo",
+            "fecha_vencimiento"
+          ],
+          "no_negativos": [
+            "prioridad_fefo"
+          ],
+          "valores_permitidos": {
+            "semaforo": [
+              "Verde",
+              "Amarillo",
+              "Rojo"
+            ],
+            "estado": [
+              "Activa",
+              "Atendida",
+              "LoteBloqueado"
+            ]
+          },
+          "invariantes": [
+            "Regla FEFO innegociable: primero se usa lo que vence primero.",
+            "Lotes Vencidos o en Cuarentena no suman al inventario disponible y se bloquean automáticamente (hard stop)."
+          ]
+        }
+      ],
+      "proveedores": [
+        {
+          "patron": "open-host-service",
+          "etiqueta": "Open Host Service",
+          "proveedor": "Seguridad y Auditoría",
+          "cliente": "Vencimientos",
+          "origen": "id-b1ad9bb55ea541df91c9ca844474c524",
+          "detalle": ""
+        },
+        {
+          "patron": "shared-kernel",
+          "etiqueta": "Shared Kernel (núcleo compartido: Lote)",
+          "proveedor": "Inventario",
+          "cliente": "Vencimientos",
+          "origen": "id-23eaa013741c4782be957276b2f88db5",
+          "detalle": "Lote"
+        }
+      ],
+      "consumidores": [],
+      "integraciones": [
+        {
+          "codigo": "INT-06",
+          "nombre": "Entidad de vigilancia farmacéutica",
+          "origen": "id-84143d5958e943ca8d0b938845f46e4f",
+          "objeto": "OBJ-06 — Alerta regulatoria o retiro de lote",
+          "objeto_origen": "id-c1ec101b708e4b77903d666ad384aa47",
+          "externo": "INVIMA (Vigilancia)",
+          "contexto": "Vencimientos",
+          "direccion": "entrada",
+          "comando": "Bloquear Lote Vencido",
+          "evento": null,
+          "mapeo": {
+            "id_alerta": "id",
+            "motivo_retiro": "motivo"
+          },
+          "externo_origen": "id-1bd23e26b74a486aa077e168585b54f5",
+          "relacion_v8": "id-da0cb80ad7504e35bcf22479bb640ac0"
+        }
+      ],
+      "grupo_v6": "id-cd5ddce8d570463aab88cf7c1e1c3847"
+    },
+    {
+      "nombre": "Planificación de Demanda",
+      "origen": "id-e70afab9d78e4e8994d45c4f280858f4",
+      "dominio": "D-03",
+      "titulo_dominio": "Planificación y predicción de demanda",
+      "clasificacion": "SUPPORTING",
+      "lenguaje": "python",
+      "arquitectura": "microservicios",
+      "puerto": 8003,
+      "base_datos": {
+        "tipo": "NoSQL",
+        "motor": "mongodb",
+        "justificacion": "Las estimaciones combinan series históricas y agendas con estructura variable según el modelo de predicción; se guardan como documentos versionados y se leen completos para análisis.\n"
+      },
+      "cache": {
+        "ttl_segundos": 300
+      },
+      "cifrado": [
+        "observaciones"
+      ],
+      "componentes": [
+        {
+          "nombre": "Gestión de consumo histórico",
+          "origen": "id-de4f8c3c798b49a985273e01ee2b9266"
+        },
+        {
+          "nombre": "Gestión de programación hospitalaria",
+          "origen": "id-fef798f6c74c49dfab5901878b68eab2"
+        },
+        {
+          "nombre": "Cálculo de necesidad estimada de medicamentos",
+          "origen": "id-ee07f7afa34f4cab8a349e43577eba9b"
+        }
+      ],
+      "funciones": [
+        {
+          "nombre": "Predicción de demanda",
+          "origen": "id-a8ad62e196bb405eb4225330f3352493"
+        }
+      ],
+      "entidades": [
+        {
+          "nombre": "Medicamento",
+          "origen": "id-2cc1cddd75794ed881d67ec17f2f5fc0",
+          "atributos": [
+            {
+              "nombre": "codigo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "principio_activo",
+              "tipo": "texto"
+            }
+          ],
+          "compartida": false
+        },
+        {
+          "nombre": "Agenda quirúrgica",
+          "origen": "id-f16505518f584003b4f7e88c10cbd1ac",
+          "atributos": [
+            {
+              "nombre": "procedimiento",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "fecha",
+              "tipo": "fecha"
+            }
+          ],
+          "compartida": false
+        },
+        {
+          "nombre": "Consumo histórico",
+          "origen": "id-7e86c6e9d37242e28b2f6dce8dc7620d",
+          "atributos": [
+            {
+              "nombre": "medicamento",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "periodo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "cantidad",
+              "tipo": "entero"
+            }
+          ],
+          "compartida": false
+        },
+        {
+          "nombre": "Estimación de demanda",
+          "origen": "id-38742fde9cae48979fb8cb3fa09a7017",
+          "atributos": [
+            {
+              "nombre": "medicamento",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "cantidad_estimada",
+              "tipo": "entero"
+            }
+          ],
+          "compartida": false
+        }
+      ],
+      "agregados": [
+        {
+          "nombre": "EstimacionDemanda",
+          "origen": "id-3b94cfbdb62b4eb99f4fbf3fdb14eb1f",
+          "atributos": [
+            {
+              "nombre": "medicamento",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "periodo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "demanda_programada",
+              "tipo": "entero"
+            },
+            {
+              "nombre": "demanda_no_programada",
+              "tipo": "entero"
+            },
+            {
+              "nombre": "cantidad_estimada",
+              "tipo": "entero"
+            },
+            {
+              "nombre": "estado",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "observaciones",
+              "tipo": "texto"
+            }
+          ],
+          "comandos": [
+            {
+              "nombre": "Calcular Demanda",
+              "origen": "id-c67f0d0968364479842d005547bf22df",
+              "evento": {
+                "nombre": "Demanda Estimada",
+                "origen": "id-1027ccf368c145dfa200252736c8cda5"
+              },
+              "crea": true,
+              "restar": null,
+              "nuevo_estado": null,
+              "requiere": [],
+              "desde_estados": [],
+              "fecha_futura": []
+            },
+            {
+              "nombre": "Ajustar Predicción",
+              "origen": "id-f66641b043ab4ba0807019ede56d3a0c",
+              "evento": {
+                "nombre": "Predicción Ajustada",
+                "origen": "id-5d47e9b1539c461b99db8ef7a28810bf"
+              },
+              "crea": false,
+              "restar": null,
+              "nuevo_estado": "Ajustada",
+              "requiere": [
+                "observaciones"
+              ],
+              "desde_estados": [],
+              "fecha_futura": []
+            }
+          ],
+          "eventos": [
+            {
+              "nombre": "Demanda Estimada",
+              "origen": "id-1027ccf368c145dfa200252736c8cda5"
+            },
+            {
+              "nombre": "Predicción Ajustada",
+              "origen": "id-5d47e9b1539c461b99db8ef7a28810bf"
+            }
+          ],
+          "valores_iniciales": {
+            "estado": "Sugerida"
+          },
+          "obligatorios": [
+            "medicamento",
+            "periodo"
+          ],
+          "no_negativos": [
+            "demanda_programada",
+            "demanda_no_programada",
+            "cantidad_estimada"
+          ],
+          "valores_permitidos": {
+            "estado": [
+              "Sugerida",
+              "Ajustada",
+              "Validada"
+            ]
+          },
+          "invariantes": [
+            "La estimación considera demanda programada (cirugías, censo) y no programada (histórico de urgencias).",
+            "Toda predicción es una sugerencia que un humano debe validar antes de pasar a abastecimiento."
+          ]
+        }
+      ],
+      "proveedores": [
+        {
+          "patron": "customer-supplier",
+          "etiqueta": "Customer / Supplier",
+          "proveedor": "Inventario",
+          "cliente": "Planificación de Demanda",
+          "origen": "id-1ad2c5cce33c4929a7c0c6aa87426e89",
+          "detalle": ""
+        }
+      ],
+      "consumidores": [
+        {
+          "patron": "customer-supplier",
+          "etiqueta": "Customer / Supplier",
+          "proveedor": "Planificación de Demanda",
+          "cliente": "Abastecimiento",
+          "origen": "id-beedef369b29427282655041d6b55ab3",
+          "detalle": ""
+        }
+      ],
+      "integraciones": [
+        {
+          "codigo": "INT-01",
+          "nombre": "Programación quirúrgica",
+          "origen": "id-a3071938ef3a4968883b265506632252",
+          "objeto": "OBJ-01 — Agenda quirúrgica confirmada",
+          "objeto_origen": "id-86a648c5426f46ac96fb5675591949fc",
+          "externo": "Programación Quirúrgica",
+          "contexto": "Planificación de Demanda",
+          "direccion": "entrada",
+          "comando": "Calcular Demanda",
+          "evento": null,
+          "mapeo": {
+            "medicamento_requerido": "medicamento",
+            "fecha_programada": "periodo",
+            "unidades_por_procedimiento": "demanda_programada"
+          },
+          "externo_origen": "id-b8f5db9887ac43cfb71079b151561f42",
+          "relacion_v8": "id-8d3ade3aef004d4491d01d6e78fb0a72"
+        }
+      ],
+      "grupo_v6": "id-e6e3a8d9ed6b45249bf1e1a6490ea81b"
+    },
+    {
+      "nombre": "Abastecimiento",
+      "origen": "id-85c11b1ebecf418488ddf539ec07eb42",
+      "dominio": "D-04",
+      "titulo_dominio": "Abastecimiento y requerimientos de compra",
+      "clasificacion": "SUPPORTING",
+      "lenguaje": "csharp",
+      "arquitectura": "hexagonal",
+      "puerto": 8004,
+      "base_datos": {
+        "tipo": "SQL",
+        "motor": "postgresql",
+        "justificacion": "Un requerimiento pasa por estados controlados (sugerido, autorizado) y debe quedar auditable ante Compras/ERP; se necesita integridad referencial y transacciones.\n"
+      },
+      "cache": {
+        "ttl_segundos": 30
+      },
+      "cifrado": [
+        "autorizado_por"
+      ],
+      "componentes": [
+        {
+          "nombre": "Gestión de requerimientos de compra",
+          "origen": "id-291b29c2bdcd4a37b542c852c83cf829"
+        },
+        {
+          "nombre": "Gestión de autorización técnica",
+          "origen": "id-aa8a12f07b18412bb63a993b81be5aa5"
+        }
+      ],
+      "funciones": [
+        {
+          "nombre": "Seguimiento del abastecimiento",
+          "origen": "id-64c8a110c5734f59a55897729439c971"
+        },
+        {
+          "nombre": "Cálculo de cantidad requerida",
+          "origen": "id-fe401f0577d94682bdbc9123ddb68525"
+        }
+      ],
+      "entidades": [
+        {
+          "nombre": "Medicamento",
+          "origen": "id-dc1caecb5bd24d7599149473c573fde6",
+          "atributos": [
+            {
+              "nombre": "codigo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "principio_activo",
+              "tipo": "texto"
+            }
+          ],
+          "compartida": false
+        },
+        {
+          "nombre": "Requerimiento de compra",
+          "origen": "id-bc60ae1995d340c7bf1b2b4366052d3b",
+          "atributos": [
+            {
+              "nombre": "principio_activo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "cantidad",
+              "tipo": "entero"
+            }
+          ],
+          "compartida": false
+        },
+        {
+          "nombre": "Autorización técnica",
+          "origen": "id-55f6df523df941a0829ec2b9d7f6546b",
+          "atributos": [
+            {
+              "nombre": "autorizado_por",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "fecha",
+              "tipo": "fecha"
+            }
+          ],
+          "compartida": false
+        }
+      ],
+      "agregados": [
+        {
+          "nombre": "RequerimientoCompra",
+          "origen": "id-7facd587a7514180a8546f49c0527bfd",
+          "atributos": [
+            {
+              "nombre": "principio_activo",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "concentracion",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "cantidad",
+              "tipo": "entero"
+            },
+            {
+              "nombre": "nivel_urgencia",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "estado",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "autorizado_por",
+              "tipo": "texto"
+            }
+          ],
+          "comandos": [
+            {
+              "nombre": "Generar Requisición",
+              "origen": "id-4c2b791e59704ea4aa4fb5005b2b040a",
+              "evento": {
+                "nombre": "Requisición Sugerida",
+                "origen": "id-1587803904614002a838109c451565db"
+              },
+              "crea": true,
+              "restar": null,
+              "nuevo_estado": null,
+              "requiere": [],
+              "desde_estados": [],
+              "fecha_futura": []
+            },
+            {
+              "nombre": "Autorizar Requisición",
+              "origen": "id-8b2c1f2410984b0d94409d84d168eb9d",
+              "evento": {
+                "nombre": "Requerimiento Autorizado",
+                "origen": "id-d5a751c3e7014118b0d9c0f2a53dfe3b"
+              },
+              "crea": false,
+              "restar": null,
+              "nuevo_estado": "Autorizado",
+              "requiere": [
+                "autorizado_por"
+              ],
+              "desde_estados": [
+                "Sugerido"
+              ],
+              "fecha_futura": []
+            }
+          ],
+          "eventos": [
+            {
+              "nombre": "Requisición Sugerida",
+              "origen": "id-1587803904614002a838109c451565db"
+            },
+            {
+              "nombre": "Requerimiento Autorizado",
+              "origen": "id-d5a751c3e7014118b0d9c0f2a53dfe3b"
+            }
+          ],
+          "valores_iniciales": {
+            "estado": "Sugerido"
+          },
+          "obligatorios": [
+            "principio_activo",
+            "concentracion",
+            "cantidad",
+            "nivel_urgencia"
+          ],
+          "no_negativos": [
+            "cantidad"
+          ],
+          "valores_permitidos": {
+            "nivel_urgencia": [
+              "Baja",
+              "Media",
+              "Alta",
+              "Critica"
+            ],
+            "estado": [
+              "Sugerido",
+              "Autorizado"
+            ]
+          },
+          "invariantes": [
+            "El requerimiento contiene principio activo (DCI), concentración, cantidad y nivel de urgencia.",
+            "Ningún requerimiento viaja a Compras (ERP) sin autorización técnica previa del Químico Farmacéutico."
+          ]
+        }
+      ],
+      "proveedores": [
+        {
+          "patron": "customer-supplier",
+          "etiqueta": "Customer / Supplier",
+          "proveedor": "Planificación de Demanda",
+          "cliente": "Abastecimiento",
+          "origen": "id-beedef369b29427282655041d6b55ab3",
+          "detalle": ""
+        },
+        {
+          "patron": "open-host-service",
+          "etiqueta": "Open Host Service",
+          "proveedor": "Seguridad y Auditoría",
+          "cliente": "Abastecimiento",
+          "origen": "id-a42b25a4caa44b33a54cd604b653b824",
+          "detalle": ""
+        },
+        {
+          "patron": "customer-supplier",
+          "etiqueta": "Customer / Supplier",
+          "proveedor": "Inventario",
+          "cliente": "Abastecimiento",
+          "origen": "id-70ed4f9c7fe3404990ef898d980bdcc7",
+          "detalle": ""
+        }
+      ],
+      "consumidores": [],
+      "integraciones": [
+        {
+          "codigo": "INT-04",
+          "nombre": "ERP de compras y contabilidad",
+          "origen": "id-1d4270943d50496b8721dc6c57bff92a",
+          "objeto": "OBJ-04 — Requerimiento y estado de compra",
+          "objeto_origen": "id-5a667296d2a244088ff4c87cd0fa40a6",
+          "externo": "Sistema ERP (Compras)",
+          "contexto": "Abastecimiento",
+          "direccion": "salida",
+          "comando": null,
+          "evento": "Requerimiento Autorizado",
+          "mapeo": {
+            "principio_activo": "dci",
+            "concentracion": "concentracion",
+            "cantidad": "cantidad_solicitada",
+            "nivel_urgencia": "prioridad"
+          },
+          "externo_origen": "id-52a8cea5e3e04b26b2f10519e0fdb01e",
+          "relacion_v8": "id-2a8222b875d24200957afb9642ada2f4"
+        }
+      ],
+      "grupo_v6": "id-7e0be27b50194a11bd4d94f51e24491c"
+    },
+    {
+      "nombre": "Seguridad y Auditoría",
+      "origen": "id-e67fbccb81624389b07037f44097585e",
+      "dominio": "D-05",
+      "titulo_dominio": "Seguridad, perfiles, auditoría y notificaciones",
+      "clasificacion": "GENERIC",
+      "lenguaje": "python",
+      "arquitectura": "microservicios",
+      "puerto": 8005,
+      "base_datos": {
+        "tipo": "SQL",
+        "motor": "postgresql",
+        "justificacion": "Usuarios, perfiles y registros de auditoría son datos estructurados que requieren integridad y consultas por usuario, fecha y acción.\n"
+      },
+      "cache": {
+        "ttl_segundos": 120
+      },
+      "cifrado": [],
+      "componentes": [
+        {
+          "nombre": "Gestión de identidades, perfiles y permisos",
+          "origen": "id-f7f6baeee2214ae5a396326681825c1a"
+        },
+        {
+          "nombre": "Registro de auditoría y trazabilidad de acciones",
+          "origen": "id-f2de3183dd9548d7b14e8ab84331440e"
+        },
+        {
+          "nombre": "Servicio de notificaciones",
+          "origen": "id-a749aac6a1b24ceca994daccd305d5a3"
+        }
+      ],
+      "funciones": [
+        {
+          "nombre": "Autenticación y autorización por perfil",
+          "origen": "id-1e3ea9e5cb0b44428c009c8bce90ec12"
+        },
+        {
+          "nombre": "Registro de eventos de auditoría",
+          "origen": "id-6a4819c419344ae4af86bfb7b1a3342b"
+        },
+        {
+          "nombre": "Envío de alertas y notificaciones",
+          "origen": "id-49e68dda08b2446881d29820e3fa2f71"
+        }
+      ],
+      "entidades": [
+        {
+          "nombre": "Usuario",
+          "origen": "id-b50daf07d3f74b9d8621affd500807ec",
+          "atributos": [
+            {
+              "nombre": "usuario",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "nombre",
+              "tipo": "texto"
+            }
+          ],
+          "compartida": false
+        },
+        {
+          "nombre": "Perfil / rol",
+          "origen": "id-a643301214ec4d77b4408571e55e2448",
+          "atributos": [
+            {
+              "nombre": "nombre",
+              "tipo": "texto"
+            }
+          ],
+          "compartida": false
+        },
+        {
+          "nombre": "Registro de auditoría",
+          "origen": "id-ec5133817d954a5d8ca9efd94e13e98b",
+          "atributos": [
+            {
+              "nombre": "usuario",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "accion",
+              "tipo": "texto"
+            },
+            {
+              "nombre": "fecha",
+              "tipo": "fecha"
+            }
+          ],
+          "compartida": false
+        }
+      ],
+      "agregados": [],
+      "proveedores": [],
+      "consumidores": [
+        {
+          "patron": "open-host-service",
+          "etiqueta": "Open Host Service",
+          "proveedor": "Seguridad y Auditoría",
+          "cliente": "Abastecimiento",
+          "origen": "id-a42b25a4caa44b33a54cd604b653b824",
+          "detalle": ""
+        },
+        {
+          "patron": "open-host-service",
+          "etiqueta": "Open Host Service",
+          "proveedor": "Seguridad y Auditoría",
+          "cliente": "Inventario",
+          "origen": "id-937050e7b0634aafb7ef5472b88ebc54",
+          "detalle": ""
+        },
+        {
+          "patron": "open-host-service",
+          "etiqueta": "Open Host Service",
+          "proveedor": "Seguridad y Auditoría",
+          "cliente": "Vencimientos",
+          "origen": "id-b1ad9bb55ea541df91c9ca844474c524",
+          "detalle": ""
+        }
+      ],
+      "integraciones": [],
+      "grupo_v6": ""
+    }
+  ],
+  "acl": {
+    "nombre": "ACL-01 Adaptador anticorrupción e interoperabilidad",
+    "origen": "id-438136e35cb14e078968e4379649e460",
+    "interfaz": "IF-ACL-01 - Interfaz de integración",
+    "lenguaje": "java",
+    "arquitectura": "hexagonal",
+    "puerto": 8010,
+    "integraciones": [
+      {
+        "codigo": "INT-01",
+        "nombre": "Programación quirúrgica",
+        "origen": "id-a3071938ef3a4968883b265506632252",
+        "objeto": "OBJ-01 — Agenda quirúrgica confirmada",
+        "objeto_origen": "id-86a648c5426f46ac96fb5675591949fc",
+        "externo": "Programación Quirúrgica",
+        "contexto": "Planificación de Demanda",
+        "direccion": "entrada",
+        "comando": "Calcular Demanda",
+        "evento": null,
+        "mapeo": {
+          "medicamento_requerido": "medicamento",
+          "fecha_programada": "periodo",
+          "unidades_por_procedimiento": "demanda_programada"
+        },
+        "externo_origen": "id-b8f5db9887ac43cfb71079b151561f42",
+        "relacion_v8": "id-8d3ade3aef004d4491d01d6e78fb0a72"
+      },
+      {
+        "codigo": "INT-02",
+        "nombre": "Historia clínica electrónica",
+        "origen": "id-a423dc26ca144a119a49bdf0b760c06b",
+        "objeto": "OBJ-02 — Prescripción médica",
+        "objeto_origen": "id-36f5432b51704dad8af9e7cae4f21395",
+        "externo": "Historia Clínica (HCE)",
+        "contexto": "Inventario",
+        "direccion": "entrada",
+        "comando": "Descontar Existencias",
+        "evento": null,
+        "mapeo": {
+          "id_lote": "id",
+          "unidades_prescritas": "cantidad"
+        },
+        "externo_origen": "id-045e36d02f8a43af94cc7975155f4dac",
+        "relacion_v8": "id-bdca25249719406fb9b97efce1ffe159"
+      },
+      {
+        "codigo": "INT-03",
+        "nombre": "Servicio de urgencias",
+        "origen": "id-556dc860c2aa46229383b2fa8b915759",
+        "objeto": "OBJ-03 — Necesidad asistencial no programada",
+        "objeto_origen": "id-c6c283fe1a8f480a89cbb756fc12b35b",
+        "externo": "Servicio de Urgencias",
+        "contexto": "Inventario",
+        "direccion": "entrada",
+        "comando": "Descontar Existencias",
+        "evento": null,
+        "mapeo": {
+          "id_lote": "id",
+          "unidades_despachadas": "cantidad"
+        },
+        "externo_origen": "id-bc1e92e87d584e428a24bf0e80eddae5",
+        "relacion_v8": "id-9bed88af98ba47279948060d16e7051d"
+      },
+      {
+        "codigo": "INT-04",
+        "nombre": "ERP de compras y contabilidad",
+        "origen": "id-1d4270943d50496b8721dc6c57bff92a",
+        "objeto": "OBJ-04 — Requerimiento y estado de compra",
+        "objeto_origen": "id-5a667296d2a244088ff4c87cd0fa40a6",
+        "externo": "Sistema ERP (Compras)",
+        "contexto": "Abastecimiento",
+        "direccion": "salida",
+        "comando": null,
+        "evento": "Requerimiento Autorizado",
+        "mapeo": {
+          "principio_activo": "dci",
+          "concentracion": "concentracion",
+          "cantidad": "cantidad_solicitada",
+          "nivel_urgencia": "prioridad"
+        },
+        "externo_origen": "id-52a8cea5e3e04b26b2f10519e0fdb01e",
+        "relacion_v8": "id-2a8222b875d24200957afb9642ada2f4"
+      },
+      {
+        "codigo": "INT-05",
+        "nombre": "Proveedor de medicamentos",
+        "origen": "id-3bd137cce500451697570fb310bd822f",
+        "objeto": "OBJ-05 — Datos de entrega y lote",
+        "objeto_origen": "id-7fc8b6bbae4b4e1b936a16cf601a9c82",
+        "externo": "Proveedores Externos",
+        "contexto": "Inventario",
+        "direccion": "entrada",
+        "comando": "Registrar Ingreso",
+        "evento": null,
+        "mapeo": {
+          "numero_lote": "codigo",
+          "nombre_comercial": "descripcion",
+          "nit_proveedor": "proveedor",
+          "vence": "fecha_vencimiento",
+          "registro_invima": "registro_sanitario",
+          "unidades": "cantidad"
+        },
+        "externo_origen": "id-669fc7a03c494e59ad8cbd263efd94ed",
+        "relacion_v8": "id-1483527edc2946d38e7c8493a19cdbe0"
+      },
+      {
+        "codigo": "INT-06",
+        "nombre": "Entidad de vigilancia farmacéutica",
+        "origen": "id-84143d5958e943ca8d0b938845f46e4f",
+        "objeto": "OBJ-06 — Alerta regulatoria o retiro de lote",
+        "objeto_origen": "id-c1ec101b708e4b77903d666ad384aa47",
+        "externo": "INVIMA (Vigilancia)",
+        "contexto": "Vencimientos",
+        "direccion": "entrada",
+        "comando": "Bloquear Lote Vencido",
+        "evento": null,
+        "mapeo": {
+          "id_alerta": "id",
+          "motivo_retiro": "motivo"
+        },
+        "externo_origen": "id-1bd23e26b74a486aa077e168585b54f5",
+        "relacion_v8": "id-da0cb80ad7504e35bcf22479bb640ac0"
+      }
+    ]
+  },
+  "advertencias": [
+    "V6: el dominio D-05 (Seguridad y Auditoría) no tiene agregados modelados; se generan solo entidades y servicios."
+  ],
+  "traza": {
+    "id-88b6385f820e45108828246754e2093e": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationComponent",
+      "nombre": "Gestión de medicamentos",
+      "archivos": [
+        "Codigo_generado/inventario/dominio/servicios/servicios.py",
+        "Codigo_generado/contratos/inventario.openapi.json"
+      ]
+    },
+    "id-2f8ff2dd47fb4fa3af0990d5c9279b0f": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationComponent",
+      "nombre": "Gestión de lotes de medicamentos",
+      "archivos": [
+        "Codigo_generado/inventario/dominio/servicios/servicios.py",
+        "Codigo_generado/contratos/inventario.openapi.json"
+      ]
+    },
+    "id-c5fa88b05b5047afaf4582f3e889a733": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationFunction",
+      "nombre": "Control de existencias por lote",
+      "archivos": [
+        "Codigo_generado/inventario/dominio/servicios/servicios.py",
+        "Codigo_generado/inventario/adaptadores/entrada/http.py",
+        "Codigo_generado/frontend/mf-inventario/src/contexto.json"
+      ]
+    },
+    "id-e7d588ab967341bdab264fafd4e2f066": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationFunction",
+      "nombre": "Gestión del estado del lote",
+      "archivos": [
+        "Codigo_generado/inventario/dominio/servicios/servicios.py",
+        "Codigo_generado/inventario/adaptadores/entrada/http.py",
+        "Codigo_generado/frontend/mf-inventario/src/contexto.json"
+      ]
+    },
+    "id-ff61d10a4a7846e1a1dc665655b53649": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationFunction",
+      "nombre": "Registros de movimientos del inventario",
+      "archivos": [
+        "Codigo_generado/inventario/dominio/servicios/servicios.py",
+        "Codigo_generado/inventario/adaptadores/entrada/http.py",
+        "Codigo_generado/frontend/mf-inventario/src/contexto.json"
+      ]
+    },
+    "id-cadf763e917b4044829588786de70675": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationComponent",
+      "nombre": "Gestión de alertas de vencimiento",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/servicios/GestionDeAlertasDeVencimientoServicio.java",
+        "Codigo_generado/contratos/vencimientos.openapi.json"
+      ]
+    },
+    "id-eb08505eba1b4de08eaf2a5fafe1f463": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationFunction",
+      "nombre": "Prioridad de uso de lotes (FEFO)",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/servicios/PrioridadDeUsoDeLotesFefo.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/api/ServidorHttp.java",
+        "Codigo_generado/frontend/mf-vencimientos/src/contexto.json"
+      ]
+    },
+    "id-a75df21c0c144d89823bf2996c9a3999": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationFunction",
+      "nombre": "Validación de restricciones de uso",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/servicios/ValidacionDeRestriccionesDeUso.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/api/ServidorHttp.java",
+        "Codigo_generado/frontend/mf-vencimientos/src/contexto.json"
+      ]
+    },
+    "id-40103258ad9944248a47ad67cd2afa03": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationFunction",
+      "nombre": "Notificación de lotes críticos",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/servicios/NotificacionDeLotesCriticos.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/api/ServidorHttp.java",
+        "Codigo_generado/frontend/mf-vencimientos/src/contexto.json"
+      ]
+    },
+    "id-de4f8c3c798b49a985273e01ee2b9266": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationComponent",
+      "nombre": "Gestión de consumo histórico",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/aplicacion/servicios/servicios.py",
+        "Codigo_generado/contratos/planificacion-de-demanda.openapi.json"
+      ]
+    },
+    "id-fef798f6c74c49dfab5901878b68eab2": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationComponent",
+      "nombre": "Gestión de programación hospitalaria",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/aplicacion/servicios/servicios.py",
+        "Codigo_generado/contratos/planificacion-de-demanda.openapi.json"
+      ]
+    },
+    "id-ee07f7afa34f4cab8a349e43577eba9b": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationComponent",
+      "nombre": "Cálculo de necesidad estimada de medicamentos",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/aplicacion/servicios/servicios.py",
+        "Codigo_generado/contratos/planificacion-de-demanda.openapi.json"
+      ]
+    },
+    "id-a8ad62e196bb405eb4225330f3352493": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationFunction",
+      "nombre": "Predicción de demanda",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/aplicacion/servicios/servicios.py",
+        "Codigo_generado/planificacion-de-demanda/api/http.py",
+        "Codigo_generado/frontend/mf-planificacion-de-demanda/src/contexto.json"
+      ]
+    },
+    "id-291b29c2bdcd4a37b542c852c83cf829": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationComponent",
+      "nombre": "Gestión de requerimientos de compra",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Dominio/Servicios/Servicios.cs",
+        "Codigo_generado/contratos/abastecimiento.openapi.json"
+      ]
+    },
+    "id-aa8a12f07b18412bb63a993b81be5aa5": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationComponent",
+      "nombre": "Gestión de autorización técnica",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Dominio/Servicios/Servicios.cs",
+        "Codigo_generado/contratos/abastecimiento.openapi.json"
+      ]
+    },
+    "id-64c8a110c5734f59a55897729439c971": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationFunction",
+      "nombre": "Seguimiento del abastecimiento",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Dominio/Servicios/Servicios.cs",
+        "Codigo_generado/abastecimiento/Adaptadores/Entrada/Rutas.cs",
+        "Codigo_generado/frontend/mf-abastecimiento/src/contexto.json"
+      ]
+    },
+    "id-fe401f0577d94682bdbc9123ddb68525": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationFunction",
+      "nombre": "Cálculo de cantidad requerida",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Dominio/Servicios/Servicios.cs",
+        "Codigo_generado/abastecimiento/Adaptadores/Entrada/Rutas.cs",
+        "Codigo_generado/frontend/mf-abastecimiento/src/contexto.json"
+      ]
+    },
+    "id-f7f6baeee2214ae5a396326681825c1a": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationComponent",
+      "nombre": "Gestión de identidades, perfiles y permisos",
+      "archivos": [
+        "Codigo_generado/seguridad-y-auditoria/aplicacion/servicios/servicios.py",
+        "Codigo_generado/contratos/seguridad-y-auditoria.openapi.json"
+      ]
+    },
+    "id-f2de3183dd9548d7b14e8ab84331440e": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationComponent",
+      "nombre": "Registro de auditoría y trazabilidad de acciones",
+      "archivos": [
+        "Codigo_generado/seguridad-y-auditoria/aplicacion/servicios/servicios.py",
+        "Codigo_generado/contratos/seguridad-y-auditoria.openapi.json"
+      ]
+    },
+    "id-a749aac6a1b24ceca994daccd305d5a3": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationComponent",
+      "nombre": "Servicio de notificaciones",
+      "archivos": [
+        "Codigo_generado/seguridad-y-auditoria/aplicacion/servicios/servicios.py",
+        "Codigo_generado/contratos/seguridad-y-auditoria.openapi.json"
+      ]
+    },
+    "id-1e3ea9e5cb0b44428c009c8bce90ec12": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationFunction",
+      "nombre": "Autenticación y autorización por perfil",
+      "archivos": [
+        "Codigo_generado/seguridad-y-auditoria/aplicacion/servicios/servicios.py",
+        "Codigo_generado/seguridad-y-auditoria/api/http.py",
+        "Codigo_generado/frontend/mf-seguridad-y-auditoria/src/contexto.json"
+      ]
+    },
+    "id-6a4819c419344ae4af86bfb7b1a3342b": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationFunction",
+      "nombre": "Registro de eventos de auditoría",
+      "archivos": [
+        "Codigo_generado/seguridad-y-auditoria/aplicacion/servicios/servicios.py",
+        "Codigo_generado/seguridad-y-auditoria/api/http.py",
+        "Codigo_generado/frontend/mf-seguridad-y-auditoria/src/contexto.json"
+      ]
+    },
+    "id-49e68dda08b2446881d29820e3fa2f71": {
+      "vista": "V5_Dominios",
+      "tipo": "ApplicationFunction",
+      "nombre": "Envío de alertas y notificaciones",
+      "archivos": [
+        "Codigo_generado/seguridad-y-auditoria/aplicacion/servicios/servicios.py",
+        "Codigo_generado/seguridad-y-auditoria/api/http.py",
+        "Codigo_generado/frontend/mf-seguridad-y-auditoria/src/contexto.json"
+      ]
+    },
+    "id-3e384a7f35e94769a4a2161ebd464f90": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "Grouping",
+      "nombre": "D-01. Gestión de inventario farmacéutico",
+      "archivos": [
+        "Codigo_generado/inventario/README.md"
+      ]
+    },
+    "id-2655a7f9a43d4073998cb591cfc415b3": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "DataObject",
+      "nombre": "LoteMedicamento",
+      "archivos": [
+        "Codigo_generado/inventario/dominio/modelo/lote_medicamento.py",
+        "Codigo_generado/inventario/puertos/salida/repositorios.py",
+        "Codigo_generado/inventario/dominio/memento/memento.py",
+        "Codigo_generado/inventario/adaptadores/salida/persistencia/memoria.py",
+        "Codigo_generado/inventario/adaptadores/salida/persistencia/base_datos.py",
+        "Codigo_generado/frontend/mf-inventario/src/contexto.json",
+        "Codigo_generado/inventario/db/esquema.sql"
+      ]
+    },
+    "id-725738c8a5084d5fbdedd4f72fe83b16": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationProcess",
+      "nombre": "Registrar Ingreso",
+      "archivos": [
+        "Codigo_generado/inventario/dominio/modelo/lote_medicamento.py",
+        "Codigo_generado/inventario/puertos/entrada/comandos.py",
+        "Codigo_generado/inventario/adaptadores/entrada/http.py",
+        "Codigo_generado/frontend/mf-inventario/src/contexto.json"
+      ]
+    },
+    "id-be3fe8675f75498f8417b5961013e61d": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationProcess",
+      "nombre": "Descontar Existencias",
+      "archivos": [
+        "Codigo_generado/inventario/dominio/modelo/lote_medicamento.py",
+        "Codigo_generado/inventario/puertos/entrada/comandos.py",
+        "Codigo_generado/inventario/adaptadores/entrada/http.py",
+        "Codigo_generado/frontend/mf-inventario/src/contexto.json"
+      ]
+    },
+    "id-fd3c164e2bf243d999661ac25f9e7ff9": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationEvent",
+      "nombre": "Lote Ingresado",
+      "archivos": [
+        "Codigo_generado/inventario/contratos/eventos_v1.py",
+        "Codigo_generado/inventario/dominio/eventos/eventos.py"
+      ]
+    },
+    "id-24a9ddfb227047c8b55d35d52aafe6ac": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationEvent",
+      "nombre": "Existencias Descontadas",
+      "archivos": [
+        "Codigo_generado/inventario/contratos/eventos_v1.py",
+        "Codigo_generado/inventario/dominio/eventos/eventos.py"
+      ]
+    },
+    "id-cd5ddce8d570463aab88cf7c1e1c3847": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "Grouping",
+      "nombre": "D-02. Gestión de vencimientos y priorización",
+      "archivos": [
+        "Codigo_generado/vencimientos/README.md"
+      ]
+    },
+    "id-789b967f16be4048a93670cdeb82c68f": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "DataObject",
+      "nombre": "AlertaVencimiento",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/memento/Caretaker.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/modelo/AlertaVencimiento.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/modelo/AlertaVencimientoMemento.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/puertos/RepositorioAlertaVencimiento.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/infraestructura/persistencia/RepositorioAlertaVencimientoMemoria.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/infraestructura/persistencia/RepositorioAlertaVencimientoBaseDatos.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/infraestructura/persistencia/RepositorioAlertaVencimientoCache.java",
+        "Codigo_generado/frontend/mf-vencimientos/src/contexto.json",
+        "Codigo_generado/vencimientos/db/colecciones.json"
+      ]
+    },
+    "id-6666e2972a544a4daa8c80083a064179": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationProcess",
+      "nombre": "Evaluar Prioridad FEFO",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/modelo/AlertaVencimiento.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/comandos/EvaluarPrioridadFefo.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/comandos/ManejadorAlertaVencimiento.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/api/ServidorHttp.java",
+        "Codigo_generado/frontend/mf-vencimientos/src/contexto.json"
+      ]
+    },
+    "id-ef24000900c84a40b01ec1905a31e1ad": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationProcess",
+      "nombre": "Bloquear Lote Vencido",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/modelo/AlertaVencimiento.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/comandos/BloquearLoteVencido.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/aplicacion/comandos/ManejadorAlertaVencimiento.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/api/ServidorHttp.java",
+        "Codigo_generado/frontend/mf-vencimientos/src/contexto.json"
+      ]
+    },
+    "id-199e4efdaa234116b1f441efaf1c17e1": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationEvent",
+      "nombre": "Prioridad FEFO Calculada",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/eventos/PrioridadFefoCalculada.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/contratos/PrioridadFefoCalculadaV1.java"
+      ]
+    },
+    "id-fcc0f44f0ffa4d379fbaf8992e3b042a": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationEvent",
+      "nombre": "Lote Bloqueado",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/eventos/LoteBloqueado.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/contratos/LoteBloqueadoV1.java"
+      ]
+    },
+    "id-e6e3a8d9ed6b45249bf1e1a6490ea81b": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "Grouping",
+      "nombre": "D-03. Planificación y predicción de demanda",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/README.md"
+      ]
+    },
+    "id-3b94cfbdb62b4eb99f4fbf3fdb14eb1f": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "DataObject",
+      "nombre": "EstimacionDemanda",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/dominio/modelo/estimacion_demanda.py",
+        "Codigo_generado/planificacion-de-demanda/dominio/puertos/repositorios.py",
+        "Codigo_generado/planificacion-de-demanda/aplicacion/memento/memento.py",
+        "Codigo_generado/planificacion-de-demanda/infraestructura/persistencia/memoria.py",
+        "Codigo_generado/planificacion-de-demanda/infraestructura/persistencia/base_datos.py",
+        "Codigo_generado/frontend/mf-planificacion-de-demanda/src/contexto.json",
+        "Codigo_generado/planificacion-de-demanda/db/colecciones.json"
+      ]
+    },
+    "id-c67f0d0968364479842d005547bf22df": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationProcess",
+      "nombre": "Calcular Demanda",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/dominio/modelo/estimacion_demanda.py",
+        "Codigo_generado/planificacion-de-demanda/aplicacion/comandos/comandos.py",
+        "Codigo_generado/planificacion-de-demanda/api/http.py",
+        "Codigo_generado/frontend/mf-planificacion-de-demanda/src/contexto.json"
+      ]
+    },
+    "id-f66641b043ab4ba0807019ede56d3a0c": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationProcess",
+      "nombre": "Ajustar Predicción",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/dominio/modelo/estimacion_demanda.py",
+        "Codigo_generado/planificacion-de-demanda/aplicacion/comandos/comandos.py",
+        "Codigo_generado/planificacion-de-demanda/api/http.py",
+        "Codigo_generado/frontend/mf-planificacion-de-demanda/src/contexto.json"
+      ]
+    },
+    "id-1027ccf368c145dfa200252736c8cda5": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationEvent",
+      "nombre": "Demanda Estimada",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/contratos/eventos_v1.py",
+        "Codigo_generado/planificacion-de-demanda/dominio/eventos/eventos.py"
+      ]
+    },
+    "id-5d47e9b1539c461b99db8ef7a28810bf": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationEvent",
+      "nombre": "Predicción Ajustada",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/contratos/eventos_v1.py",
+        "Codigo_generado/planificacion-de-demanda/dominio/eventos/eventos.py"
+      ]
+    },
+    "id-7e0be27b50194a11bd4d94f51e24491c": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "Grouping",
+      "nombre": "D-04. Abastecimiento y requerimientos de compra",
+      "archivos": [
+        "Codigo_generado/abastecimiento/README.md"
+      ]
+    },
+    "id-7facd587a7514180a8546f49c0527bfd": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "DataObject",
+      "nombre": "RequerimientoCompra",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Dominio/Modelo/RequerimientoCompra.cs",
+        "Codigo_generado/abastecimiento/Puertos/Salida/Repositorios.cs",
+        "Codigo_generado/abastecimiento/Dominio/Memento/Caretaker.cs",
+        "Codigo_generado/abastecimiento/Adaptadores/Salida/Persistencia/RepositoriosMemoria.cs",
+        "Codigo_generado/abastecimiento/Adaptadores/Salida/Persistencia/RepositoriosBaseDatos.cs",
+        "Codigo_generado/abastecimiento/Adaptadores/Salida/Persistencia/Cache.cs",
+        "Codigo_generado/frontend/mf-abastecimiento/src/contexto.json",
+        "Codigo_generado/abastecimiento/db/esquema.sql"
+      ]
+    },
+    "id-4c2b791e59704ea4aa4fb5005b2b040a": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationProcess",
+      "nombre": "Generar Requisición",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Dominio/Modelo/RequerimientoCompra.cs",
+        "Codigo_generado/abastecimiento/Puertos/Entrada/Comandos.cs",
+        "Codigo_generado/abastecimiento/Adaptadores/Entrada/Rutas.cs",
+        "Codigo_generado/frontend/mf-abastecimiento/src/contexto.json"
+      ]
+    },
+    "id-8b2c1f2410984b0d94409d84d168eb9d": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationProcess",
+      "nombre": "Autorizar Requisición",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Dominio/Modelo/RequerimientoCompra.cs",
+        "Codigo_generado/abastecimiento/Puertos/Entrada/Comandos.cs",
+        "Codigo_generado/abastecimiento/Adaptadores/Entrada/Rutas.cs",
+        "Codigo_generado/frontend/mf-abastecimiento/src/contexto.json"
+      ]
+    },
+    "id-1587803904614002a838109c451565db": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationEvent",
+      "nombre": "Requisición Sugerida",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Contratos/EventosV1.cs",
+        "Codigo_generado/abastecimiento/Dominio/Eventos/Eventos.cs"
+      ]
+    },
+    "id-d5a751c3e7014118b0d9c0f2a53dfe3b": {
+      "vista": "V6 - Agregados, Comandos y Eventos",
+      "tipo": "ApplicationEvent",
+      "nombre": "Requerimiento Autorizado",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Contratos/EventosV1.cs",
+        "Codigo_generado/abastecimiento/Dominio/Eventos/Eventos.cs"
+      ]
+    },
+    "id-e70afab9d78e4e8994d45c4f280858f4": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "ApplicationComponent",
+      "nombre": "Planificación de Demanda",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/main.py",
+        "Codigo_generado/planificacion-de-demanda/Dockerfile",
+        "Codigo_generado/frontend/mf-planificacion-de-demanda/src/contexto.json",
+        "Codigo_generado/frontend/mf-planificacion-de-demanda/vite.config.ts",
+        "Codigo_generado/frontend/shell/vite.config.ts",
+        "Codigo_generado/frontend/shell/src/remotos.ts",
+        "Codigo_generado/planificacion-de-demanda/README.md",
+        "Codigo_generado/gateway/nginx.conf"
+      ]
+    },
+    "id-2cc1cddd75794ed881d67ec17f2f5fc0": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Medicamento",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/dominio/modelo/entidades.py"
+      ]
+    },
+    "id-f16505518f584003b4f7e88c10cbd1ac": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Agenda quirúrgica",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/dominio/modelo/entidades.py"
+      ]
+    },
+    "id-7e86c6e9d37242e28b2f6dce8dc7620d": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Consumo histórico",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/dominio/modelo/entidades.py"
+      ]
+    },
+    "id-38742fde9cae48979fb8cb3fa09a7017": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Estimación de demanda",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/dominio/modelo/entidades.py"
+      ]
+    },
+    "id-85c11b1ebecf418488ddf539ec07eb42": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "ApplicationComponent",
+      "nombre": "Abastecimiento",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Program.cs",
+        "Codigo_generado/abastecimiento/Abastecimiento.csproj",
+        "Codigo_generado/abastecimiento/Dockerfile",
+        "Codigo_generado/frontend/mf-abastecimiento/src/contexto.json",
+        "Codigo_generado/frontend/mf-abastecimiento/vite.config.ts",
+        "Codigo_generado/frontend/shell/vite.config.ts",
+        "Codigo_generado/frontend/shell/src/remotos.ts",
+        "Codigo_generado/abastecimiento/README.md",
+        "Codigo_generado/gateway/nginx.conf"
+      ]
+    },
+    "id-dc1caecb5bd24d7599149473c573fde6": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Medicamento",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Dominio/Modelo/Entidades.cs"
+      ]
+    },
+    "id-bc60ae1995d340c7bf1b2b4366052d3b": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Requerimiento de compra",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Dominio/Modelo/Entidades.cs"
+      ]
+    },
+    "id-55f6df523df941a0829ec2b9d7f6546b": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Autorización técnica",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Dominio/Modelo/Entidades.cs"
+      ]
+    },
+    "id-e67fbccb81624389b07037f44097585e": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "ApplicationComponent",
+      "nombre": "Seguridad y Auditoría",
+      "archivos": [
+        "Codigo_generado/seguridad-y-auditoria/main.py",
+        "Codigo_generado/seguridad-y-auditoria/Dockerfile",
+        "Codigo_generado/frontend/mf-seguridad-y-auditoria/src/contexto.json",
+        "Codigo_generado/frontend/mf-seguridad-y-auditoria/vite.config.ts",
+        "Codigo_generado/frontend/shell/vite.config.ts",
+        "Codigo_generado/frontend/shell/src/remotos.ts",
+        "Codigo_generado/seguridad-y-auditoria/README.md",
+        "Codigo_generado/gateway/nginx.conf"
+      ]
+    },
+    "id-b50daf07d3f74b9d8621affd500807ec": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Usuario",
+      "archivos": [
+        "Codigo_generado/seguridad-y-auditoria/dominio/modelo/entidades.py"
+      ]
+    },
+    "id-a643301214ec4d77b4408571e55e2448": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Perfil / rol",
+      "archivos": [
+        "Codigo_generado/seguridad-y-auditoria/dominio/modelo/entidades.py"
+      ]
+    },
+    "id-ec5133817d954a5d8ca9efd94e13e98b": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Registro de auditoría",
+      "archivos": [
+        "Codigo_generado/seguridad-y-auditoria/dominio/modelo/entidades.py"
+      ]
+    },
+    "id-cac88af7b537472997fd25876082498e": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "ApplicationComponent",
+      "nombre": "Inventario",
+      "archivos": [
+        "Codigo_generado/inventario/main.py",
+        "Codigo_generado/inventario/Dockerfile",
+        "Codigo_generado/frontend/mf-inventario/src/contexto.json",
+        "Codigo_generado/frontend/mf-inventario/vite.config.ts",
+        "Codigo_generado/frontend/shell/vite.config.ts",
+        "Codigo_generado/frontend/shell/src/remotos.ts",
+        "Codigo_generado/inventario/README.md",
+        "Codigo_generado/gateway/nginx.conf"
+      ]
+    },
+    "id-03937a6239954ff290d547fada70dbc0": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Medicamento",
+      "archivos": [
+        "Codigo_generado/inventario/dominio/modelo/entidades.py"
+      ]
+    },
+    "id-6cd2ac9559aa49f399e4eecc10479f6b": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Lote",
+      "archivos": [
+        "Codigo_generado/inventario/shared_kernel/__init__.py",
+        "Codigo_generado/contratos/shared-kernel/lote.schema.json"
+      ]
+    },
+    "id-37f39cf7ffc149a7bb43913b252c7ab6": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Movimiento de inventario",
+      "archivos": [
+        "Codigo_generado/inventario/dominio/modelo/entidades.py"
+      ]
+    },
+    "id-6d07ead32f9c4ffdbe80f360d3ceb05e": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "ApplicationComponent",
+      "nombre": "Vencimientos",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/Main.java",
+        "Codigo_generado/vencimientos/pom.xml",
+        "Codigo_generado/vencimientos/Dockerfile",
+        "Codigo_generado/frontend/mf-vencimientos/src/contexto.json",
+        "Codigo_generado/frontend/mf-vencimientos/vite.config.ts",
+        "Codigo_generado/frontend/shell/vite.config.ts",
+        "Codigo_generado/frontend/shell/src/remotos.ts",
+        "Codigo_generado/vencimientos/README.md",
+        "Codigo_generado/gateway/nginx.conf"
+      ]
+    },
+    "id-a0c6e580e89947f3ae90e93586486bc9": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Lote",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/sharedkernel/Lote.java",
+        "Codigo_generado/contratos/shared-kernel/lote.schema.json"
+      ]
+    },
+    "id-7fc20f0a20f44ec8842b0dea3c5e5ff1": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Alerta de vencimiento",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/modelo/AlertaDeVencimiento.java"
+      ]
+    },
+    "id-c8f0bedd183c4529bbb0ff53a09235f5": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "DataObject",
+      "nombre": "Restricción de uso",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/modelo/RestriccionDeUso.java"
+      ]
+    },
+    "id-b8f5db9887ac43cfb71079b151561f42": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "ApplicationComponent",
+      "nombre": "Programación Quirúrgica",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/AgendaQuirurgicaConfirmada.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt01ProgramacionQuirurgica.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorSistemaExternoHttp.java"
+      ]
+    },
+    "id-52a8cea5e3e04b26b2f10519e0fdb01e": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "ApplicationComponent",
+      "nombre": "Sistema ERP (Compras)",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/RequerimientoYEstadoDeCompra.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt04ErpDeComprasYContabilidad.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorSistemaExternoHttp.java"
+      ]
+    },
+    "id-045e36d02f8a43af94cc7975155f4dac": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "ApplicationComponent",
+      "nombre": "Historia Clínica (HCE)",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/PrescripcionMedica.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt02HistoriaClinicaElectronica.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorSistemaExternoHttp.java"
+      ]
+    },
+    "id-bc1e92e87d584e428a24bf0e80eddae5": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "ApplicationComponent",
+      "nombre": "Servicio de Urgencias",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/NecesidadAsistencialNoProgramada.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt03ServicioDeUrgencias.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorSistemaExternoHttp.java"
+      ]
+    },
+    "id-669fc7a03c494e59ad8cbd263efd94ed": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "ApplicationComponent",
+      "nombre": "Proveedores Externos",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/DatosDeEntregaYLote.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt05ProveedorDeMedicamentos.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorSistemaExternoHttp.java"
+      ]
+    },
+    "id-1bd23e26b74a486aa077e168585b54f5": {
+      "vista": "V8 - Mapa de Contextos",
+      "tipo": "ApplicationComponent",
+      "nombre": "INVIMA (Vigilancia)",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/AlertaRegulatoriaORetiroDeLote.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt06EntidadDeVigilanciaFarmaceutica.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorSistemaExternoHttp.java"
+      ]
+    },
+    "id-438136e35cb14e078968e4379649e460": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "ApplicationComponent",
+      "nombre": "ACL-01 Adaptador anticorrupción e interoperabilidad",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/aplicacion/ServicioIntegracion.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/Main.java",
+        "Codigo_generado/acl-01-anticorrupcion/pom.xml",
+        "Codigo_generado/acl-01-anticorrupcion/Dockerfile",
+        "Codigo_generado/frontend/mf-integraciones/src/contexto.json",
+        "Codigo_generado/frontend/mf-integraciones/vite.config.ts",
+        "Codigo_generado/frontend/shell/vite.config.ts",
+        "Codigo_generado/frontend/shell/src/remotos.ts",
+        "Codigo_generado/contratos/acl-01-anticorrupcion.openapi.json",
+        "Codigo_generado/acl-01-anticorrupcion/README.md",
+        "Codigo_generado/gateway/nginx.conf"
+      ]
+    },
+    "id-0c134e772fb24127a769483946556081": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "ApplicationInterface",
+      "nombre": "IF-ACL-01 - Interfaz de integración",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java"
+      ]
+    },
+    "id-a3071938ef3a4968883b265506632252": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "BusinessService",
+      "nombre": "INT-01. Programación quirúrgica",
+      "archivos": [
+        "Codigo_generado/planificacion-de-demanda/dominio/puertos/clientes.py",
+        "Codigo_generado/planificacion-de-demanda/infraestructura/clientes/http.py",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/AgendaQuirurgicaConfirmada.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt01ProgramacionQuirurgica.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorContextoHttp.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+        "Codigo_generado/frontend/mf-integraciones/src/contexto.json"
+      ]
+    },
+    "id-86a648c5426f46ac96fb5675591949fc": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "BusinessObject",
+      "nombre": "OBJ-01 — Agenda quirúrgica confirmada",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/AgendaQuirurgicaConfirmada.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt01ProgramacionQuirurgica.java"
+      ]
+    },
+    "id-a423dc26ca144a119a49bdf0b760c06b": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "BusinessService",
+      "nombre": "INT-02. Historia clínica electrónica",
+      "archivos": [
+        "Codigo_generado/inventario/puertos/salida/clientes.py",
+        "Codigo_generado/inventario/adaptadores/salida/clientes/http.py",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/PrescripcionMedica.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt02HistoriaClinicaElectronica.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorContextoHttp.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+        "Codigo_generado/frontend/mf-integraciones/src/contexto.json"
+      ]
+    },
+    "id-36f5432b51704dad8af9e7cae4f21395": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "BusinessObject",
+      "nombre": "OBJ-02 — Prescripción médica",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/PrescripcionMedica.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt02HistoriaClinicaElectronica.java"
+      ]
+    },
+    "id-556dc860c2aa46229383b2fa8b915759": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "BusinessService",
+      "nombre": "INT-03. Servicio de urgencias",
+      "archivos": [
+        "Codigo_generado/inventario/puertos/salida/clientes.py",
+        "Codigo_generado/inventario/adaptadores/salida/clientes/http.py",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/NecesidadAsistencialNoProgramada.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt03ServicioDeUrgencias.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorContextoHttp.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+        "Codigo_generado/frontend/mf-integraciones/src/contexto.json"
+      ]
+    },
+    "id-c6c283fe1a8f480a89cbb756fc12b35b": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "BusinessObject",
+      "nombre": "OBJ-03 — Necesidad asistencial no programada",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/NecesidadAsistencialNoProgramada.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt03ServicioDeUrgencias.java"
+      ]
+    },
+    "id-1d4270943d50496b8721dc6c57bff92a": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "BusinessService",
+      "nombre": "INT-04. ERP de compras y contabilidad",
+      "archivos": [
+        "Codigo_generado/abastecimiento/Puertos/Salida/Clientes.cs",
+        "Codigo_generado/abastecimiento/Adaptadores/Salida/Clientes/ClientesHttp.cs",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/RequerimientoYEstadoDeCompra.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt04ErpDeComprasYContabilidad.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorContextoHttp.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+        "Codigo_generado/frontend/mf-integraciones/src/contexto.json"
+      ]
+    },
+    "id-5a667296d2a244088ff4c87cd0fa40a6": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "BusinessObject",
+      "nombre": "OBJ-04 — Requerimiento y estado de compra",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/RequerimientoYEstadoDeCompra.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt04ErpDeComprasYContabilidad.java"
+      ]
+    },
+    "id-3bd137cce500451697570fb310bd822f": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "BusinessActor",
+      "nombre": "INT-05. Proveedor de medicamentos",
+      "archivos": [
+        "Codigo_generado/inventario/puertos/salida/clientes.py",
+        "Codigo_generado/inventario/adaptadores/salida/clientes/http.py",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/DatosDeEntregaYLote.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt05ProveedorDeMedicamentos.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorContextoHttp.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+        "Codigo_generado/frontend/mf-integraciones/src/contexto.json"
+      ]
+    },
+    "id-7fc8b6bbae4b4e1b936a16cf601a9c82": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "BusinessObject",
+      "nombre": "OBJ-05 — Datos de entrega y lote",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/DatosDeEntregaYLote.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt05ProveedorDeMedicamentos.java"
+      ]
+    },
+    "id-84143d5958e943ca8d0b938845f46e4f": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "BusinessActor",
+      "nombre": "INT-06. Entidad de vigilancia farmacéutica",
+      "archivos": [
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/dominio/puertos/PuertoAnticorrupcion.java",
+        "Codigo_generado/vencimientos/src/main/java/co/edu/farmacia/vencimientos/infraestructura/clientes/ClienteAnticorrupcionHttp.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/AlertaRegulatoriaORetiroDeLote.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt06EntidadDeVigilanciaFarmaceutica.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/adaptadores/AdaptadorContextoHttp.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/infraestructura/api/ServidorHttp.java",
+        "Codigo_generado/frontend/mf-integraciones/src/contexto.json"
+      ]
+    },
+    "id-c1ec101b708e4b77903d666ad384aa47": {
+      "vista": "V9_Interoperabilidad_anticorrupcion",
+      "tipo": "BusinessObject",
+      "nombre": "OBJ-06 — Alerta regulatoria o retiro de lote",
+      "archivos": [
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/dto/AlertaRegulatoriaORetiroDeLote.java",
+        "Codigo_generado/acl-01-anticorrupcion/src/main/java/co/edu/farmacia/anticorrupcion/dominio/traductores/TraductorInt06EntidadDeVigilanciaFarmaceutica.java"
+      ]
+    }
+  }
+}

@@ -1,0 +1,74 @@
+"""Punto de entrada de {{ ctx.nombre }} — raíz de composición (aquí se conectan puertos y adaptadores).
+
+Contexto delimitado: {{ ctx.nombre }}  ({{ ctx.dominio }} {{ ctx.titulo_dominio }} — {{ ctx.clasificacion }})
+Arquitectura: {{ ctx.arquitectura }}   Lenguaje: Python   Puerto: {{ ctx.puerto }}
+Relaciones (V8):
+{% for r in ctx.proveedores %}
+  - consume a {{ r.proveedor }}: «{{ r.etiqueta }}»
+{% endfor %}
+{% for r in ctx.consumidores %}
+  - le sirve a {{ r.cliente }}: «{{ r.etiqueta }}»
+{% endfor %}
+{% for i in ctx.integraciones %}
+  - {{ i.codigo }} {{ i.nombre }} ({{ i.direccion }}) vía ACL-01
+{% endfor %}
+
+Generado automáticamente desde el modelo ArchiMate. Ejecutar:  python main.py
+"""
+from __future__ import annotations
+
+import logging
+import os
+from types import SimpleNamespace
+
+from {{ L.api }}.http import servidor
+from {{ L.clientes }}.http import ClienteHttp{% for r in ctx.proveedores %}, Cliente{{ r.proveedor | pascal }}Http{% endfor %}{% if ctx.integraciones %}, ClienteAnticorrupcionHttp{% endif %}
+
+from {{ L.memento }}.memento import Caretaker
+from {{ L.persistencia }}.cache import RepositorioConCache
+from {{ L.bus }}.bus_eventos import BusEventos
+from {{ L.transversal }}.cifrado import Cifrador
+from {{ L.contratos }}.eventos_v1 import a_contrato
+{% for a in ctx.agregados %}
+from {{ L.comandos }}.comandos import Manejador{{ a.clase }}
+from {{ L.persistencia }}.memoria import Repositorio{{ a.clase }}Memoria
+from {{ L.persistencia }}.base_datos import Repositorio{{ a.clase }}BaseDatos
+{% endfor %}
+
+
+def construir_app() -> SimpleNamespace:
+    bus = BusEventos(a_contrato)
+    cifrador = Cifrador()
+    usar_bd = os.getenv("PERSISTENCIA", "memoria") == "bd"
+    app = SimpleNamespace(bus=bus, manejadores={}, caches={}, clientes={})
+{% for a in ctx.agregados %}
+
+    repo_{{ a.snake }} = RepositorioConCache(
+        Repositorio{{ a.clase }}BaseDatos(cifrador) if usar_bd else Repositorio{{ a.clase }}Memoria(cifrador))
+    app.caches["{{ a.recurso }}"] = repo_{{ a.snake }}
+    app.manejadores["{{ a.recurso }}"] = Manejador{{ a.clase }}(repo_{{ a.snake }}, bus, Caretaker())
+{% endfor %}
+{% for r in ctx.proveedores %}
+
+    # {{ r.patron }}: «{{ r.etiqueta }}»
+    app.clientes["{{ r.proveedor }}"] = Cliente{{ r.proveedor | pascal }}Http(
+        ClienteHttp(os.getenv("{{ r.proveedor | snake | upper }}_URL", "http://localhost:{{ sistema.contexto(r.proveedor).puerto }}")))
+{% endfor %}
+{% set salidas = ctx.integraciones | selectattr("direccion", "equalto", "salida") | list %}
+{% if ctx.integraciones %}
+
+    acl = ClienteAnticorrupcionHttp(ClienteHttp(os.getenv("ACL_URL", "http://localhost:{{ sistema.acl.puerto if sistema.acl else 8010 }}")))
+    app.clientes["ACL-01"] = acl
+{% for i in salidas %}
+    # {{ i.codigo }}: cuando ocurre «{{ i.evento }}» se envía a {{ i.externo }} a través de la ACL
+    bus.suscribir("{{ i.evento | pascal }}", lambda evento: acl.enviar("{{ i.codigo }}", evento.datos))
+{% endfor %}
+{% endif %}
+    return app
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
+    puerto = int(os.getenv("PUERTO", "{{ ctx.puerto }}"))
+    logging.getLogger("main").info("{{ ctx.nombre }} escuchando en el puerto %s", puerto)
+    servidor(construir_app(), puerto).serve_forever()

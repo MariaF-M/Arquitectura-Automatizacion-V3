@@ -1,0 +1,196 @@
+package {{ P.modelo }};
+
+{% for e in a.eventos %}
+import {{ P.eventos }}.{{ e.clase }};
+{% endfor %}
+import {{ P.eventos }}.EventoDominio;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * Agregado raíz «{{ a.nombre }}» del contexto {{ ctx.nombre }} ({{ ctx.dominio }}). Generado desde V6.
+{% for c in a.comandos %}
+ * <br>Comando «{{ c.nombre }}» -> {{ c.metodo_camel }}(){% if c.evento %} emite «{{ c.evento.nombre }}»{% endif %}
+
+{% endfor %}
+ *
+ * Invariantes:
+{% for i in a.invariantes %}
+ * <br>- {{ i }}
+{% endfor %}
+ */
+public class {{ a.clase }} {
+{% for campo, valores in a.valores_permitidos.items() %}
+    public static final Set<String> {{ campo | snake | upper }}_PERMITIDOS = Set.of({% for x in valores %}"{{ x }}"{{ ", " if not loop.last }}{% endfor %});
+{% endfor %}
+
+    private final String id;
+{% for at in a.atributos %}
+    private {{ tipo_java(at.tipo) }} {{ at.camel }};
+{% endfor %}
+    private final List<EventoDominio> eventos = new ArrayList<>();
+
+    public {{ a.clase }}(String id, Map<String, Object> datos) {
+        this.id = (id == null || id.isBlank()) ? UUID.randomUUID().toString() : id;
+{% for k, val in a.valores_iniciales.items() %}
+        aplicar(Map.of("{{ k | snake }}", {{ val | tojson }}));
+{% endfor %}
+        aplicar(datos);
+    }
+
+    // ------------------------------------------------------------------ comandos (V6)
+{% for c in a.comandos %}
+{% if c.crea %}
+    /** Comando «{{ c.nombre }}»: crea el agregado. */
+    public static {{ a.clase }} {{ c.metodo_camel }}(Map<String, Object> datos) {
+        Map<String, Object> d = new LinkedHashMap<>(datos);
+        d.remove("id");
+        {{ a.clase }} agregado = new {{ a.clase }}(null, d);
+{% for f in c.fecha_futura %}
+{% set at = a.atributos | selectattr("nombre", "equalto", f) | first %}
+        if (agregado.{{ at.camel }} != null && !agregado.{{ at.camel }}.isAfter(LocalDate.now()))
+            throw new ReglaNegocioException("«{{ c.nombre }}»: '{{ at.snake }}' debe ser posterior a hoy");
+{% endfor %}
+{% if c.nuevo_estado %}
+        agregado.estado = "{{ c.nuevo_estado }}";
+{% endif %}
+        agregado.validar();
+{% if c.evento %}
+        agregado.eventos.add(new {{ c.evento.clase }}(agregado.id, agregado.aMapa()));
+{% endif %}
+        return agregado;
+    }
+
+{% else %}
+    /** Comando «{{ c.nombre }}». */
+    public void {{ c.metodo_camel }}(Map<String, Object> datos) {
+{% if c.desde_estados %}
+        if (!Set.of({% for x in c.desde_estados %}"{{ x }}"{{ ", " if not loop.last }}{% endfor %}).contains(estado))
+            throw new ReglaNegocioException("«{{ c.nombre }}» no se permite con estado '" + estado + "'");
+{% endif %}
+{% for r in c.requiere %}
+        if (datos.get("{{ r | snake }}") == null || String.valueOf(datos.get("{{ r | snake }}")).isBlank())
+            throw new ReglaNegocioException("«{{ c.nombre }}» requiere '{{ r | snake }}'");
+{% endfor %}
+{% if c.restar %}
+        if (!datos.containsKey("{{ c.restar | snake }}"))
+            throw new ReglaNegocioException("«{{ c.nombre }}» requiere '{{ c.restar | snake }}'");
+{% set at = a.atributos | selectattr("nombre", "equalto", c.restar) | first %}
+        {{ at.camel }} = ({{ at.camel }} == null ? 0 : {{ at.camel }}) - {{ "aEntero" if at.tipo == "entero" else "aDecimal" }}("{{ at.snake }}", datos.get("{{ at.snake }}"));
+{% else %}
+        Map<String, Object> d = new LinkedHashMap<>(datos);
+        d.remove("id");
+        aplicar(d);
+{% endif %}
+{% for f in c.fecha_futura %}
+{% set at = a.atributos | selectattr("nombre", "equalto", f) | first %}
+        if ({{ at.camel }} != null && !{{ at.camel }}.isAfter(LocalDate.now()))
+            throw new ReglaNegocioException("«{{ c.nombre }}»: '{{ at.snake }}' debe ser posterior a hoy");
+{% endfor %}
+{% if c.nuevo_estado %}
+        estado = "{{ c.nuevo_estado }}";
+{% endif %}
+        validar();
+{% if c.evento %}
+        eventos.add(new {{ c.evento.clase }}(id, aMapa()));
+{% endif %}
+    }
+
+{% endif %}
+{% endfor %}
+    // ------------------------------------------------------------------ invariantes
+    public void validar() {
+{% for x in a.obligatorios %}
+{% set at = a.atributos | selectattr("nombre", "equalto", x) | first %}
+        if ({{ at.camel }} == null{% if at.tipo == "texto" %} || {{ at.camel }}.isBlank(){% endif %})
+            throw new ReglaNegocioException("El campo '{{ at.snake }}' es obligatorio en {{ a.clase }}");
+{% endfor %}
+{% for x in a.no_negativos %}
+{% set at = a.atributos | selectattr("nombre", "equalto", x) | first %}
+        if ({{ at.camel }} != null && {{ at.camel }} < 0)
+            throw new ReglaNegocioException("'{{ at.snake }}' no puede ser negativo (valor: " + {{ at.camel }} + ")");
+{% endfor %}
+{% for campo in a.valores_permitidos %}
+{% set at = a.atributos | selectattr("nombre", "equalto", campo) | first %}
+        if ({{ at.camel }} != null && !{{ campo | snake | upper }}_PERMITIDOS.contains({{ at.camel }}))
+            throw new ReglaNegocioException("'{{ at.snake }}' = '" + {{ at.camel }} + "' no es válido. Permitidos: " + {{ campo | snake | upper }}_PERMITIDOS);
+{% endfor %}
+    }
+
+    // ------------------------------------------------------------------ memento
+    public {{ a.clase }}Memento crearMemento() {
+        return new {{ a.clase }}Memento(id{% for at in a.atributos %}, {{ at.camel }}{% endfor %});
+    }
+
+    public void restaurar({{ a.clase }}Memento m) {
+{% for at in a.atributos %}
+        this.{{ at.camel }} = m.{{ at.camel }}();
+{% endfor %}
+    }
+
+    // ------------------------------------------------------------------ utilidades
+    private void aplicar(Map<String, Object> datos) {
+        for (Map.Entry<String, Object> e : datos.entrySet()) {
+            Object v = e.getValue();
+            switch (e.getKey()) {
+{% for at in a.atributos %}
+                case "{{ at.snake }}" -> {{ at.camel }} = {{ {"texto": "aTexto", "entero": "aEntero", "decimal": "aDecimal", "fecha": "aFecha", "booleano": "aBooleano"}[at.tipo] }}("{{ at.snake }}", v);
+{% endfor %}
+                default -> { }
+            }
+        }
+    }
+
+    private static String aTexto(String c, Object v) { return v == null ? null : String.valueOf(v); }
+
+    private static Integer aEntero(String c, Object v) {
+        if (v == null) return null;
+        try { return v instanceof Number n ? n.intValue() : Integer.parseInt(String.valueOf(v)); }
+        catch (NumberFormatException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v); }
+    }
+
+    private static Double aDecimal(String c, Object v) {
+        if (v == null) return null;
+        try { return v instanceof Number n ? n.doubleValue() : Double.parseDouble(String.valueOf(v)); }
+        catch (NumberFormatException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v); }
+    }
+
+    private static LocalDate aFecha(String c, Object v) {
+        if (v == null) return null;
+        try { return v instanceof LocalDate f ? f : LocalDate.parse(String.valueOf(v)); }
+        catch (RuntimeException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v); }
+    }
+
+    private static Boolean aBooleano(String c, Object v) {
+        return v == null ? null : (v instanceof Boolean b ? b : Boolean.parseBoolean(String.valueOf(v)));
+    }
+
+    public List<EventoDominio> extraerEventos() {
+        List<EventoDominio> r = List.copyOf(eventos);
+        eventos.clear();
+        return r;
+    }
+
+    public String getId() { return id; }
+
+    public Map<String, Object> aMapa() {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", id);
+{% for at in a.atributos %}
+        m.put("{{ at.snake }}", {{ at.camel }}{% if at.tipo == "fecha" %} == null ? null : {{ at.camel }}.toString(){% endif %});
+{% endfor %}
+        return m;
+    }
+
+    public static {{ a.clase }} desdeMapa(Map<String, Object> m) {
+        Map<String, Object> d = new LinkedHashMap<>(m);
+        Object id = d.remove("id");
+        return new {{ a.clase }}(id == null ? null : String.valueOf(id), d);
+    }
+}

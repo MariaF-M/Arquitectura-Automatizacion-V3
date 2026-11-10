@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Lote",
+  "description": "Shared Kernel «Lote» (V8). Contrato canónico entre contextos en lenguajes distintos; las clases de cada servicio se generan desde aquí.",
+  "type": "object",
+  "properties": {
+    "id": {"type": "string"},
+    "codigo": {"type": "string"},
+    "fecha_vencimiento": {"type": "string", "format": "date"},
+    "estado": {"type": "string"}
+  },
+  "required": ["id"]
+}

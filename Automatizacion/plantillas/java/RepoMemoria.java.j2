@@ -1,0 +1,33 @@
+package {{ P.persistencia }};
+
+import {{ P.modelo }}.{{ a.clase }};
+import {{ P.puertos }}.Repositorio{{ a.clase }};
+import {{ P.transversal }}.Cifrador;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/** Persistencia en memoria (por defecto). Cifra en reposo: {{ ctx.cifrado | tojson }}. */
+public class Repositorio{{ a.clase }}Memoria implements Repositorio{{ a.clase }} {
+{% set campos = a.atributos | map(attribute="snake") | select("in", ctx.cifrado | map("snake") | list) | list %}
+    private static final List<String> CAMPOS_CIFRADOS = List.of({% for c in campos %}"{{ c }}"{{ ", " if not loop.last }}{% endfor %});
+    private final Map<String, Map<String, Object>> datos = new ConcurrentHashMap<>();
+    private final Cifrador cifrador;
+
+    public Repositorio{{ a.clase }}Memoria(Cifrador cifrador) { this.cifrador = cifrador; }
+
+    @Override
+    public void guardar({{ a.clase }} agregado) {
+        datos.put(agregado.getId(), cifrador.cifrarCampos(agregado.aMapa(), CAMPOS_CIFRADOS));
+    }
+
+    @Override
+    public {{ a.clase }} obtener(String id) {
+        Map<String, Object> fila = datos.get(id);
+        return fila == null ? null : {{ a.clase }}.desdeMapa(cifrador.descifrarCampos(fila, CAMPOS_CIFRADOS));
+    }
+
+    @Override
+    public List<{{ a.clase }}> listar() { return datos.keySet().stream().map(this::obtener).toList(); }
+}

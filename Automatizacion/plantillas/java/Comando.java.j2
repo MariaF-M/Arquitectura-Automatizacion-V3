@@ -1,0 +1,6 @@
+package {{ P.comandos }};
+
+import java.util.Map;
+
+/** Comando «{{ c.nombre }}» sobre {{ a.nombre }} (Application Process en V6). */
+public record {{ c.clase }}({% if not c.crea %}String id, {% endif %}Map<String, Object> datos) { }

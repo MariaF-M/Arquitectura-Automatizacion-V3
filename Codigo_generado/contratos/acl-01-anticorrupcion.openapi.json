@@ -1,0 +1,65 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ACL-01 Adaptador anticorrupci\u00f3n e interoperabilidad",
+    "version": "1.0.0",
+    "description": "Contrato generado desde el modelo ArchiMate. Capa anticorrupci\u00f3n (V9)."
+  },
+  "servers": [{"url": "http://localhost:8010"}],
+  "paths": {
+    "/entrantes/int-01": {
+      "post": {
+        "summary": "INT-01 Programaci\u00f3n quir\u00fargica: traduce \u00abOBJ-01 \u2014 Agenda quir\u00fargica confirmada\u00bb \u2192 comando \u00abCalcular Demanda\u00bb en Planificaci\u00f3n de Demanda",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "AgendaQuirurgicaConfirmada"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/entrantes/int-02": {
+      "post": {
+        "summary": "INT-02 Historia cl\u00ednica electr\u00f3nica: traduce \u00abOBJ-02 \u2014 Prescripci\u00f3n m\u00e9dica\u00bb \u2192 comando \u00abDescontar Existencias\u00bb en Inventario",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "PrescripcionMedica"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/entrantes/int-03": {
+      "post": {
+        "summary": "INT-03 Servicio de urgencias: traduce \u00abOBJ-03 \u2014 Necesidad asistencial no programada\u00bb \u2192 comando \u00abDescontar Existencias\u00bb en Inventario",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "NecesidadAsistencialNoProgramada"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/entrantes/int-05": {
+      "post": {
+        "summary": "INT-05 Proveedor de medicamentos: traduce \u00abOBJ-05 \u2014 Datos de entrega y lote\u00bb \u2192 comando \u00abRegistrar Ingreso\u00bb en Inventario",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "DatosDeEntregaYLote"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/entrantes/int-06": {
+      "post": {
+        "summary": "INT-06 Entidad de vigilancia farmac\u00e9utica: traduce \u00abOBJ-06 \u2014 Alerta regulatoria o retiro de lote\u00bb \u2192 comando \u00abBloquear Lote Vencido\u00bb en Vencimientos",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "AlertaRegulatoriaORetiroDeLote"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/integraciones": {
+      "get": {
+        "summary": "cat\u00e1logo de integraciones INT-xx",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/salientes/int-04": {
+      "post": {
+        "summary": "INT-04 ERP de compras y contabilidad: traduce \u00abOBJ-04 \u2014 Requerimiento y estado de compra\u00bb \u2192 Sistema ERP (Compras)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "RequerimientoYEstadoDeCompra"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/salud": {
+      "get": {
+        "summary": "estado del servicio",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    }
+  }
+}

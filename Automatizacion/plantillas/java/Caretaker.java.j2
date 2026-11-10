@@ -1,0 +1,26 @@
+package {{ P.memento }};
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/** Caretaker del patrón Memento: historial de estados por agregado. */
+public class Caretaker<M> {
+    private final Map<String, Deque<M>> historial = new ConcurrentHashMap<>();
+    private final int maximo;
+
+    public Caretaker() { this(20); }
+    public Caretaker(int maximo) { this.maximo = maximo; }
+
+    public void guardar(String id, M memento) {
+        Deque<M> pila = historial.computeIfAbsent(id, k -> new ArrayDeque<>());
+        pila.push(memento);
+        while (pila.size() > maximo) pila.removeLast();
+    }
+
+    public M ultimo(String id) {
+        Deque<M> pila = historial.get(id);
+        return (pila == null || pila.isEmpty()) ? null : pila.pop();
+    }
+}

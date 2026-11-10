@@ -1,0 +1,22 @@
+"""Entidades del contexto {{ ctx.nombre }} (Data Objects anidados en el componente en V8). Generado automáticamente."""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from datetime import date
+import uuid
+{% if ctx.entidades | selectattr("compartida") | list %}
+
+from shared_kernel import {% for e in ctx.entidades if e.compartida %}{{ e.clase }}{{ ", " if not loop.last }}{% endfor %}  # noqa: F401  (núcleo compartido)
+{% endif %}
+
+{% for e in ctx.entidades if not e.compartida %}
+
+
+@dataclass
+class {{ e.clase }}:
+    """Entidad «{{ e.nombre }}» (V8)."""
+{% for at in e.atributos %}
+    {{ at.snake }}: {{ tipo_py(at.tipo) }} | None = None
+{% endfor %}
+    id: str = field(default_factory=lambda: str(uuid.uuid4()))
+{% endfor %}

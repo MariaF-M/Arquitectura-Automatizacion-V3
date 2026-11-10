@@ -1,0 +1,9 @@
+{# Macro compartida: la tabla de un agregado. La usan db/esquema.sql y los adaptadores SQL (que la ejecutan al arrancar). #}
+{% macro tabla(ctx, a) -%}
+{% set tipos = {"texto": "VARCHAR(255)", "entero": "INTEGER", "decimal": "NUMERIC(14,2)", "fecha": "DATE", "booleano": "BOOLEAN"} -%}
+CREATE TABLE IF NOT EXISTS {{ a.snake }} (
+    id VARCHAR(36) PRIMARY KEY{% for at in a.atributos %},
+    {{ at.snake }} {{ "TEXT" if at.snake in (ctx.cifrado | map("snake") | list) else tipos[at.tipo] }}{% if at.nombre in a.obligatorios %} NOT NULL{% endif %}{% if at.nombre in a.no_negativos %} CHECK ({{ at.snake }} >= 0){% endif %}{% if at.nombre in a.valores_permitidos %} CHECK ({{ at.snake }} IN ({% for v in a.valores_permitidos[at.nombre] %}'{{ v }}'{{ ", " if not loop.last }}{% endfor %})){% endif %}{% endfor %}
+
+)
+{%- endmacro %}

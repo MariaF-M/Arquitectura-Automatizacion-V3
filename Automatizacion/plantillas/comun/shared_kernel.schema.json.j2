@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": {{ ent.clase | tojson }},
+  "description": "Shared Kernel «{{ ent.nombre }}» (V8). Contrato canónico entre contextos en lenguajes distintos; las clases de cada servicio se generan desde aquí.",
+  "type": "object",
+{% set tipos = {"texto": "string", "entero": "integer", "decimal": "number", "fecha": "string", "booleano": "boolean"} %}
+  "properties": {
+    "id": {"type": "string"}{% for at in ent.atributos %},
+    "{{ at.snake }}": {"type": "{{ tipos[at.tipo] }}"{% if at.tipo == "fecha" %}, "format": "date"{% endif %}}{% endfor %}
+
+  },
+  "required": ["id"]
+}

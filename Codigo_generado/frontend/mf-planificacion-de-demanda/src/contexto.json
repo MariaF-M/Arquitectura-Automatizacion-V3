@@ -1,0 +1,153 @@
+{
+  "tipo": "contexto",
+  "nombre": "Planificación de Demanda",
+  "carpeta": "planificacion-de-demanda",
+  "puerto": 8003,
+  "dominio": "D-03",
+  "tituloDominio": "Planificación y predicción de demanda",
+  "clasificacion": "SUPPORTING",
+  "lenguaje": "Python",
+  "arquitectura": "microservicios",
+  "baseDatos": "NoSQL · mongodb",
+  "agregados": [
+    {
+      "nombre": "EstimacionDemanda",
+      "recurso": "estimacion-demanda",
+      "atributos": [
+        {
+          "nombre": "medicamento",
+          "etiqueta": "Medicamento",
+          "tipo": "texto",
+          "obligatorio": true,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "periodo",
+          "etiqueta": "Periodo",
+          "tipo": "texto",
+          "obligatorio": true,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "demanda_programada",
+          "etiqueta": "Demanda programada",
+          "tipo": "entero",
+          "obligatorio": false,
+          "noNegativo": true,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "demanda_no_programada",
+          "etiqueta": "Demanda no programada",
+          "tipo": "entero",
+          "obligatorio": false,
+          "noNegativo": true,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "cantidad_estimada",
+          "etiqueta": "Cantidad estimada",
+          "tipo": "entero",
+          "obligatorio": false,
+          "noNegativo": true,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "estado",
+          "etiqueta": "Estado",
+          "tipo": "texto",
+          "obligatorio": false,
+          "noNegativo": false,
+          "opciones": [
+            "Sugerida",
+            "Ajustada",
+            "Validada"
+          ],
+          "cifrado": false,
+          "inicial": "Sugerida"
+        },
+        {
+          "nombre": "observaciones",
+          "etiqueta": "Observaciones",
+          "tipo": "texto",
+          "obligatorio": false,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": true,
+          "inicial": null
+        }
+      ],
+      "invariantes": [
+        "La estimación considera demanda programada (cirugías, censo) y no programada (histórico de urgencias).",
+        "Toda predicción es una sugerencia que un humano debe validar antes de pasar a abastecimiento."
+      ],
+      "comandos": [
+        {
+          "nombre": "Calcular Demanda",
+          "ruta": "calcular-demanda",
+          "crea": true,
+          "evento": "Demanda Estimada",
+          "restar": null,
+          "estado": null,
+          "requiere": [],
+          "desdeEstados": [],
+          "fechaFutura": []
+        },
+        {
+          "nombre": "Ajustar Predicción",
+          "ruta": "ajustar-prediccion",
+          "crea": false,
+          "evento": "Predicción Ajustada",
+          "restar": null,
+          "estado": "Ajustada",
+          "requiere": [
+            "observaciones"
+          ],
+          "desdeEstados": [],
+          "fechaFutura": []
+        }
+      ]
+    }
+  ],
+  "funciones": [
+    {
+      "nombre": "Predicción de demanda",
+      "ruta": "prediccion-de-demanda"
+    }
+  ],
+  "componentes": [
+    "Gestión de consumo histórico",
+    "Gestión de programación hospitalaria",
+    "Cálculo de necesidad estimada de medicamentos"
+  ],
+  "entidades": [
+    "Medicamento",
+    "Agenda quirúrgica",
+    "Consumo histórico",
+    "Estimación de demanda"
+  ],
+  "relaciones": [
+    {
+      "con": "Inventario",
+      "patron": "Customer / Supplier",
+      "sentido": "consume"
+    },
+    {
+      "con": "Abastecimiento",
+      "patron": "Customer / Supplier",
+      "sentido": "provee"
+    }
+  ]
+}

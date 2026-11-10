@@ -1,0 +1,23 @@
+# Trazabilidad modelo → código
+
+Modelo: `{{ modelo }}` · Generado: {{ fecha }}
+
+**{{ resumen.generados }} de {{ resumen.total }}** elementos de la capa de aplicación de las vistas V5, V6, V8 y V9
+produjeron código ({{ "%.0f" | format(resumen.porcentaje) }} %).
+{% if sistema.advertencias %}
+
+## Avisos del generador
+{% for a in sistema.advertencias %}
+- {{ a }}
+{% endfor %}
+{% endif %}
+{% for vista in filas | groupby("vista") %}
+
+## {{ vista.grouper }}
+
+| Tipo | Elemento del diagrama | Archivos generados |
+|---|---|---|
+{% for f in vista.list %}
+| {{ f.tipo }} | {{ f.nombre }} | {% for a in f.archivos %}`{{ a }}`{{ "<br>" if not loop.last }}{% else %}**sin código** {% endfor %} |
+{% endfor %}
+{% endfor %}

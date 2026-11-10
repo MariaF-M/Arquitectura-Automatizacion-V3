@@ -1,0 +1,151 @@
+package {{ P.persistencia }};
+
+import {{ P.modelo }}.{{ a.clase }};
+import {{ P.puertos }}.Repositorio{{ a.clase }};
+import {{ P.transversal }}.Cifrador;
+
+{% set sql = ctx.base_datos.tipo | upper == "SQL" %}
+{% set cifrados = a.atributos | map(attribute="snake") | select("in", ctx.cifrado | map("snake") | list) | list %}
+{% from "ddl.j2" import tabla %}
+{% if sql %}
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+{% else %}
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
+import org.bson.Document;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+{% endif %}
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Adaptador de persistencia para {{ ctx.base_datos.motor }} ({{ ctx.base_datos.tipo }}). Se activa con PERSISTENCIA=bd.
+ * {{ "Tabla" if sql else "Colección" }} «{{ a.snake }}». Campos cifrados en reposo: {{ cifrados | join(", ") or "ninguno" }}.
+ * Justificación: {{ ctx.base_datos.justificacion | default("") | trim | replace("\n", " ") }}
+ */
+public class Repositorio{{ a.clase }}BaseDatos implements Repositorio{{ a.clase }} {
+    private static final List<String> CAMPOS_CIFRADOS = List.of({% for c in cifrados %}"{{ c }}"{{ ", " if not loop.last }}{% endfor %});
+    private final Cifrador cifrador;
+{% if sql %}
+    private static final List<String> CAMPOS = List.of({% for at in a.atributos %}"{{ at.snake }}"{{ ", " if not loop.last }}{% endfor %});
+    private static final String DDL = """
+{{ tabla(ctx, a) | indent(12, true) }}
+            """;
+    private final String url;
+    private final String usuario;
+    private final String clave;
+
+    public Repositorio{{ a.clase }}BaseDatos(Cifrador cifrador) {
+        this.cifrador = cifrador;
+        // BD_URL en formato JDBC: jdbc:postgresql://host:5432/base
+        this.url = System.getenv().getOrDefault("BD_URL", "jdbc:postgresql://localhost:5432/{{ ctx.snake }}");
+        this.usuario = System.getenv().getOrDefault("BD_USUARIO", "farmacia");
+        this.clave = System.getenv().getOrDefault("BD_CLAVE", "farmacia");
+        try (Connection c = conectar(); Statement s = c.createStatement()) {
+            s.execute(DDL);
+        } catch (SQLException e) {
+            throw new IllegalStateException("No se pudo preparar la tabla {{ a.snake }}: " + e.getMessage(), e);
+        }
+    }
+
+    private Connection conectar() throws SQLException { return DriverManager.getConnection(url, usuario, clave); }
+
+    @Override
+    public void guardar({{ a.clase }} agregado) {
+        Map<String, Object> fila = cifrador.cifrarCampos(agregado.aMapa(), CAMPOS_CIFRADOS);
+        String sql = "INSERT INTO {{ a.snake }} (id, " + String.join(", ", CAMPOS) + ") VALUES (?" + ", ?".repeat(CAMPOS.size()) + ") "
+                + "ON CONFLICT (id) DO UPDATE SET " + String.join(", ", CAMPOS.stream().map(c -> c + " = EXCLUDED." + c).toList());
+        try (Connection c = conectar(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, agregado.getId());
+            int i = 2;
+{% for at in a.atributos %}
+{% if at.tipo == "fecha" and at.snake not in cifrados %}
+            ps.setObject(i++, fila.get("{{ at.snake }}") == null ? null : java.sql.Date.valueOf(String.valueOf(fila.get("{{ at.snake }}"))));
+{% else %}
+            ps.setObject(i++, fila.get("{{ at.snake }}"));
+{% endif %}
+{% endfor %}
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("Error guardando {{ a.clase }}: " + e.getMessage(), e);
+        }
+    }
+
+    private {{ a.clase }} desdeFila(ResultSet rs) throws SQLException {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", rs.getString("id"));
+        for (String campo : CAMPOS) {
+            Object v = rs.getObject(campo);
+            m.put(campo, v instanceof java.sql.Date f ? f.toLocalDate().toString() : v);
+        }
+        return {{ a.clase }}.desdeMapa(cifrador.descifrarCampos(m, CAMPOS_CIFRADOS));
+    }
+
+    @Override
+    public {{ a.clase }} obtener(String id) {
+        try (Connection c = conectar(); PreparedStatement ps = c.prepareStatement("SELECT * FROM {{ a.snake }} WHERE id = ?")) {
+            ps.setString(1, id);
+            try (ResultSet rs = ps.executeQuery()) { return rs.next() ? desdeFila(rs) : null; }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Error leyendo {{ a.clase }}: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<{{ a.clase }}> listar() {
+        List<{{ a.clase }}> r = new ArrayList<>();
+        try (Connection c = conectar(); Statement s = c.createStatement(); ResultSet rs = s.executeQuery("SELECT * FROM {{ a.snake }} ORDER BY id")) {
+            while (rs.next()) r.add(desdeFila(rs));
+        } catch (SQLException e) {
+            throw new IllegalStateException("Error listando {{ a.clase }}: " + e.getMessage(), e);
+        }
+        return r;
+    }
+{% else %}
+    private final MongoCollection<Document> coleccion;
+
+    public Repositorio{{ a.clase }}BaseDatos(Cifrador cifrador) {
+        this.cifrador = cifrador;
+        MongoClientURI uri = new MongoClientURI(System.getenv().getOrDefault("BD_URL", "mongodb://localhost:27017/{{ ctx.snake }}"));
+        this.coleccion = new MongoClient(uri).getDatabase(uri.getDatabase()).getCollection("{{ a.snake }}");
+    }
+
+    @Override
+    public void guardar({{ a.clase }} agregado) {
+        Document doc = new Document(cifrador.cifrarCampos(agregado.aMapa(), CAMPOS_CIFRADOS));
+        doc.put("_id", doc.remove("id"));
+        coleccion.findOneAndReplace(Filters.eq("_id", agregado.getId()), doc, new FindOneAndReplaceOptions().upsert(true));
+    }
+
+    private {{ a.clase }} desdeDocumento(Document d) {
+        Map<String, Object> m = new LinkedHashMap<>(d);
+        m.put("id", m.remove("_id"));
+        return {{ a.clase }}.desdeMapa(cifrador.descifrarCampos(m, CAMPOS_CIFRADOS));
+    }
+
+    @Override
+    public {{ a.clase }} obtener(String id) {
+        Document d = coleccion.find(Filters.eq("_id", id)).first();
+        return d == null ? null : desdeDocumento(d);
+    }
+
+    @Override
+    public List<{{ a.clase }}> listar() {
+        List<{{ a.clase }}> r = new ArrayList<>();
+        for (Document d : coleccion.find()) r.add(desdeDocumento(d));
+        return r;
+    }
+{% endif %}
+}

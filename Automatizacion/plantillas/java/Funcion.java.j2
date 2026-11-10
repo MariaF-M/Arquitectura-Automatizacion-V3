@@ -1,0 +1,10 @@
+package {{ P.servicios }};
+
+import java.util.Map;
+
+/** Application Function «{{ f.nombre }}» (V5). Su lógica de negocio no está en el diagrama: pendiente. */
+public class {{ f.clase }} {
+    public Map<String, Object> ejecutar(Map<String, Object> datos) {
+        throw new CasoDeUsoPendienteException("«{{ f.nombre }}» está modelada pero su lógica está pendiente");
+    }
+}

@@ -1,0 +1,17 @@
+namespace {{ N.puertos }};
+{% for r in ctx.proveedores %}
+
+/// <summary>{{ ctx.nombre }} consume a {{ r.proveedor }} — «{{ r.etiqueta }}» ({{ r.patron }}).</summary>
+public interface IPuerto{{ r.proveedor | pascal }}
+{
+    Task<string> Consultar(string ruta);
+}
+{% endfor %}
+{% if ctx.integraciones %}
+
+/// <summary>Salida hacia sistemas externos, siempre a través de la ACL-01 (V9).</summary>
+public interface IPuertoAnticorrupcion
+{
+    Task Enviar(string codigoIntegracion, Dictionary<string, object?> datos);
+}
+{% endif %}

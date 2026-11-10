@@ -1,0 +1,72 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Planificaci\u00f3n de Demanda",
+    "version": "1.0.0",
+    "description": "Contrato generado desde el modelo ArchiMate. Contexto D-03 SUPPORTING."
+  },
+  "servers": [{"url": "http://localhost:8003"}],
+  "paths": {
+    "/arquitectura": {
+      "get": {
+        "summary": "componentes, funciones y cach\u00e9",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/estimacion-demanda": {
+      "get": {
+        "summary": "lista de EstimacionDemanda",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/estimacion-demanda/calcular-demanda": {
+      "post": {
+        "summary": "comando \u00abCalcular Demanda\u00bb \u2192 evento \u00abDemanda Estimada\u00bb",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "EstimacionDemanda"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/estimacion-demanda/{id}": {
+      "get": {
+        "summary": "un EstimacionDemanda",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/estimacion-demanda/{id}/ajustar-prediccion": {
+      "post": {
+        "summary": "comando \u00abAjustar Predicci\u00f3n\u00bb \u2192 evento \u00abPredicci\u00f3n Ajustada\u00bb",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "EstimacionDemanda"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/estimacion-demanda/{id}/deshacer": {
+      "post": {
+        "summary": "deshace el \u00faltimo comando (memento)",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/eventos": {
+      "get": {
+        "summary": "eventos de dominio publicados",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/funciones/prediccion-de-demanda": {
+      "post": {
+        "summary": "funci\u00f3n \u00abPredicci\u00f3n de demanda\u00bb (pendiente, 501)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/salud": {
+      "get": {
+        "summary": "estado del servicio",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    }
+  }
+}

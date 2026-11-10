@@ -1,0 +1,12 @@
+namespace {{ N.modelo }};
+{% for e in ctx.entidades if not e.compartida %}
+
+/// <summary>Entidad «{{ e.nombre }}» del contexto {{ ctx.nombre }} (Data Object en V8).</summary>
+public class {{ e.clase }}
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+{% for at in e.atributos %}
+    public {{ tipo_cs(at.tipo) }}? {{ at.pascal }} { get; set; }
+{% endfor %}
+}
+{% endfor %}

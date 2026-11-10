@@ -1,0 +1,11 @@
+namespace {{ N.contratos }};
+
+// Lenguaje publicado de {{ ctx.nombre }}: eventos de integración versionados (V1).
+// Solo tipos primitivos y sin dependencias del dominio, para que otro contexto los use sin arrastrarlo.
+{% for a in ctx.agregados %}
+{% for e in a.eventos %}
+
+/// <summary>Evento de integración «{{ e.nombre }}», versión 1.</summary>
+public sealed record {{ e.clase }}V1(Guid EventoId, DateTimeOffset OcurrioEn, string {{ a.clase }}Id{% for at in a.atributos %}, {{ {"texto": "string", "entero": "int", "decimal": "double", "fecha": "string", "booleano": "bool"}[at.tipo] }}? {{ at.pascal }}{% endfor %});
+{% endfor %}
+{% endfor %}

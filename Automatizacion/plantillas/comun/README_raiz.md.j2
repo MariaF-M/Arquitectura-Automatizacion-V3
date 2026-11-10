@@ -1,0 +1,22 @@
+# Código generado — {{ sistema.proyecto }}
+
+> Todo lo que hay en esta carpeta lo produjo `Automatizacion/generar.py` a partir de
+> `Modelo_archimate/{{ modelo }}` + `Automatizacion/spec.yaml`. Para cambiarlo, cambie el
+> modelo o el spec y regenere.
+
+| Servicio | Dominio | Clasif. | Lenguaje | Arquitectura | Puerto | BD |
+|---|---|---|---|---|---|---|
+{% for c in sistema.contextos %}
+| [{{ c.nombre }}]({{ c.carpeta }}/README.md) | {{ c.dominio }} | {{ c.clasificacion }} | {{ c.lenguaje }} | {{ c.arquitectura }} | {{ c.puerto }} | {{ c.base_datos.motor }} |
+{% endfor %}
+{% if sistema.acl %}
+| [ACL-01 Anticorrupción]({{ sistema.acl.carpeta }}/README.md) | — | — | {{ sistema.acl.lenguaje }} | {{ sistema.acl.arquitectura }} | {{ sistema.acl.puerto }} | — |
+{% endif %}
+
+- `frontend/`: shell + microfrontends (React + TypeScript + Module Federation). Ver `frontend/README.md`.
+- `gateway/nginx.conf`: una sola URL para todo el backend (`http://localhost:8080/api/<contexto>`).
+- `bd/postgres/`: creación de una base de datos por contexto SQL.
+- `contratos/`: contrato OpenAPI de cada servicio y el Shared Kernel en JSON Schema.
+- `docker-compose.yml`: despliegue de todo (`docker compose up --build`, luego abrir http://localhost:5100).
+- `TRAZABILIDAD.md`: cada elemento del diagrama y los archivos que generó.
+- `modelo_intermedio.json`: lo que el generador entendió del modelo.

@@ -1,0 +1,174 @@
+{
+  "tipo": "contexto",
+  "nombre": "Inventario",
+  "carpeta": "inventario",
+  "puerto": 8001,
+  "dominio": "D-01",
+  "tituloDominio": "Gestión de inventario farmacéutico",
+  "clasificacion": "CORE",
+  "lenguaje": "Python",
+  "arquitectura": "hexagonal",
+  "baseDatos": "SQL · postgresql",
+  "agregados": [
+    {
+      "nombre": "LoteMedicamento",
+      "recurso": "lote-medicamento",
+      "atributos": [
+        {
+          "nombre": "codigo",
+          "etiqueta": "Codigo",
+          "tipo": "texto",
+          "obligatorio": true,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "descripcion",
+          "etiqueta": "Descripcion",
+          "tipo": "texto",
+          "obligatorio": true,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "proveedor",
+          "etiqueta": "Proveedor",
+          "tipo": "texto",
+          "obligatorio": true,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": true,
+          "inicial": null
+        },
+        {
+          "nombre": "fecha_vencimiento",
+          "etiqueta": "Fecha vencimiento",
+          "tipo": "fecha",
+          "obligatorio": true,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "registro_sanitario",
+          "etiqueta": "Registro sanitario",
+          "tipo": "texto",
+          "obligatorio": true,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "cantidad",
+          "etiqueta": "Cantidad",
+          "tipo": "entero",
+          "obligatorio": false,
+          "noNegativo": true,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "estado",
+          "etiqueta": "Estado",
+          "tipo": "texto",
+          "obligatorio": false,
+          "noNegativo": false,
+          "opciones": [
+            "Disponible",
+            "Cuarentena",
+            "Vencido",
+            "Bloqueado"
+          ],
+          "cifrado": false,
+          "inicial": "Disponible"
+        }
+      ],
+      "invariantes": [
+        "La cantidad de existencias nunca puede ser negativa.",
+        "Todo lote tiene Código, Descripción, Proveedor, Fecha de vencimiento y Registro sanitario desde la recepción técnica.",
+        "Un lote solo puede estar Disponible, en Cuarentena, Vencido o Bloqueado.",
+        "No se recibe un lote vencido o que vence hoy (la fecha de vencimiento debe ser posterior a la recepción)."
+      ],
+      "comandos": [
+        {
+          "nombre": "Registrar Ingreso",
+          "ruta": "registrar-ingreso",
+          "crea": true,
+          "evento": "Lote Ingresado",
+          "restar": null,
+          "estado": null,
+          "requiere": [],
+          "desdeEstados": [],
+          "fechaFutura": [
+            "fecha_vencimiento"
+          ]
+        },
+        {
+          "nombre": "Descontar Existencias",
+          "ruta": "descontar-existencias",
+          "crea": false,
+          "evento": "Existencias Descontadas",
+          "restar": "cantidad",
+          "estado": null,
+          "requiere": [],
+          "desdeEstados": [
+            "Disponible"
+          ],
+          "fechaFutura": []
+        }
+      ]
+    }
+  ],
+  "funciones": [
+    {
+      "nombre": "Control de existencias por lote",
+      "ruta": "control-de-existencias-por-lote"
+    },
+    {
+      "nombre": "Gestión del estado del lote",
+      "ruta": "gestion-del-estado-del-lote"
+    },
+    {
+      "nombre": "Registros de movimientos del inventario",
+      "ruta": "registros-de-movimientos-del-inventario"
+    }
+  ],
+  "componentes": [
+    "Gestión de medicamentos",
+    "Gestión de lotes de medicamentos"
+  ],
+  "entidades": [
+    "Medicamento",
+    "Lote",
+    "Movimiento de inventario"
+  ],
+  "relaciones": [
+    {
+      "con": "Seguridad y Auditoría",
+      "patron": "Open Host Service",
+      "sentido": "consume"
+    },
+    {
+      "con": "Abastecimiento",
+      "patron": "Customer / Supplier",
+      "sentido": "provee"
+    },
+    {
+      "con": "Planificación de Demanda",
+      "patron": "Customer / Supplier",
+      "sentido": "provee"
+    },
+    {
+      "con": "Vencimientos",
+      "patron": "Shared Kernel (núcleo compartido: Lote)",
+      "sentido": "provee"
+    }
+  ]
+}

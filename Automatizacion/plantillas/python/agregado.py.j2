@@ -1,0 +1,172 @@
+"""Agregado raíz {{ a.nombre }} del contexto {{ ctx.nombre }} ({{ ctx.dominio }}).
+
+Generado desde el modelo ArchiMate:
+  - Data Object «{{ a.nombre }}» (V6)  -> esta clase
+{% for c in a.comandos %}
+  - Application Process «{{ c.nombre }}» -> método {{ c.metodo_snake }}(){% if c.evento %} que emite «{{ c.evento.nombre }}»{% endif %}
+
+{% endfor %}
+
+Invariantes que protege:
+{% for i in a.invariantes %}
+  * {{ i }}
+{% else %}
+  (no se definieron invariantes en spec.yaml)
+{% endfor %}
+"""
+from __future__ import annotations
+
+import uuid
+from dataclasses import dataclass
+from datetime import date
+
+from {{ L.modelo }}.errores import ReglaNegocioError
+from {{ L.eventos }}.eventos import EventoDominio{% for e in a.eventos %}, {{ e.clase }}{% endfor %}
+
+
+
+CAMPOS = {
+{% for at in a.atributos %}
+    "{{ at.snake }}": {{ tipo_py(at.tipo) }},
+{% endfor %}
+}
+VALORES_INICIALES = {{ a.valores_iniciales | tojson }}
+OBLIGATORIOS = ({% for x in a.obligatorios %}"{{ x | snake }}", {% endfor %})
+NO_NEGATIVOS = ({% for x in a.no_negativos %}"{{ x | snake }}", {% endfor %})
+VALORES_PERMITIDOS = {
+{% for campo, valores in a.valores_permitidos.items() %}
+    "{{ campo | snake }}": {{ valores | tojson }},
+{% endfor %}
+}
+
+
+def _convertir(tipo, valor):
+    if valor is None or isinstance(valor, tipo):
+        return valor
+    if tipo is date:
+        return date.fromisoformat(str(valor))
+    return tipo(valor)
+
+
+@dataclass(frozen=True)
+class {{ a.clase }}Memento:
+    """Memento (GoF): foto inmutable del estado de {{ a.clase }}. Solo el agregado sabe crearla y leerla."""
+    id: str
+{% for at in a.atributos %}
+    {{ at.snake }}: {{ tipo_py(at.tipo) }} | None
+{% endfor %}
+
+
+class {{ a.clase }}:
+    def __init__(self, id: str | None = None, **datos):
+        self.id = id or str(uuid.uuid4())
+{% for at in a.atributos %}
+        self.{{ at.snake }}: {{ tipo_py(at.tipo) }} | None = None
+{% endfor %}
+        self._eventos: list[EventoDominio] = []
+        self._aplicar({**VALORES_INICIALES, **datos})
+
+    # ----------------------------------------------------------------- comandos (V6)
+{% for c in a.comandos %}
+{% if c.crea %}
+    @classmethod
+    def {{ c.metodo_snake }}(cls, datos: dict) -> "{{ a.clase }}":
+        """Comando «{{ c.nombre }}»: crea el agregado."""
+        agregado = cls(**{k: v for k, v in datos.items() if k != "id"})
+{% for f in c.fecha_futura %}
+        if agregado.{{ f | snake }} is not None and agregado.{{ f | snake }} <= date.today():
+            raise ReglaNegocioError("«{{ c.nombre }}»: '{{ f | snake }}' debe ser posterior a hoy")
+{% endfor %}
+{% if c.nuevo_estado %}
+        agregado.estado = "{{ c.nuevo_estado }}"
+{% endif %}
+        agregado.validar()
+{% if c.evento %}
+        agregado._registrar({{ c.evento.clase }}(agregado.id, agregado.a_dict()))
+{% endif %}
+        return agregado
+
+{% else %}
+    def {{ c.metodo_snake }}(self, datos: dict) -> None:
+        """Comando «{{ c.nombre }}»."""
+{% if c.desde_estados %}
+        if self.estado not in {{ c.desde_estados | tojson }}:
+            raise ReglaNegocioError(f"«{{ c.nombre }}» no se permite con estado '{self.estado}'")
+{% endif %}
+{% for r in c.requiere %}
+        if datos.get("{{ r | snake }}") in (None, ""):
+            raise ReglaNegocioError("«{{ c.nombre }}» requiere '{{ r | snake }}'")
+{% endfor %}
+{% if c.restar %}
+        if "{{ c.restar | snake }}" not in datos:
+            raise ReglaNegocioError("«{{ c.nombre }}» requiere '{{ c.restar | snake }}'")
+        self.{{ c.restar | snake }} = (self.{{ c.restar | snake }} or 0) - _convertir(CAMPOS["{{ c.restar | snake }}"], datos["{{ c.restar | snake }}"])
+{% else %}
+        self._aplicar({k: v for k, v in datos.items() if k != "id"})
+{% endif %}
+{% for f in c.fecha_futura %}
+        if self.{{ f | snake }} is not None and self.{{ f | snake }} <= date.today():
+            raise ReglaNegocioError("«{{ c.nombre }}»: '{{ f | snake }}' debe ser posterior a hoy")
+{% endfor %}
+{% if c.nuevo_estado %}
+        self.estado = "{{ c.nuevo_estado }}"
+{% endif %}
+        self.validar()
+{% if c.evento %}
+        self._registrar({{ c.evento.clase }}(self.id, self.a_dict()))
+{% endif %}
+
+{% endif %}
+{% endfor %}
+    # ----------------------------------------------------------------- invariantes
+    def validar(self) -> None:
+        for campo in OBLIGATORIOS:
+            if getattr(self, campo) in (None, ""):
+                raise ReglaNegocioError(f"El campo '{campo}' es obligatorio en {{ a.clase }}")
+        for campo in NO_NEGATIVOS:
+            valor = getattr(self, campo)
+            if valor is not None and valor < 0:
+                raise ReglaNegocioError(f"'{campo}' no puede ser negativo (valor: {valor})")
+        for campo, permitidos in VALORES_PERMITIDOS.items():
+            valor = getattr(self, campo)
+            if valor is not None and valor not in permitidos:
+                raise ReglaNegocioError(f"'{campo}' = '{valor}' no es válido. Permitidos: {permitidos}")
+
+    # ----------------------------------------------------------------- memento
+    def crear_memento(self) -> {{ a.clase }}Memento:
+        return {{ a.clase }}Memento(self.id{% for at in a.atributos %}, self.{{ at.snake }}{% endfor %})
+
+    def restaurar(self, memento: {{ a.clase }}Memento) -> None:
+{% for at in a.atributos %}
+        self.{{ at.snake }} = memento.{{ at.snake }}
+{% endfor %}
+{% if not a.atributos %}
+        pass
+{% endif %}
+
+    # ----------------------------------------------------------------- utilidades
+    def _aplicar(self, datos: dict) -> None:
+        for campo, valor in datos.items():
+            if campo in CAMPOS:
+                try:
+                    setattr(self, campo, _convertir(CAMPOS[campo], valor))
+                except (TypeError, ValueError) as error:
+                    raise ReglaNegocioError(f"Valor inválido para '{campo}': {valor!r}") from error
+
+    def _registrar(self, evento: EventoDominio) -> None:
+        self._eventos.append(evento)
+
+    def extraer_eventos(self) -> list[EventoDominio]:
+        eventos, self._eventos = self._eventos, []
+        return eventos
+
+    def a_dict(self) -> dict:
+        datos = {"id": self.id}
+        for campo in CAMPOS:
+            valor = getattr(self, campo)
+            datos[campo] = valor.isoformat() if isinstance(valor, date) else valor
+        return datos
+
+    @classmethod
+    def desde_dict(cls, datos: dict) -> "{{ a.clase }}":
+        return cls(**datos)

@@ -1,0 +1,34 @@
+"""Servicios de aplicación de {{ ctx.nombre }}, uno por Application Component de V5 ({{ ctx.dominio }}),
+y casos de uso, uno por Application Function de V5.
+
+Las funciones quedan como punto de extensión: su lógica de negocio no está en el diagrama.
+"""
+from __future__ import annotations
+
+
+class CasoDeUsoPendiente(NotImplementedError):
+    """La función existe en el diagrama pero su lógica aún no se implementa."""
+{% for x in ctx.funciones %}
+
+
+class {{ x.clase }}:
+    """Application Function «{{ x.nombre }}» (V5)."""
+
+    def ejecutar(self, datos: dict) -> dict:
+        raise CasoDeUsoPendiente("«{{ x.nombre }}» está modelada pero su lógica está pendiente")
+{% endfor %}
+{% for c in ctx.componentes %}
+
+
+class {{ c.clase }}Servicio:
+    """Application Component «{{ c.nombre }}» (V5)."""
+    nombre = "{{ c.nombre }}"
+{% endfor %}
+
+
+COMPONENTES = [{% for c in ctx.componentes %}{{ c.clase }}Servicio{{ ", " if not loop.last }}{% endfor %}]
+FUNCIONES = {
+{% for x in ctx.funciones %}
+    "{{ x.ruta }}": {{ x.clase }},
+{% endfor %}
+}

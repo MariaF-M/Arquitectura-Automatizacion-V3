@@ -1,0 +1,54 @@
+{
+  "tipo": "contexto",
+  "nombre": "Seguridad y Auditoría",
+  "carpeta": "seguridad-y-auditoria",
+  "puerto": 8005,
+  "dominio": "D-05",
+  "tituloDominio": "Seguridad, perfiles, auditoría y notificaciones",
+  "clasificacion": "GENERIC",
+  "lenguaje": "Python",
+  "arquitectura": "microservicios",
+  "baseDatos": "SQL · postgresql",
+  "agregados": [],
+  "funciones": [
+    {
+      "nombre": "Autenticación y autorización por perfil",
+      "ruta": "autenticacion-y-autorizacion-por-perfil"
+    },
+    {
+      "nombre": "Registro de eventos de auditoría",
+      "ruta": "registro-de-eventos-de-auditoria"
+    },
+    {
+      "nombre": "Envío de alertas y notificaciones",
+      "ruta": "envio-de-alertas-y-notificaciones"
+    }
+  ],
+  "componentes": [
+    "Gestión de identidades, perfiles y permisos",
+    "Registro de auditoría y trazabilidad de acciones",
+    "Servicio de notificaciones"
+  ],
+  "entidades": [
+    "Usuario",
+    "Perfil / rol",
+    "Registro de auditoría"
+  ],
+  "relaciones": [
+    {
+      "con": "Abastecimiento",
+      "patron": "Open Host Service",
+      "sentido": "provee"
+    },
+    {
+      "con": "Inventario",
+      "patron": "Open Host Service",
+      "sentido": "provee"
+    },
+    {
+      "con": "Vencimientos",
+      "patron": "Open Host Service",
+      "sentido": "provee"
+    }
+  ]
+}

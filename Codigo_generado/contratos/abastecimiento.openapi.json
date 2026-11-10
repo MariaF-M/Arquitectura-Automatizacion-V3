@@ -1,0 +1,79 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Abastecimiento",
+    "version": "1.0.0",
+    "description": "Contrato generado desde el modelo ArchiMate. Contexto D-04 SUPPORTING."
+  },
+  "servers": [{"url": "http://localhost:8004"}],
+  "paths": {
+    "/arquitectura": {
+      "get": {
+        "summary": "componentes, funciones y cach\u00e9",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/eventos": {
+      "get": {
+        "summary": "eventos de dominio publicados",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/funciones/calculo-de-cantidad-requerida": {
+      "post": {
+        "summary": "funci\u00f3n \u00abC\u00e1lculo de cantidad requerida\u00bb (pendiente, 501)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/funciones/seguimiento-del-abastecimiento": {
+      "post": {
+        "summary": "funci\u00f3n \u00abSeguimiento del abastecimiento\u00bb (pendiente, 501)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/requerimiento-compra": {
+      "get": {
+        "summary": "lista de RequerimientoCompra",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/requerimiento-compra/generar-requisicion": {
+      "post": {
+        "summary": "comando \u00abGenerar Requisici\u00f3n\u00bb \u2192 evento \u00abRequisici\u00f3n Sugerida\u00bb",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "RequerimientoCompra"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/requerimiento-compra/{id}": {
+      "get": {
+        "summary": "un RequerimientoCompra",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/requerimiento-compra/{id}/autorizar-requisicion": {
+      "post": {
+        "summary": "comando \u00abAutorizar Requisici\u00f3n\u00bb \u2192 evento \u00abRequerimiento Autorizado\u00bb",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "RequerimientoCompra"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/requerimiento-compra/{id}/deshacer": {
+      "post": {
+        "summary": "deshace el \u00faltimo comando (memento)",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/salud": {
+      "get": {
+        "summary": "estado del servicio",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    }
+  }
+}

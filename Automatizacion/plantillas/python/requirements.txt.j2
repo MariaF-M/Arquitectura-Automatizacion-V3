@@ -1,0 +1,6 @@
+# {{ ctx.nombre }}: driver de {{ ctx.base_datos.motor }} (solo se usa con PERSISTENCIA=bd).
+{% if ctx.base_datos.tipo | upper == "SQL" %}
+psycopg[binary]>=3.1
+{% else %}
+pymongo>=4.6
+{% endif %}

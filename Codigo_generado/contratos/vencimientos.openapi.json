@@ -1,0 +1,86 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Vencimientos",
+    "version": "1.0.0",
+    "description": "Contrato generado desde el modelo ArchiMate. Contexto D-02 CORE."
+  },
+  "servers": [{"url": "http://localhost:8002"}],
+  "paths": {
+    "/alerta-vencimiento": {
+      "get": {
+        "summary": "lista de AlertaVencimiento",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/alerta-vencimiento/evaluar-prioridad-fefo": {
+      "post": {
+        "summary": "comando \u00abEvaluar Prioridad FEFO\u00bb \u2192 evento \u00abPrioridad FEFO Calculada\u00bb",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "AlertaVencimiento"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/alerta-vencimiento/{id}": {
+      "get": {
+        "summary": "un AlertaVencimiento",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/alerta-vencimiento/{id}/bloquear-lote-vencido": {
+      "post": {
+        "summary": "comando \u00abBloquear Lote Vencido\u00bb \u2192 evento \u00abLote Bloqueado\u00bb",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "AlertaVencimiento"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/alerta-vencimiento/{id}/deshacer": {
+      "post": {
+        "summary": "deshace el \u00faltimo comando (memento)",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/arquitectura": {
+      "get": {
+        "summary": "componentes, funciones y cach\u00e9",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/eventos": {
+      "get": {
+        "summary": "eventos de dominio publicados",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/funciones/notificacion-de-lotes-criticos": {
+      "post": {
+        "summary": "funci\u00f3n \u00abNotificaci\u00f3n de lotes cr\u00edticos\u00bb (pendiente, 501)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/funciones/prioridad-de-uso-de-lotes-fefo": {
+      "post": {
+        "summary": "funci\u00f3n \u00abPrioridad de uso de lotes (FEFO)\u00bb (pendiente, 501)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/funciones/validacion-de-restricciones-de-uso": {
+      "post": {
+        "summary": "funci\u00f3n \u00abValidaci\u00f3n de restricciones de uso\u00bb (pendiente, 501)",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": "datos"}}}},
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    },
+    "/salud": {
+      "get": {
+        "summary": "estado del servicio",
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }
+    }
+  }
+}

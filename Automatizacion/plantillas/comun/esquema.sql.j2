@@ -1,0 +1,12 @@
+-- Esquema {{ ctx.base_datos.motor }} del contexto {{ ctx.nombre }} ({{ ctx.dominio }}).
+-- Generado desde los agregados de V6 + atributos e invariantes de spec.yaml. Una base de datos por contexto.
+-- El adaptador de persistencia ejecuta este mismo CREATE TABLE al arrancar, así que este archivo es de referencia.
+{% from "ddl.j2" import tabla %}
+{% for a in ctx.agregados %}
+
+-- Agregado raíz «{{ a.nombre }}»
+{{ tabla(ctx, a) }};
+{% for at in a.atributos if at.snake in (ctx.cifrado | map("snake") | list) %}
+COMMENT ON COLUMN {{ a.snake }}.{{ at.snake }} IS 'Cifrado en reposo por la aplicación';
+{% endfor %}
+{% endfor %}

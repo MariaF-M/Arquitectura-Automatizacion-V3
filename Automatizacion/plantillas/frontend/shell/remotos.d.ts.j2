@@ -1,0 +1,7 @@
+// Tipos de los módulos remotos (Module Federation los resuelve en tiempo de ejecución).
+{% for r in fe.remotos %}
+declare module '{{ r.federado }}/App' {
+  const App: import('react').ComponentType;
+  export default App;
+}
+{% endfor %}

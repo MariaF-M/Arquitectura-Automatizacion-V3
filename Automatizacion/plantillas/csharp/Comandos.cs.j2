@@ -1,0 +1,59 @@
+using {{ N.memento }};
+using {{ N.modelo }};
+using {{ N.puertos }};
+using {{ N.bus }};
+
+namespace {{ N.comandos }};
+{% for a in ctx.agregados %}
+{% for c in a.comandos %}
+
+/// <summary>Comando «{{ c.nombre }}» (Application Process en V6).</summary>
+public sealed record {{ c.clase }}Comando({% if not c.crea %}string Id, {% endif %}Dictionary<string, object?> Datos);
+{% endfor %}
+
+/// <summary>
+/// Manejador de comandos de {{ a.nombre }}: toma memento, ejecuta, valida invariantes;
+/// si falla restaura el memento; si no, guarda y publica eventos.
+/// </summary>
+public class Manejador{{ a.clase }}(IRepositorio{{ a.clase }} repo, BusEventos bus, Caretaker<{{ a.clase }}Memento> caretaker)
+{
+    private {{ a.clase }} Cargar(string id) => repo.Obtener(id) ?? throw new NoEncontradoException($"{{ a.clase }} {id} no existe");
+
+    private Dictionary<string, object?> Confirmar({{ a.clase }} a)
+    {
+        repo.Guardar(a);
+        foreach (var e in a.ExtraerEventos()) bus.Publicar(e);
+        return a.AMapa();
+    }
+{% for c in a.comandos %}
+
+    public Dictionary<string, object?> Manejar({{ c.clase }}Comando comando)
+    {
+{% if c.crea %}
+        return Confirmar({{ a.clase }}.{{ c.clase }}(comando.Datos));
+{% else %}
+        var a = Cargar(comando.Id);
+        var memento = a.CrearMemento();
+        try { a.{{ c.clase }}(comando.Datos); }
+        catch (ReglaNegocioException) { a.Restaurar(memento); throw; }
+        caretaker.Guardar(a.Id, memento);
+        return Confirmar(a);
+{% endif %}
+    }
+{% endfor %}
+
+    /// <summary>Deshace el último comando (patrón Memento).</summary>
+    public Dictionary<string, object?> Deshacer(string id)
+    {
+        var a = Cargar(id);
+        var m = caretaker.Ultimo(id) ?? throw new ReglaNegocioException("No hay cambios para deshacer");
+        a.Restaurar(m);
+        repo.Guardar(a);
+        return a.AMapa();
+    }
+
+    public Dictionary<string, object?> Obtener(string id) => Cargar(id).AMapa();
+
+    public List<Dictionary<string, object?>> Listar() => repo.Listar().Select(a => a.AMapa()).ToList();
+}
+{% endfor %}

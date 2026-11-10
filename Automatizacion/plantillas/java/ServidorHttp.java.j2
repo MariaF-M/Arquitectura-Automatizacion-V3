@@ -1,0 +1,135 @@
+package {{ P.api }};
+
+{% for a in ctx.agregados %}
+import {{ P.comandos }}.Manejador{{ a.clase }};
+{% for c in a.comandos %}
+import {{ P.comandos }}.{{ c.clase }};
+{% endfor %}
+{% endfor %}
+import {{ P.modelo }}.NoEncontradoException;
+import {{ P.modelo }}.ReglaNegocioException;
+import {{ P.servicios }}.CasoDeUsoPendienteException;
+{% for f in ctx.funciones %}
+import {{ P.servicios }}.{{ f.clase }};
+{% endfor %}
+import {{ P.bus }}.BusEventos;
+import {{ P.transversal }}.Json;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * API HTTP de {{ ctx.nombre }} (adaptador de entrada). Rutas generadas desde el modelo:
+{% for a in ctx.agregados %}
+{% for c in a.comandos %}
+ * <br>POST /{{ a.recurso }}/{% if not c.crea %}{id}/{% endif %}{{ c.ruta }}  ← «{{ c.nombre }}»
+{% endfor %}
+{% endfor %}
+ */
+public class ServidorHttp {
+    private record Ruta(String metodo, Pattern patron, Function<Map<String, Object>, Object> accion) { }
+
+    private final List<Ruta> rutas = new ArrayList<>();
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> cuerpo(Map<String, Object> d) { return (Map<String, Object>) d.get("cuerpo"); }
+
+    private static String id(Map<String, Object> d) { return (String) d.get("id"); }
+
+    public ServidorHttp(BusEventos bus, Map<String, Object> manejadores, Supplier<Map<String, Object>> arquitectura) {
+        ruta("GET", "/salud", d -> Map.of("contexto", "{{ ctx.nombre }}", "estado", "ok"));
+        ruta("GET", "/eventos", d -> bus.historial());
+        ruta("GET", "/arquitectura", d -> arquitectura.get());
+{% for f in ctx.funciones %}
+        ruta("POST", "/funciones/{{ f.ruta }}", d -> new {{ f.clase }}().ejecutar(cuerpo(d)));
+{% endfor %}
+{% for a in ctx.agregados %}
+
+        Manejador{{ a.clase }} m{{ a.clase }} = (Manejador{{ a.clase }}) manejadores.get("{{ a.recurso }}");
+        ruta("GET", "/{{ a.recurso }}", d -> m{{ a.clase }}.listar());
+        ruta("GET", "/{{ a.recurso }}/(?<id>[\\w-]+)", d -> m{{ a.clase }}.obtener(id(d)));
+        ruta("POST", "/{{ a.recurso }}/(?<id>[\\w-]+)/deshacer", d -> m{{ a.clase }}.deshacer(id(d)));
+{% for c in a.comandos %}
+{% if c.crea %}
+        ruta("POST", "/{{ a.recurso }}/{{ c.ruta }}", d -> m{{ a.clase }}.manejar(new {{ c.clase }}(cuerpo(d))));
+{% else %}
+        ruta("POST", "/{{ a.recurso }}/(?<id>[\\w-]+)/{{ c.ruta }}", d -> m{{ a.clase }}.manejar(new {{ c.clase }}(id(d), cuerpo(d))));
+{% endif %}
+{% endfor %}
+{% endfor %}
+        // primero las rutas más largas: /recurso/accion no se confunde con /recurso/{id}
+        rutas.sort(Comparator.comparingInt((Ruta r) -> -r.patron().pattern().length()));
+    }
+
+    private void ruta(String metodo, String patron, Function<Map<String, Object>, Object> accion) {
+        rutas.add(new Ruta(metodo, Pattern.compile(patron + "$"), accion));
+    }
+
+    public HttpServer iniciar(int puerto) throws IOException {
+        HttpServer servidor = HttpServer.create(new InetSocketAddress(puerto), 0);
+        servidor.createContext("/", this::atender);
+        servidor.start();
+        return servidor;
+    }
+
+    /** CORS: permite que los microfrontends (otro origen) llamen a esta API. */
+    private static final String ORIGENES_CORS = System.getenv().getOrDefault("CORS_ORIGENES", "*");
+
+    private static void cors(HttpExchange ex) {
+        ex.getResponseHeaders().set("Access-Control-Allow-Origin", ORIGENES_CORS);
+        ex.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        ex.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    }
+
+    private void atender(HttpExchange ex) throws IOException {
+        String ruta = ex.getRequestURI().getPath().replaceAll("/+$", "");
+        String metodo = ex.getRequestMethod();
+        cors(ex);
+        if (metodo.equals("OPTIONS")) {
+            ex.sendResponseHeaders(204, -1);
+            ex.close();
+            return;
+        }
+        try {
+            for (Ruta r : rutas) {
+                Matcher m = r.patron().matcher(ruta);
+                if (!r.metodo().equals(metodo) || !m.matches()) continue;
+                Map<String, Object> d = new LinkedHashMap<>();
+                if (r.patron().pattern().contains("(?<id>")) d.put("id", m.group("id"));
+                d.put("cuerpo", Json.leerObjeto(new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8)));
+                responder(ex, metodo.equals("POST") ? 201 : 200, r.accion().apply(d));
+                return;
+            }
+            responder(ex, 404, Map.of("error", "Ruta no encontrada: " + metodo + " " + ruta));
+        } catch (ReglaNegocioException e) {
+            responder(ex, 422, Map.of("error", e.getMessage()));
+        } catch (NoEncontradoException e) {
+            responder(ex, 404, Map.of("error", e.getMessage()));
+        } catch (CasoDeUsoPendienteException e) {
+            responder(ex, 501, Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            responder(ex, 400, Map.of("error", e.getMessage()));
+        }
+    }
+
+    private static void responder(HttpExchange ex, int codigo, Object cuerpo) throws IOException {
+        byte[] datos = Json.escribir(cuerpo).getBytes(StandardCharsets.UTF_8);
+        ex.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        ex.sendResponseHeaders(codigo, datos.length);
+        ex.getResponseBody().write(datos);
+        ex.close();
+    }
+}

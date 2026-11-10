@@ -1,0 +1,20 @@
+// Catálogo de microfrontends que compone el shell. Generado desde V5/V8/V9 del modelo ArchiMate.
+import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
+
+export interface Remoto {
+  id: string;
+  nombre: string;
+  dominio: string;
+  clasificacion: string;
+  puerto: number;
+  Componente: LazyExoticComponent<ComponentType>;
+}
+
+export const REMOTOS: Remoto[] = [
+{% for r in fe.remotos %}
+  {
+    id: '{{ r.federado }}', nombre: '{{ r.nombre }}', dominio: '{{ r.dominio }}', clasificacion: '{{ r.clasificacion }}', puerto: {{ r.puerto }},
+    Componente: lazy(() => import('{{ r.federado }}/App')),
+  },
+{% endfor %}
+];

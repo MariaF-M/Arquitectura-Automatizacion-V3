@@ -1,0 +1,44 @@
+package co.edu.farmacia.anticorrupcion.infraestructura.adaptadores;
+
+import co.edu.farmacia.anticorrupcion.infraestructura.transversal.Json;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.Map;
+
+/** Cliente HTTP genérico (java.net.http). Devuelve el cuerpo y lanza excepción si la respuesta no es 2xx. */
+public class ClienteHttp {
+    private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+
+    public Object post(String url, Map<String, Object> datos) {
+        try {
+            HttpResponse<String> r = http.send(HttpRequest.newBuilder(URI.create(url))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(Json.escribir(datos))).build(),
+                    HttpResponse.BodyHandlers.ofString());
+            Object cuerpo = Json.leer(r.body());
+            if (r.statusCode() >= 300) throw new ErrorDestinoException(r.statusCode(), cuerpo);
+            return cuerpo;
+        } catch (ErrorDestinoException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ErrorDestinoException(502, Map.of("error", "No se pudo llamar a " + url + ": " + e.getMessage()));
+        }
+    }
+
+    /** El servicio destino respondió con error (se devuelve tal cual al que llamó a la ACL). */
+    public static class ErrorDestinoException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+        public final int codigo;
+        public final transient Object cuerpo;
+
+        public ErrorDestinoException(int codigo, Object cuerpo) {
+            super("destino respondió " + codigo);
+            this.codigo = codigo;
+            this.cuerpo = cuerpo;
+        }
+    }
+}

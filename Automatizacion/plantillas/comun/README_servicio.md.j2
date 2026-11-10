@@ -1,0 +1,83 @@
+# {{ ctx.nombre }}
+
+> Generado automáticamente desde el modelo ArchiMate. **No editar a mano lo que se pueda regenerar**: cambie el modelo o `spec.yaml` y vuelva a ejecutar el generador.
+
+| | |
+|---|---|
+| Dominio (V5) | {{ ctx.dominio }} — {{ ctx.titulo_dominio }} |
+| Clasificación | {{ ctx.clasificacion }} |
+| Lenguaje | {{ {"python": "Python 3.12", "java": "Java 17", "csharp": "C# / .NET 8"}[ctx.lenguaje] }} |
+| Arquitectura | {{ ctx.arquitectura }} |
+| Puerto | {{ ctx.puerto }} |
+| Base de datos | {{ ctx.base_datos.tipo }} — {{ ctx.base_datos.motor }} |
+| Caché | TTL {{ ctx.cache.ttl_segundos | default(30) }} s |
+| Campos cifrados | {{ ctx.cifrado | join(", ") or "ninguno" }} |
+
+**¿Por qué {{ ctx.base_datos.tipo }}?** {{ ctx.base_datos.justificacion | default("") | trim }}
+
+## Agregados (V6)
+{% for a in ctx.agregados %}
+
+### {{ a.nombre }}
+Atributos: {% for at in a.atributos %}`{{ at.snake }}` ({{ at.tipo }}){{ ", " if not loop.last }}{% endfor %}
+
+
+| Comando | Evento que emite | Regla |
+|---|---|---|
+{% for c in a.comandos %}
+| {{ c.nombre }} | {{ c.evento.nombre if c.evento else "—" }} | {% if c.crea %}crea el agregado{% endif %}{% if c.restar %}resta `{{ c.restar }}`{% endif %}{% if c.nuevo_estado %} estado → {{ c.nuevo_estado }}{% endif %}{% if c.desde_estados %}; solo desde {{ c.desde_estados | join("/") }}{% endif %}{% if c.requiere %}; requiere {{ c.requiere | join(", ") }}{% endif %} |
+{% endfor %}
+
+Invariantes:
+{% for i in a.invariantes %}
+- {{ i }}
+{% endfor %}
+{% else %}
+
+Este dominio no tiene agregados en V6: se generan entidades, servicios y funciones.
+{% endfor %}
+
+## Componentes y funciones (V5)
+{% for c in ctx.componentes %}
+- Componente: **{{ c.nombre }}**
+{% endfor %}
+{% for f in ctx.funciones %}
+- Función: {{ f.nombre }} → `POST /funciones/{{ f.ruta }}` (pendiente)
+{% endfor %}
+
+## Relaciones con otros contextos (V8)
+{% for r in ctx.proveedores %}
+- Consume a **{{ r.proveedor }}** — «{{ r.etiqueta }}»
+{% endfor %}
+{% for r in ctx.consumidores %}
+- Le sirve a **{{ r.cliente }}** — «{{ r.etiqueta }}»
+{% endfor %}
+{% for i in ctx.integraciones %}
+- {{ i.codigo }} **{{ i.externo }}** ({{ i.direccion }}) a través de ACL-01 — intercambia «{{ i.objeto }}»
+{% endfor %}
+
+## API
+| Método | Ruta | Qué hace |
+|---|---|---|
+{% for r in rutas %}
+| {{ r.metodo }} | `{{ r.ruta }}` | {{ r.que }} |
+{% endfor %}
+
+## Ejecutar
+{% if ctx.lenguaje == "python" %}
+```bash
+python main.py
+```
+{% elif ctx.lenguaje == "java" %}
+```bash
+mvn -q package && java -jar target/{{ ctx.carpeta }}.jar   # el jar incluye el driver de {{ ctx.base_datos.motor }}
+```
+{% else %}
+```bash
+dotnet run
+```
+{% endif %}
+Por defecto guarda en memoria. Con base de datos real: `PERSISTENCIA=bd` y `BD_URL` (formato del driver:
+{% if ctx.base_datos.tipo | upper != "SQL" %}`mongodb://localhost:27017/{{ ctx.snake }}`{% elif ctx.lenguaje == "java" %}`jdbc:postgresql://localhost:5432/{{ ctx.snake }}` + `BD_USUARIO`, `BD_CLAVE`{% elif ctx.lenguaje == "csharp" %}`Host=localhost;Database={{ ctx.snake }};Username=farmacia;Password=farmacia`{% else %}`postgresql://farmacia:farmacia@localhost:5432/{{ ctx.snake }}`{% endif %}). La {{ "tabla" if ctx.base_datos.tipo | upper == "SQL" else "colección" }} se crea sola al arrancar.
+
+Variables de entorno: `PUERTO`, `PERSISTENCIA` (`memoria` | `bd`), `BD_URL`, `CLAVE_CIFRADO`, `CORS_ORIGENES`{% for r in ctx.proveedores %}, `{{ r.proveedor | snake | upper }}_URL`{% endfor %}{% if ctx.integraciones %}, `ACL_URL`{% endif %}.

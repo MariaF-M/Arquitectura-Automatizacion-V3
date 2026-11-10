@@ -1,0 +1,73 @@
+package {{ P.comandos }};
+
+import {{ P.memento }}.Caretaker;
+import {{ P.modelo }}.{{ a.clase }};
+import {{ P.modelo }}.{{ a.clase }}Memento;
+import {{ P.modelo }}.NoEncontradoException;
+import {{ P.modelo }}.ReglaNegocioException;
+import {{ P.puertos }}.Repositorio{{ a.clase }};
+import {{ P.bus }}.BusEventos;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Manejador de comandos de {{ a.nombre }}: toma memento, ejecuta, valida invariantes;
+ * si falla restaura el memento, si no guarda y publica eventos.
+ */
+public class Manejador{{ a.clase }} {
+    private final Repositorio{{ a.clase }} repo;
+    private final BusEventos bus;
+    private final Caretaker<{{ a.clase }}Memento> caretaker;
+
+    public Manejador{{ a.clase }}(Repositorio{{ a.clase }} repo, BusEventos bus, Caretaker<{{ a.clase }}Memento> caretaker) {
+        this.repo = repo;
+        this.bus = bus;
+        this.caretaker = caretaker;
+    }
+
+    private {{ a.clase }} cargar(String id) {
+        {{ a.clase }} a = repo.obtener(id);
+        if (a == null) throw new NoEncontradoException("{{ a.clase }} " + id + " no existe");
+        return a;
+    }
+
+    private Map<String, Object> confirmar({{ a.clase }} a) {
+        repo.guardar(a);
+        a.extraerEventos().forEach(bus::publicar);
+        return a.aMapa();
+    }
+{% for c in a.comandos %}
+
+    public Map<String, Object> manejar({{ c.clase }} comando) {
+{% if c.crea %}
+        return confirmar({{ a.clase }}.{{ c.metodo_camel }}(comando.datos()));
+{% else %}
+        {{ a.clase }} a = cargar(comando.id());
+        {{ a.clase }}Memento memento = a.crearMemento();
+        try {
+            a.{{ c.metodo_camel }}(comando.datos());
+        } catch (ReglaNegocioException e) {
+            a.restaurar(memento);
+            throw e;
+        }
+        caretaker.guardar(a.getId(), memento);
+        return confirmar(a);
+{% endif %}
+    }
+{% endfor %}
+
+    /** Deshace el último comando (patrón Memento). */
+    public Map<String, Object> deshacer(String id) {
+        {{ a.clase }} a = cargar(id);
+        {{ a.clase }}Memento m = caretaker.ultimo(id);
+        if (m == null) throw new ReglaNegocioException("No hay cambios para deshacer");
+        a.restaurar(m);
+        repo.guardar(a);
+        return a.aMapa();
+    }
+
+    public Map<String, Object> obtener(String id) { return cargar(id).aMapa(); }
+
+    public List<Map<String, Object>> listar() { return repo.listar().stream().map({{ a.clase }}::aMapa).toList(); }
+}

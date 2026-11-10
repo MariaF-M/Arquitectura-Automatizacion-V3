@@ -1,0 +1,35 @@
+package {{ P.traductores }};
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * {{ i.codigo }} {{ i.nombre }} ({{ i.direccion }}).
+{% if i.direccion == "entrada" %}
+ * {{ i.externo }} --«{{ i.objeto }}»--> ACL-01 --comando «{{ i.comando }}»--> {{ i.contexto }}
+{% else %}
+ * {{ i.contexto }} --evento «{{ i.evento }}»--> ACL-01 --«{{ i.objeto }}»--> {{ i.externo }}
+{% endif %}
+ */
+public class {{ clase }} implements Traductor {
+    private static final Map<String, String> MAPEO = new LinkedHashMap<>();
+    static {
+{% for k, val in i.mapeo.items() %}
+        MAPEO.put("{{ k }}", "{{ val }}");
+{% endfor %}
+    }
+{% if i.direccion == "entrada" %}
+    /** Variable de entorno con la URL del contexto destino. */
+    public static final String VARIABLE_URL = "{{ d.variable }}";
+    public static final String URL_DEFECTO = "{{ d.url }}";
+    /** Ruta del comando en el contexto destino ({id} se toma del campo traducido "id"). */
+    public static final String RUTA_COMANDO = "{{ d.ruta }}";
+{% endif %}
+
+    @Override public String codigo() { return "{{ i.codigo }}"; }
+    @Override public String nombre() { return "{{ i.nombre }}"; }
+    @Override public String direccion() { return "{{ i.direccion }}"; }
+    @Override public String contexto() { return "{{ i.contexto }}"; }
+    @Override public String externo() { return "{{ i.externo }}"; }
+    @Override public Map<String, String> mapeo() { return MAPEO; }
+}

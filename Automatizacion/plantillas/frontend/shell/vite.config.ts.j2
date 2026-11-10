@@ -1,0 +1,31 @@
+// Shell — HOST de Module Federation. Compone en tiempo de ejecución un microfrontend por contexto
+// delimitado (V8) más el de integraciones (V9). Generado desde el modelo ArchiMate.
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { federation } from '@module-federation/vite';
+
+// Dónde vive cada microfrontend. Se puede cambiar al desplegar sin tocar el código.
+const remoto = (nombre: string, variable: string, porDefecto: string) => ({
+  type: 'module' as const,
+  name: nombre,
+  entry: (process.env[variable] ?? porDefecto) + 'remoteEntry.js',
+});
+
+export default defineConfig({
+  server: { port: {{ fe.shell.puerto }}, strictPort: true },
+  preview: { port: {{ fe.shell.puerto }}, strictPort: true },
+  build: { target: 'chrome89' },
+  plugins: [
+    federation({
+      name: 'shell',
+      remotes: {
+{% for r in fe.remotos %}
+        {{ r.federado }}: remoto('{{ r.federado }}', '{{ r.federado | upper }}_URL', 'http://localhost:{{ r.puerto }}/'),  // {{ r.nombre }}
+{% endfor %}
+      },
+      shared: { react: { singleton: true }, 'react-dom': { singleton: true } },
+      dts: false,
+    }),
+    react(),
+  ],
+});

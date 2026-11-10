@@ -1,0 +1,32 @@
+package {{ P.bus }};
+
+import {{ P.eventos }}.EventoDominio;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+
+/** Bus de eventos en memoria (patrón Observer). */
+public class BusEventos {
+    private static final Logger LOG = Logger.getLogger("eventos");
+    private final Map<String, List<Consumer<EventoDominio>>> suscriptores = new HashMap<>();
+    private final List<Map<String, Object>> historial = Collections.synchronizedList(new ArrayList<>());
+
+    public void suscribir(String nombreEvento, Consumer<EventoDominio> manejador) {
+        suscriptores.computeIfAbsent(nombreEvento, k -> new ArrayList<>()).add(manejador);
+    }
+
+    public void publicar(EventoDominio evento) {
+        historial.add(evento.aMapa());
+        LOG.info("evento publicado: " + evento.nombre() + " (" + evento.agregadoId() + ")");
+        for (Consumer<EventoDominio> m : suscriptores.getOrDefault(evento.nombre(), List.of())) {
+            try { m.accept(evento); } catch (RuntimeException e) { LOG.warning("falló un suscriptor de " + evento.nombre() + ": " + e); }
+        }
+    }
+
+    public List<Map<String, Object>> historial() { return List.copyOf(historial); }
+}

@@ -1,0 +1,77 @@
+package {{ P.api }};
+
+import {{ P.adaptadores }}.ClienteHttp.ErrorDestinoException;
+import {{ P.servicios }}.ServicioIntegracion;
+import {{ P.transversal }}.Json;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Interfaz «{{ acl.interfaz }}» (V9): punto de entrada HTTP de la ACL.
+ * POST /entrantes/{int-0x}  (externo -> interno)   POST /salientes/{int-0x}  (interno -> externo)
+ */
+public class ServidorHttp {
+    private static final Pattern RUTA = Pattern.compile("/(entrantes|salientes)/([\\w-]+)$");
+    private final ServicioIntegracion servicio;
+
+    public ServidorHttp(ServicioIntegracion servicio) { this.servicio = servicio; }
+
+    public HttpServer iniciar(int puerto) throws IOException {
+        HttpServer s = HttpServer.create(new InetSocketAddress(puerto), 0);
+        s.createContext("/", this::atender);
+        s.start();
+        return s;
+    }
+
+    /** CORS: permite que los microfrontends (otro origen) llamen a esta API. */
+    private static final String ORIGENES_CORS = System.getenv().getOrDefault("CORS_ORIGENES", "*");
+
+    private static void cors(HttpExchange ex) {
+        ex.getResponseHeaders().set("Access-Control-Allow-Origin", ORIGENES_CORS);
+        ex.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        ex.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    }
+
+    private void atender(HttpExchange ex) throws IOException {
+        String ruta = ex.getRequestURI().getPath().replaceAll("/+$", "");
+        String metodo = ex.getRequestMethod();
+        cors(ex);
+        if (metodo.equals("OPTIONS")) {
+            ex.sendResponseHeaders(204, -1);
+            ex.close();
+            return;
+        }
+        try {
+            if (metodo.equals("GET") && ruta.equals("/salud")) { responder(ex, 200, Map.of("servicio", "ACL-01", "estado", "ok")); return; }
+            if (metodo.equals("GET") && ruta.equals("/integraciones")) { responder(ex, 200, servicio.catalogo()); return; }
+            Matcher m = RUTA.matcher(ruta);
+            if (metodo.equals("POST") && m.matches()) {
+                Map<String, Object> cuerpo = Json.leerObjeto(new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+                Object r = m.group(1).equals("entrantes") ? servicio.recibirEntrante(m.group(2), cuerpo) : servicio.recibirSaliente(m.group(2), cuerpo);
+                responder(ex, 200, r);
+                return;
+            }
+            responder(ex, 404, Map.of("error", "Ruta no encontrada: " + metodo + " " + ruta));
+        } catch (ErrorDestinoException e) {
+            responder(ex, e.codigo, e.cuerpo);
+        } catch (IllegalArgumentException e) {
+            responder(ex, 400, Map.of("error", e.getMessage()));
+        }
+    }
+
+    private static void responder(HttpExchange ex, int codigo, Object cuerpo) throws IOException {
+        byte[] d = Json.escribir(cuerpo).getBytes(StandardCharsets.UTF_8);
+        ex.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        ex.sendResponseHeaders(codigo, d.length);
+        ex.getResponseBody().write(d);
+        ex.close();
+    }
+}

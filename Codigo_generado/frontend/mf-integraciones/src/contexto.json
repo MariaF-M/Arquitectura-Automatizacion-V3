@@ -1,0 +1,161 @@
+{
+  "tipo": "integraciones",
+  "nombre": "Integraciones (ACL-01)",
+  "carpeta": "acl-01-anticorrupcion",
+  "puerto": 8010,
+  "interfaz": "IF-ACL-01 - Interfaz de integración",
+  "integraciones": [
+    {
+      "codigo": "INT-01",
+      "ruta": "int-01",
+      "nombre": "Programación quirúrgica",
+      "externo": "Programación Quirúrgica",
+      "objeto": "OBJ-01 — Agenda quirúrgica confirmada",
+      "direccion": "entrada",
+      "contexto": "Planificación de Demanda",
+      "carpetaContexto": "planificacion-de-demanda",
+      "puertoContexto": 8003,
+      "recursoContexto": "estimacion-demanda",
+      "comando": "Calcular Demanda",
+      "evento": null,
+      "campos": [
+        "medicamento_requerido",
+        "fecha_programada",
+        "unidades_por_procedimiento"
+      ],
+      "campoId": null,
+      "mapeo": {
+        "medicamento_requerido": "medicamento",
+        "fecha_programada": "periodo",
+        "unidades_por_procedimiento": "demanda_programada"
+      }
+    },
+    {
+      "codigo": "INT-02",
+      "ruta": "int-02",
+      "nombre": "Historia clínica electrónica",
+      "externo": "Historia Clínica (HCE)",
+      "objeto": "OBJ-02 — Prescripción médica",
+      "direccion": "entrada",
+      "contexto": "Inventario",
+      "carpetaContexto": "inventario",
+      "puertoContexto": 8001,
+      "recursoContexto": "lote-medicamento",
+      "comando": "Descontar Existencias",
+      "evento": null,
+      "campos": [
+        "id_lote",
+        "unidades_prescritas"
+      ],
+      "campoId": "id_lote",
+      "mapeo": {
+        "id_lote": "id",
+        "unidades_prescritas": "cantidad"
+      }
+    },
+    {
+      "codigo": "INT-03",
+      "ruta": "int-03",
+      "nombre": "Servicio de urgencias",
+      "externo": "Servicio de Urgencias",
+      "objeto": "OBJ-03 — Necesidad asistencial no programada",
+      "direccion": "entrada",
+      "contexto": "Inventario",
+      "carpetaContexto": "inventario",
+      "puertoContexto": 8001,
+      "recursoContexto": "lote-medicamento",
+      "comando": "Descontar Existencias",
+      "evento": null,
+      "campos": [
+        "id_lote",
+        "unidades_despachadas"
+      ],
+      "campoId": "id_lote",
+      "mapeo": {
+        "id_lote": "id",
+        "unidades_despachadas": "cantidad"
+      }
+    },
+    {
+      "codigo": "INT-04",
+      "ruta": "int-04",
+      "nombre": "ERP de compras y contabilidad",
+      "externo": "Sistema ERP (Compras)",
+      "objeto": "OBJ-04 — Requerimiento y estado de compra",
+      "direccion": "salida",
+      "contexto": "Abastecimiento",
+      "carpetaContexto": "abastecimiento",
+      "puertoContexto": 8004,
+      "recursoContexto": "requerimiento-compra",
+      "comando": null,
+      "evento": "Requerimiento Autorizado",
+      "campos": [
+        "principio_activo",
+        "concentracion",
+        "cantidad",
+        "nivel_urgencia"
+      ],
+      "campoId": null,
+      "mapeo": {
+        "principio_activo": "dci",
+        "concentracion": "concentracion",
+        "cantidad": "cantidad_solicitada",
+        "nivel_urgencia": "prioridad"
+      }
+    },
+    {
+      "codigo": "INT-05",
+      "ruta": "int-05",
+      "nombre": "Proveedor de medicamentos",
+      "externo": "Proveedores Externos",
+      "objeto": "OBJ-05 — Datos de entrega y lote",
+      "direccion": "entrada",
+      "contexto": "Inventario",
+      "carpetaContexto": "inventario",
+      "puertoContexto": 8001,
+      "recursoContexto": "lote-medicamento",
+      "comando": "Registrar Ingreso",
+      "evento": null,
+      "campos": [
+        "numero_lote",
+        "nombre_comercial",
+        "nit_proveedor",
+        "vence",
+        "registro_invima",
+        "unidades"
+      ],
+      "campoId": null,
+      "mapeo": {
+        "numero_lote": "codigo",
+        "nombre_comercial": "descripcion",
+        "nit_proveedor": "proveedor",
+        "vence": "fecha_vencimiento",
+        "registro_invima": "registro_sanitario",
+        "unidades": "cantidad"
+      }
+    },
+    {
+      "codigo": "INT-06",
+      "ruta": "int-06",
+      "nombre": "Entidad de vigilancia farmacéutica",
+      "externo": "INVIMA (Vigilancia)",
+      "objeto": "OBJ-06 — Alerta regulatoria o retiro de lote",
+      "direccion": "entrada",
+      "contexto": "Vencimientos",
+      "carpetaContexto": "vencimientos",
+      "puertoContexto": 8002,
+      "recursoContexto": "alerta-vencimiento",
+      "comando": "Bloquear Lote Vencido",
+      "evento": null,
+      "campos": [
+        "id_alerta",
+        "motivo_retiro"
+      ],
+      "campoId": "id_alerta",
+      "mapeo": {
+        "id_alerta": "id",
+        "motivo_retiro": "motivo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{# Cadena de conexión dentro de docker-compose, en el formato que espera el driver de cada lenguaje #}
+{% macro bd_url(ctx, host_sql="postgres", host_mongo="mongo") -%}
+{% if ctx.base_datos.tipo | upper == "SQL" -%}
+{% if ctx.lenguaje == "java" %}jdbc:postgresql://{{ host_sql }}:5432/{{ ctx.snake }}{% elif ctx.lenguaje == "csharp" %}Host={{ host_sql }};Database={{ ctx.snake }};Username=farmacia;Password=farmacia{% else %}postgresql://farmacia:farmacia@{{ host_sql }}:5432/{{ ctx.snake }}{% endif %}
+{%- else -%}
+mongodb://{{ host_mongo }}:27017/{{ ctx.snake }}
+{%- endif %}
+{%- endmacro %}

@@ -1,0 +1,2 @@
+# Inventario: driver de postgresql (solo se usa con PERSISTENCIA=bd).
+psycopg[binary]>=3.1

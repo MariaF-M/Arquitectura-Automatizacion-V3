@@ -1,0 +1,119 @@
+{% set sql = ctx.base_datos.tipo | upper == "SQL" %}
+{% from "ddl.j2" import tabla %}
+{% if sql %}
+using Npgsql;
+{% else %}
+using MongoDB.Bson;
+using MongoDB.Driver;
+{% endif %}
+using {{ N.modelo }};
+using {{ N.puertos }};
+using {{ N.transversal }};
+
+namespace {{ N.persistencia }};
+{% for a in ctx.agregados %}
+{% set cifrados = a.atributos | map(attribute="snake") | select("in", ctx.cifrado | map("snake") | list) | list %}
+
+/// <summary>
+/// Adaptador de persistencia para {{ ctx.base_datos.motor }} ({{ ctx.base_datos.tipo }}). Se activa con PERSISTENCIA=bd.
+/// {{ "Tabla" if sql else "Colección" }} «{{ a.snake }}». Campos cifrados en reposo: {{ cifrados | join(", ") or "ninguno" }}.
+/// Justificación: {{ ctx.base_datos.justificacion | default("") | trim | replace("\n", " ") }}
+/// </summary>
+public class Repositorio{{ a.clase }}BaseDatos : IRepositorio{{ a.clase }}
+{
+    private static readonly string[] CamposCifrados = [{% for c in cifrados %}"{{ c }}"{{ ", " if not loop.last }}{% endfor %}];
+    private readonly Cifrador _cifrador;
+{% if sql %}
+    private static readonly string[] Campos = [{% for at in a.atributos %}"{{ at.snake }}"{{ ", " if not loop.last }}{% endfor %}];
+    private const string Ddl = """
+{{ tabla(ctx, a) | indent(8, true) }}
+        """;
+    private readonly NpgsqlDataSource _fuente;
+
+    public Repositorio{{ a.clase }}BaseDatos(Cifrador cifrador)
+    {
+        _cifrador = cifrador;
+        // BD_URL en formato Npgsql: Host=postgres;Database=base;Username=u;Password=p
+        var cadena = Environment.GetEnvironmentVariable("BD_URL") ?? "Host=localhost;Database={{ ctx.snake }};Username=farmacia;Password=farmacia";
+        _fuente = NpgsqlDataSource.Create(cadena);
+        using var cmd = _fuente.CreateCommand(Ddl);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void Guardar({{ a.clase }} agregado)
+    {
+        var fila = _cifrador.CifrarCampos(agregado.AMapa(), CamposCifrados);
+        var sql = $"INSERT INTO {{ a.snake }} (id, {string.Join(", ", Campos)}) VALUES (@id, {string.Join(", ", Campos.Select(c => "@" + c))}) "
+                + $"ON CONFLICT (id) DO UPDATE SET {string.Join(", ", Campos.Select(c => $"{c} = EXCLUDED.{c}"))}";
+        using var cmd = _fuente.CreateCommand(sql);
+        cmd.Parameters.AddWithValue("id", agregado.Id);
+{% for at in a.atributos %}
+{% if at.tipo == "fecha" and at.snake not in cifrados %}
+        cmd.Parameters.AddWithValue("{{ at.snake }}", (object?)agregado.{{ at.pascal }} ?? DBNull.Value);
+{% else %}
+        cmd.Parameters.AddWithValue("{{ at.snake }}", fila["{{ at.snake }}"] ?? DBNull.Value);
+{% endif %}
+{% endfor %}
+        cmd.ExecuteNonQuery();
+    }
+
+    private {{ a.clase }} DesdeLector(NpgsqlDataReader r)
+    {
+        var m = new Dictionary<string, object?>();
+        for (var i = 0; i < r.FieldCount; i++)
+            m[r.GetName(i)] = r.IsDBNull(i) ? null : r.GetValue(i);
+        return {{ a.clase }}.DesdeMapa(_cifrador.DescifrarCampos(m, CamposCifrados));
+    }
+
+    public {{ a.clase }}? Obtener(string id)
+    {
+        using var cmd = _fuente.CreateCommand("SELECT * FROM {{ a.snake }} WHERE id = @id");
+        cmd.Parameters.AddWithValue("id", id);
+        using var r = cmd.ExecuteReader();
+        return r.Read() ? DesdeLector(r) : null;
+    }
+
+    public IReadOnlyList<{{ a.clase }}> Listar()
+    {
+        using var cmd = _fuente.CreateCommand("SELECT * FROM {{ a.snake }} ORDER BY id");
+        using var r = cmd.ExecuteReader();
+        var lista = new List<{{ a.clase }}>();
+        while (r.Read()) lista.Add(DesdeLector(r));
+        return lista;
+    }
+{% else %}
+    private readonly IMongoCollection<BsonDocument> _coleccion;
+
+    public Repositorio{{ a.clase }}BaseDatos(Cifrador cifrador)
+    {
+        _cifrador = cifrador;
+        var url = MongoUrl.Create(Environment.GetEnvironmentVariable("BD_URL") ?? "mongodb://localhost:27017/{{ ctx.snake }}");
+        _coleccion = new MongoClient(url).GetDatabase(url.DatabaseName).GetCollection<BsonDocument>("{{ a.snake }}");
+    }
+
+    public void Guardar({{ a.clase }} agregado)
+    {
+        var fila = _cifrador.CifrarCampos(agregado.AMapa(), CamposCifrados);
+        fila["_id"] = fila["id"];
+        fila.Remove("id");
+        var doc = new BsonDocument(fila.ToDictionary(kv => kv.Key, kv => kv.Value));
+        _coleccion.ReplaceOne(Builders<BsonDocument>.Filter.Eq("_id", agregado.Id), doc, new ReplaceOptions { IsUpsert = true });
+    }
+
+    private {{ a.clase }} DesdeDocumento(BsonDocument d)
+    {
+        var m = d.ToDictionary().ToDictionary(kv => kv.Key == "_id" ? "id" : kv.Key, kv => (object?)kv.Value);
+        return {{ a.clase }}.DesdeMapa(_cifrador.DescifrarCampos(m, CamposCifrados));
+    }
+
+    public {{ a.clase }}? Obtener(string id)
+    {
+        var d = _coleccion.Find(Builders<BsonDocument>.Filter.Eq("_id", id)).FirstOrDefault();
+        return d is null ? null : DesdeDocumento(d);
+    }
+
+    public IReadOnlyList<{{ a.clase }}> Listar() =>
+        _coleccion.Find(FilterDefinition<BsonDocument>.Empty).ToList().Select(DesdeDocumento).ToList();
+{% endif %}
+}
+{% endfor %}

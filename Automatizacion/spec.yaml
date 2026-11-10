@@ -1,0 +1,262 @@
+# =====================================================================
+#  ESPECIFICACIONES COMPLEMENTARIAS AL MODELO ARCHIMATE
+# ---------------------------------------------------------------------
+#  El diagrama dice QUÉ existe (contextos, agregados, comandos, eventos,
+#  relaciones e integraciones). Este archivo dice lo que ArchiMate no
+#  expresa: lenguaje, estilo de arquitectura, base de datos, atributos,
+#  invariantes (tomadas del documento de la V6 de la entrega 3), caché,
+#  cifrado y despliegue.
+#
+#  Regla: aquí NO se declaran contextos, comandos ni eventos nuevos.
+#  Todo nombre usado aquí debe existir en el modelo; si no, el generador
+#  falla con un error que dice qué falta.
+# =====================================================================
+
+proyecto:
+  nombre: farmacia-hospitalaria
+  paquete_base: co.edu.farmacia          # base de paquetes Java / namespaces C#
+
+modelo:
+  archivo: ../Modelo_archimate/Modelo_Farmacia_mejorado.archimate
+  vistas:                                 # vistas de donde se lee cada cosa
+    dominios: V5_Dominios                 # grupos D-0X, componentes y funciones
+    agregados: V6 - Agregados, Comandos y Eventos
+    mapa_contextos: V8 - Mapa de Contextos
+    interoperabilidad: V9_Interoperabilidad_anticorrupcion
+
+# Tipos de atributo admitidos: texto | entero | decimal | fecha | booleano
+contextos:
+
+  Inventario:                             # nombre del Application Component en V8
+    dominio: D-01                         # código del grupo en V5 y del Grouping en V6
+    lenguaje: python
+    arquitectura: hexagonal
+    puerto: 8001
+    base_datos:
+      tipo: SQL
+      motor: postgresql
+      justificacion: >
+        El inventario exige consistencia fuerte (ACID): una dispensación no puede
+        dejar existencias negativas ni dos movimientos pueden pisarse. Los lotes,
+        medicamentos y movimientos tienen estructura fija y relaciones claras.
+    cache: {ttl_segundos: 30}
+    cifrado: {campos: [proveedor]}
+    agregados:
+      LoteMedicamento:
+        atributos:
+          codigo: texto
+          descripcion: texto
+          proveedor: texto
+          fecha_vencimiento: fecha
+          registro_sanitario: texto
+          cantidad: entero
+          estado: texto
+        valores_iniciales: {estado: Disponible}
+        obligatorios: [codigo, descripcion, proveedor, fecha_vencimiento, registro_sanitario]
+        no_negativos: [cantidad]
+        valores_permitidos:
+          estado: [Disponible, Cuarentena, Vencido, Bloqueado]
+        invariantes:
+          - La cantidad de existencias nunca puede ser negativa.
+          - Todo lote tiene Código, Descripción, Proveedor, Fecha de vencimiento y Registro sanitario desde la recepción técnica.
+          - Un lote solo puede estar Disponible, en Cuarentena, Vencido o Bloqueado.
+          - No se recibe un lote vencido o que vence hoy (la fecha de vencimiento debe ser posterior a la recepción).
+        comandos:
+          Registrar Ingreso: {crea: true, fecha_futura: [fecha_vencimiento]}   # no se recibe un lote vencido
+          Descontar Existencias: {restar: cantidad, desde_estados: [Disponible]}
+    entidades:
+      Medicamento: {codigo: texto, principio_activo: texto, concentracion: texto}
+      Lote: {codigo: texto, fecha_vencimiento: fecha, estado: texto}
+      Movimiento de inventario: {lote_codigo: texto, tipo: texto, cantidad: entero, fecha: fecha}
+
+  Vencimientos:
+    dominio: D-02
+    lenguaje: java
+    arquitectura: microservicios
+    puerto: 8002
+    base_datos:
+      tipo: NoSQL
+      motor: mongodb
+      justificacion: >
+        Las alertas son documentos de vida corta, con semaforización y metadatos
+        que cambian según el tipo de alerta (vencimiento, retiro regulatorio). Se
+        escriben mucho y se consultan por lote o semáforo; un documento por alerta
+        evita joins y permite evolucionar el esquema sin migraciones.
+    cache: {ttl_segundos: 60}
+    cifrado: {campos: [motivo]}
+    agregados:
+      AlertaVencimiento:
+        atributos:
+          lote_codigo: texto
+          fecha_vencimiento: fecha
+          dias_para_vencer: entero
+          prioridad_fefo: entero
+          semaforo: texto
+          estado: texto
+          motivo: texto
+        valores_iniciales: {estado: Activa}
+        obligatorios: [lote_codigo, fecha_vencimiento]
+        no_negativos: [prioridad_fefo]
+        valores_permitidos:
+          semaforo: [Verde, Amarillo, Rojo]
+          estado: [Activa, Atendida, LoteBloqueado]
+        invariantes:
+          - "Regla FEFO innegociable: primero se usa lo que vence primero."
+          - Lotes Vencidos o en Cuarentena no suman al inventario disponible y se bloquean automáticamente (hard stop).
+        comandos:
+          Evaluar Prioridad FEFO: {crea: true}
+          Bloquear Lote Vencido: {estado: LoteBloqueado, desde_estados: [Activa]}
+    entidades:
+      Lote: {codigo: texto, fecha_vencimiento: fecha, estado: texto}
+      Alerta de vencimiento: {lote_codigo: texto, semaforo: texto}
+      Restricción de uso: {lote_codigo: texto, motivo: texto}
+
+  Planificación de Demanda:
+    dominio: D-03
+    lenguaje: python
+    arquitectura: microservicios
+    puerto: 8003
+    base_datos:
+      tipo: NoSQL
+      motor: mongodb
+      justificacion: >
+        Las estimaciones combinan series históricas y agendas con estructura
+        variable según el modelo de predicción; se guardan como documentos
+        versionados y se leen completos para análisis.
+    cache: {ttl_segundos: 300}
+    cifrado: {campos: [observaciones]}
+    agregados:
+      EstimacionDemanda:
+        atributos:
+          medicamento: texto
+          periodo: texto
+          demanda_programada: entero
+          demanda_no_programada: entero
+          cantidad_estimada: entero
+          estado: texto
+          observaciones: texto
+        valores_iniciales: {estado: Sugerida}
+        obligatorios: [medicamento, periodo]
+        no_negativos: [demanda_programada, demanda_no_programada, cantidad_estimada]
+        valores_permitidos:
+          estado: [Sugerida, Ajustada, Validada]
+        invariantes:
+          - La estimación considera demanda programada (cirugías, censo) y no programada (histórico de urgencias).
+          - Toda predicción es una sugerencia que un humano debe validar antes de pasar a abastecimiento.
+        comandos:
+          Calcular Demanda: {crea: true}
+          Ajustar Predicción: {estado: Ajustada, requiere: [observaciones]}
+    entidades:
+      Medicamento: {codigo: texto, principio_activo: texto}
+      Agenda quirúrgica: {procedimiento: texto, fecha: fecha}
+      Consumo histórico: {medicamento: texto, periodo: texto, cantidad: entero}
+      Estimación de demanda: {medicamento: texto, cantidad_estimada: entero}
+
+  Abastecimiento:
+    dominio: D-04
+    lenguaje: csharp
+    arquitectura: hexagonal
+    puerto: 8004
+    base_datos:
+      tipo: SQL
+      motor: postgresql
+      justificacion: >
+        Un requerimiento pasa por estados controlados (sugerido, autorizado) y
+        debe quedar auditable ante Compras/ERP; se necesita integridad
+        referencial y transacciones.
+    cache: {ttl_segundos: 30}
+    cifrado: {campos: [autorizado_por]}
+    agregados:
+      RequerimientoCompra:
+        atributos:
+          principio_activo: texto
+          concentracion: texto
+          cantidad: entero
+          nivel_urgencia: texto
+          estado: texto
+          autorizado_por: texto
+        valores_iniciales: {estado: Sugerido}
+        obligatorios: [principio_activo, concentracion, cantidad, nivel_urgencia]
+        no_negativos: [cantidad]
+        valores_permitidos:
+          nivel_urgencia: [Baja, Media, Alta, Critica]
+          estado: [Sugerido, Autorizado]
+        invariantes:
+          - El requerimiento contiene principio activo (DCI), concentración, cantidad y nivel de urgencia.
+          - Ningún requerimiento viaja a Compras (ERP) sin autorización técnica previa del Químico Farmacéutico.
+        comandos:
+          Generar Requisición: {crea: true}
+          Autorizar Requisición: {estado: Autorizado, requiere: [autorizado_por], desde_estados: [Sugerido]}
+    entidades:
+      Medicamento: {codigo: texto, principio_activo: texto}
+      Requerimiento de compra: {principio_activo: texto, cantidad: entero}
+      Autorización técnica: {autorizado_por: texto, fecha: fecha}
+
+  Seguridad y Auditoría:
+    dominio: D-05
+    lenguaje: python
+    arquitectura: microservicios
+    puerto: 8005
+    base_datos:
+      tipo: SQL
+      motor: postgresql
+      justificacion: >
+        Usuarios, perfiles y registros de auditoría son datos estructurados que
+        requieren integridad y consultas por usuario, fecha y acción.
+    cache: {ttl_segundos: 120}
+    cifrado: {campos: []}
+    entidades:
+      Usuario: {usuario: texto, nombre: texto}
+      Perfil / rol: {nombre: texto}
+      Registro de auditoría: {usuario: texto, accion: texto, fecha: fecha}
+
+# ---------------------------------------------------------------------
+#  Capa anticorrupción (V9). Cada INT-xx del diagrama se traduce:
+#   - entrada: sistema externo -> ACL -> comando de un contexto interno
+#   - salida : evento de un contexto interno -> ACL -> sistema externo
+#  El contexto destino NO se escribe aquí: se deduce de V8
+#  (relaciones «ACL (Capa Anticorrupción)»).
+#  mapeo en entrada = {campo externo: campo interno}
+#  mapeo en salida  = {campo interno: campo externo}
+#  (el campo interno "id" identifica el agregado sobre el que actúa el comando)
+# ---------------------------------------------------------------------
+anticorrupcion:
+  componente: ACL-01 Adaptador anticorrupción e interoperabilidad
+  lenguaje: java
+  arquitectura: hexagonal
+  puerto: 8010
+  integraciones:
+    INT-01:
+      direccion: entrada
+      comando: Calcular Demanda
+      mapeo: {medicamento_requerido: medicamento, fecha_programada: periodo, unidades_por_procedimiento: demanda_programada}
+    INT-02:
+      direccion: entrada
+      comando: Descontar Existencias
+      mapeo: {id_lote: id, unidades_prescritas: cantidad}
+    INT-03:
+      direccion: entrada
+      comando: Descontar Existencias
+      mapeo: {id_lote: id, unidades_despachadas: cantidad}
+    INT-04:
+      direccion: salida
+      evento: Requerimiento Autorizado
+      mapeo: {principio_activo: dci, concentracion: concentracion, cantidad: cantidad_solicitada, nivel_urgencia: prioridad}
+    INT-05:
+      direccion: entrada
+      comando: Registrar Ingreso
+      mapeo: {numero_lote: codigo, nombre_comercial: descripcion, nit_proveedor: proveedor, vence: fecha_vencimiento, registro_invima: registro_sanitario, unidades: cantidad}
+    INT-06:
+      direccion: entrada
+      comando: Bloquear Lote Vencido
+      mapeo: {id_alerta: id, motivo_retiro: motivo}
+
+despliegue:
+  docker_compose: true
+
+# ---------------------------------------------------------------------
+#  Frontend: shell + un microfrontend por contexto (+ integraciones),
+#  React + TypeScript + Vite + Module Federation 2.0.
+# ---------------------------------------------------------------------
+frontend:
+  generar: true

@@ -1,0 +1,49 @@
+package co.edu.farmacia.vencimientos.infraestructura.transversal;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Cifrado simple (XOR con clave + Base64) para campos sensibles en reposo.
+ * Didáctico: en producción se cambia por AES (javax.crypto) sin tocar el dominio.
+ */
+public class Cifrador {
+    private static final String PREFIJO = "enc:";
+    private final byte[] clave;
+
+    public Cifrador() {
+        this(System.getenv().getOrDefault("CLAVE_CIFRADO", "farmacia-2026"));
+    }
+
+    public Cifrador(String clave) { this.clave = clave.getBytes(StandardCharsets.UTF_8); }
+
+    private byte[] xor(byte[] d) {
+        byte[] r = new byte[d.length];
+        for (int i = 0; i < d.length; i++) r[i] = (byte) (d[i] ^ clave[i % clave.length]);
+        return r;
+    }
+
+    public String cifrar(String texto) {
+        return PREFIJO + Base64.getEncoder().encodeToString(xor(texto.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    public String descifrar(String texto) {
+        if (!texto.startsWith(PREFIJO)) return texto;
+        return new String(xor(Base64.getDecoder().decode(texto.substring(PREFIJO.length()))), StandardCharsets.UTF_8);
+    }
+
+    public Map<String, Object> cifrarCampos(Map<String, Object> fila, List<String> campos) {
+        Map<String, Object> r = new LinkedHashMap<>(fila);
+        for (String c : campos) if (r.get(c) != null) r.put(c, cifrar(String.valueOf(r.get(c))));
+        return r;
+    }
+
+    public Map<String, Object> descifrarCampos(Map<String, Object> fila, List<String> campos) {
+        Map<String, Object> r = new LinkedHashMap<>(fila);
+        for (String c : campos) if (r.get(c) instanceof String t) r.put(c, descifrar(t));
+        return r;
+    }
+}

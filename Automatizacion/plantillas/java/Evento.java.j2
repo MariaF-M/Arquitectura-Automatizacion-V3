@@ -1,0 +1,8 @@
+package {{ P.eventos }};
+
+import java.util.Map;
+
+/** Evento «{{ ev.nombre }}» del agregado {{ a.nombre }} (V6). */
+public class {{ ev.clase }} extends EventoDominio {
+    public {{ ev.clase }}(String agregadoId, Map<String, Object> datos) { super(agregadoId, datos); }
+}

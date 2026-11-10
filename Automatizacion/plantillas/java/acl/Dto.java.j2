@@ -1,0 +1,12 @@
+package {{ P.dto }};
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * «{{ i.objeto }}» (Business Object de V9) en el formato {{ "de " ~ i.externo if i.direccion == "entrada" else "que espera " ~ i.externo }}.
+ * Integración {{ i.codigo }} {{ i.nombre }} — {{ i.direccion }}.
+ */
+public record {{ i.dto }}(Map<String, Object> datos) {
+    public static final List<String> CAMPOS = List.of({% for k, val in i.mapeo.items() %}"{{ val if i.direccion == "salida" else k }}"{{ ", " if not loop.last }}{% endfor %});
+}

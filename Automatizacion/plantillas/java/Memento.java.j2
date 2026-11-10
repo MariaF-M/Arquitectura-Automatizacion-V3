@@ -1,0 +1,6 @@
+package {{ P.modelo }};
+
+import java.time.LocalDate;
+
+/** Memento (GoF): foto inmutable del estado de {{ a.clase }}. */
+public record {{ a.clase }}Memento(String id{% for at in a.atributos %}, {{ tipo_java(at.tipo) }} {{ at.camel }}{% endfor %}) { }

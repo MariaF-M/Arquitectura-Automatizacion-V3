@@ -1,0 +1,8 @@
+package co.edu.farmacia.anticorrupcion.dominio.puertos;
+
+import java.util.Map;
+
+/** Puerto de salida de la ACL hacia los contextos internos: ejecuta un comando en su lenguaje ubicuo. */
+public interface PuertoContextoInterno {
+    Object ejecutarComando(String urlBase, String ruta, Map<String, Object> datos);
+}

@@ -1,0 +1,8 @@
+# Servidor de archivos estáticos para el shell y cada microfrontend.
+# CORS abierto: el shell (otro origen) descarga los módulos de los remotos.
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    add_header Access-Control-Allow-Origin * always;
+    location / { try_files $uri $uri/ /index.html; }
+}

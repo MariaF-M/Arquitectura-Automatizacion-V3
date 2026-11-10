@@ -1,0 +1,26 @@
+package {{ paquete }};
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+/**
+{% if e.compartida %}
+ * Shared Kernel «{{ e.nombre }}» (V8). Contrato canónico: contratos/shared-kernel/{{ e.snake }}.schema.json.
+ * Cualquier cambio se acuerda con el otro contexto que lo comparte.
+{% else %}
+ * Entidad «{{ e.nombre }}» del contexto {{ ctx.nombre }} (Data Object en V8).
+{% endif %}
+ */
+public class {{ e.clase }} {
+    private String id = UUID.randomUUID().toString();
+{% for at in e.atributos %}
+    private {{ tipo_java(at.tipo) }} {{ at.camel }};
+{% endfor %}
+
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+{% for at in e.atributos %}
+    public {{ tipo_java(at.tipo) }} get{{ at.pascal }}() { return {{ at.camel }}; }
+    public void set{{ at.pascal }}({{ tipo_java(at.tipo) }} {{ at.camel }}) { this.{{ at.camel }} = {{ at.camel }}; }
+{% endfor %}
+}

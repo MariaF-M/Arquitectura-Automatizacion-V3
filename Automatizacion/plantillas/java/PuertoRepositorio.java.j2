@@ -1,0 +1,12 @@
+package {{ P.puertos }};
+
+import {{ P.modelo }}.{{ a.clase }};
+
+import java.util.List;
+
+/** Puerto de persistencia de {{ a.nombre }}: el dominio depende de esta abstracción (DIP). */
+public interface Repositorio{{ a.clase }} {
+    void guardar({{ a.clase }} agregado);
+    {{ a.clase }} obtener(String id);
+    List<{{ a.clase }}> listar();
+}

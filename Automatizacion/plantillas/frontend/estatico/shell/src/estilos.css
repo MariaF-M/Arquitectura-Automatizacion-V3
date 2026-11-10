@@ -1,0 +1,38 @@
+/* Estilos del shell: prefijo sh- para no interferir con los microfrontends (que usan mf-). */
+* { box-sizing: border-box; }
+body { margin: 0; background: #f3f5f8; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #1d2430; }
+.sh-app { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+.sh-menu { background: #13201d; color: #d7e2df; padding: 18px 14px; display: flex; flex-direction: column; gap: 18px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.sh-marca { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
+.sh-marca small { color: #8fb3aa; }
+.sh-logo { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; background: #0f6b5c; font-size: 22px; }
+.sh-menu nav { display: flex; flex-direction: column; gap: 2px; }
+.sh-menu nav a { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; color: #d7e2df; text-decoration: none; }
+.sh-menu nav a:hover { background: #1d2f2b; }
+.sh-menu nav a.sh-activo { background: #0f6b5c; color: #fff; }
+.sh-clasif { font-size: 10px; letter-spacing: .05em; padding: 1px 6px; border-radius: 999px; background: #33413e; color: #cfe0db; }
+.sh-clasif-core { background: #1f8f7b; color: #fff; }
+.sh-clasif-supporting { background: #2f5d8a; color: #fff; }
+.sh-clasif-generic { background: #5d626b; color: #fff; }
+.sh-clasif-acl { background: #8a5a12; color: #fff; }
+.sh-actividad { margin-top: auto; border-top: 1px solid #2a3a36; padding-top: 12px; }
+.sh-actividad h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #8fb3aa; margin: 0 0 8px; }
+.sh-actividad p { font-size: 12px; color: #8fb3aa; margin: 0; }
+.sh-actividad ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.sh-actividad li { display: flex; flex-direction: column; font-size: 12px; }
+.sh-actividad li b { color: #fff; }
+.sh-actividad li span { color: #8fb3aa; }
+.sh-contenido { padding: 24px 28px; min-width: 0; }
+.sh-cargando { color: #5b6473; }
+.sh-inicio h1 { margin: 4px 0 10px; font-size: 28px; }
+.sh-inicio > p { max-width: 760px; color: #3b4452; }
+.sh-sobretitulo { margin: 0; color: #5b6473; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.sh-tarjetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 20px; }
+.sh-tarjeta { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; padding: 16px; border-radius: 10px; background: #fff; border: 1px solid #dfe3ea; color: inherit; text-decoration: none; }
+.sh-tarjeta:hover { border-color: #0f6b5c; }
+.sh-tarjeta b { font-size: 16px; }
+.sh-tarjeta span { color: #5b6473; font-size: 12px; }
+.sh-caido { background: #fff; border: 1px solid #f0c9c6; border-radius: 10px; padding: 20px; }
+.sh-caido h2 { margin-top: 0; color: #a8322c; font-size: 18px; }
+.sh-detalle { color: #5b6473; font-size: 12px; }
+@media (max-width: 800px) { .sh-app { grid-template-columns: 1fr; } .sh-menu { position: static; height: auto; } }

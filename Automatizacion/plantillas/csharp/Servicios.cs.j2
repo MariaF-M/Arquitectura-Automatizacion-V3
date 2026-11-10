@@ -1,0 +1,33 @@
+namespace {{ N.servicios }};
+
+/// <summary>La función existe en el diagrama pero su lógica aún no se implementa.</summary>
+public class CasoDeUsoPendienteException(string mensaje) : Exception(mensaje);
+{% for x in ctx.funciones %}
+
+/// <summary>Application Function «{{ x.nombre }}» (V5).</summary>
+public class {{ x.clase }}
+{
+    public Dictionary<string, object?> Ejecutar(Dictionary<string, object?> datos) =>
+        throw new CasoDeUsoPendienteException("«{{ x.nombre }}» está modelada pero su lógica está pendiente");
+}
+{% endfor %}
+{% for c in ctx.componentes %}
+
+/// <summary>Application Component «{{ c.nombre }}» (V5).</summary>
+public class {{ c.clase }}Servicio
+{
+    public const string Nombre = "{{ c.nombre }}";
+}
+{% endfor %}
+
+public static class Catalogo
+{
+    public static readonly string[] Componentes = [{% for c in ctx.componentes %}{{ c.clase }}Servicio.Nombre{{ ", " if not loop.last }}{% endfor %}];
+
+    public static readonly Dictionary<string, Func<Dictionary<string, object?>, Dictionary<string, object?>>> Funciones = new()
+    {
+{% for x in ctx.funciones %}
+        ["{{ x.ruta }}"] = d => new {{ x.clase }}().Ejecutar(d),
+{% endfor %}
+    };
+}

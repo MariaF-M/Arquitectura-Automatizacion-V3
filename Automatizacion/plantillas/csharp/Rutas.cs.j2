@@ -1,0 +1,71 @@
+using System.Text.Json;
+using {{ N.comandos }};
+using {{ N.modelo }};
+using {{ N.servicios }};
+{% if N.bus != N.transversal %}
+using {{ N.bus }};
+{% endif %}
+using {{ N.transversal }};
+
+namespace {{ N.api }};
+
+/// <summary>
+/// API HTTP de {{ ctx.nombre }} (adaptador de entrada), generada desde el modelo.
+{% for a in ctx.agregados %}
+{% for c in a.comandos %}
+/// POST /{{ a.recurso }}/{% if not c.crea %}{id}/{% endif %}{{ c.ruta }} ← «{{ c.nombre }}»
+{% endfor %}
+{% endfor %}
+/// </summary>
+public static class Rutas
+{
+    private static IResult Ejecutar(Func<object?> accion, int codigo = 200)
+    {
+        try { return Results.Json(accion(), statusCode: codigo); }
+        catch (ReglaNegocioException e) { return Results.Json(new { error = e.Message }, statusCode: 422); }
+        catch (NoEncontradoException e) { return Results.Json(new { error = e.Message }, statusCode: 404); }
+        catch (CasoDeUsoPendienteException e) { return Results.Json(new { error = e.Message }, statusCode: 501); }
+    }
+
+    /// <summary>Lee el cuerpo como JSON sin exigir el encabezado Content-Type (igual que los servicios Python y Java).</summary>
+    private static async Task<Dictionary<string, object?>?> Cuerpo(HttpRequest req)
+    {
+        using var lector = new StreamReader(req.Body);
+        var texto = await lector.ReadToEndAsync();
+        if (string.IsNullOrWhiteSpace(texto)) return new();
+        try { return Valores.DesdeJson(JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(texto)); }
+        catch (JsonException) { return null; }
+    }
+
+    private static async Task<IResult> ConCuerpo(HttpRequest req, Func<Dictionary<string, object?>, object?> accion, int codigo = 201)
+    {
+        var cuerpo = await Cuerpo(req);
+        return cuerpo is null ? Results.Json(new { error = "JSON inválido" }, statusCode: 400) : Ejecutar(() => accion(cuerpo), codigo);
+    }
+
+    public static void Mapear(WebApplication app, Func<object> arquitectura)
+    {
+        app.MapGet("/salud", () => Results.Json(new Dictionary<string, object?> { ["contexto"] = "{{ ctx.nombre }}", ["estado"] = "ok" }));
+        app.MapGet("/eventos", (BusEventos bus) => Results.Json(bus.Historial));
+        app.MapGet("/arquitectura", () => Results.Json(arquitectura()));
+        app.MapPost("/funciones/{funcion}", (string funcion, HttpRequest req) =>
+            Catalogo.Funciones.TryGetValue(funcion, out var f)
+                ? ConCuerpo(req, d => f(d))
+                : Task.FromResult(Results.Json(new { error = $"Función {funcion} no existe" }, statusCode: 404)));
+{% for a in ctx.agregados %}
+
+        app.MapGet("/{{ a.recurso }}", (Manejador{{ a.clase }} m) => Ejecutar(() => m.Listar()));
+        app.MapGet("/{{ a.recurso }}/{id}", (string id, Manejador{{ a.clase }} m) => Ejecutar(() => m.Obtener(id)));
+        app.MapPost("/{{ a.recurso }}/{id}/deshacer", (string id, Manejador{{ a.clase }} m) => Ejecutar(() => m.Deshacer(id), 201));
+{% for c in a.comandos %}
+{% if c.crea %}
+        app.MapPost("/{{ a.recurso }}/{{ c.ruta }}", (HttpRequest req, Manejador{{ a.clase }} m) =>
+            ConCuerpo(req, d => m.Manejar(new {{ c.clase }}Comando(d))));
+{% else %}
+        app.MapPost("/{{ a.recurso }}/{id}/{{ c.ruta }}", (string id, HttpRequest req, Manejador{{ a.clase }} m) =>
+            ConCuerpo(req, d => m.Manejar(new {{ c.clase }}Comando(id, d))));
+{% endif %}
+{% endfor %}
+{% endfor %}
+    }
+}

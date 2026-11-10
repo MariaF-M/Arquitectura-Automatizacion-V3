@@ -1,0 +1,36 @@
+using System.Collections.Concurrent;
+using {{ N.modelo }};
+using {{ N.puertos }};
+
+namespace {{ N.persistencia }};
+{% for a in ctx.agregados %}
+
+/// <summary>Caché con TTL ({{ ctx.cache.ttl_segundos | default(30) }} s) como decorador del repositorio (patrón Decorator).</summary>
+public class Repositorio{{ a.clase }}Cache(IRepositorio{{ a.clase }} repo, int ttlSegundos = {{ ctx.cache.ttl_segundos | default(30) }}) : IRepositorio{{ a.clase }}
+{
+    private readonly ConcurrentDictionary<string, ({{ a.clase }} Valor, DateTime Momento)> _cache = new();
+    public int Aciertos { get; private set; }
+    public int Fallos { get; private set; }
+
+    public void Guardar({{ a.clase }} a)
+    {
+        repo.Guardar(a);
+        _cache.TryRemove(a.Id, out _);
+    }
+
+    public {{ a.clase }}? Obtener(string id)
+    {
+        if (_cache.TryGetValue(id, out var e) && (DateTime.UtcNow - e.Momento).TotalSeconds < ttlSegundos)
+        {
+            Aciertos++;
+            return e.Valor;
+        }
+        Fallos++;
+        var v = repo.Obtener(id);
+        if (v is not null) _cache[id] = (v, DateTime.UtcNow);
+        return v;
+    }
+
+    public IReadOnlyList<{{ a.clase }}> Listar() => repo.Listar();
+}
+{% endfor %}

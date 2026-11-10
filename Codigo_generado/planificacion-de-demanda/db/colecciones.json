@@ -1,0 +1,29 @@
+{
+  "_comentario": "Validadores de colección mongodb para Planificación de Demanda (D-03). Generado desde V6 + spec.yaml.",
+  "colecciones": [
+    {
+      "nombre": "estimacion_demanda",
+      "validator": {
+        "$jsonSchema": {
+          "bsonType": "object",
+          "required": ["_id", "medicamento", "periodo"],
+          "properties": {
+            "_id": {"bsonType": "string"},
+            "medicamento": {"bsonType": ["string","null"]},
+            "periodo": {"bsonType": ["string","null"]},
+            "demanda_programada": {"bsonType": ["int","null"], "minimum": 0},
+            "demanda_no_programada": {"bsonType": ["int","null"], "minimum": 0},
+            "cantidad_estimada": {"bsonType": ["int","null"], "minimum": 0},
+            "estado": {"bsonType": ["string","null"], "enum": ["Sugerida", "Ajustada", "Validada"]},
+            "observaciones": {"bsonType": ["string","null"]}
+          }
+        }
+      },
+      "indices": [{"campos": {"estado": 1}}]
+    },
+    {
+      "nombre": "estimacion_demanda_eventos",
+      "eventos_permitidos": ["DemandaEstimada", "PrediccionAjustada"]
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "tipo": "contexto",
+  "nombre": "Vencimientos",
+  "carpeta": "vencimientos",
+  "puerto": 8002,
+  "dominio": "D-02",
+  "tituloDominio": "Gestión de vencimientos y priorización",
+  "clasificacion": "CORE",
+  "lenguaje": "Java",
+  "arquitectura": "microservicios",
+  "baseDatos": "NoSQL · mongodb",
+  "agregados": [
+    {
+      "nombre": "AlertaVencimiento",
+      "recurso": "alerta-vencimiento",
+      "atributos": [
+        {
+          "nombre": "lote_codigo",
+          "etiqueta": "Lote codigo",
+          "tipo": "texto",
+          "obligatorio": true,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "fecha_vencimiento",
+          "etiqueta": "Fecha vencimiento",
+          "tipo": "fecha",
+          "obligatorio": true,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "dias_para_vencer",
+          "etiqueta": "Dias para vencer",
+          "tipo": "entero",
+          "obligatorio": false,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "prioridad_fefo",
+          "etiqueta": "Prioridad fefo",
+          "tipo": "entero",
+          "obligatorio": false,
+          "noNegativo": true,
+          "opciones": null,
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "semaforo",
+          "etiqueta": "Semaforo",
+          "tipo": "texto",
+          "obligatorio": false,
+          "noNegativo": false,
+          "opciones": [
+            "Verde",
+            "Amarillo",
+            "Rojo"
+          ],
+          "cifrado": false,
+          "inicial": null
+        },
+        {
+          "nombre": "estado",
+          "etiqueta": "Estado",
+          "tipo": "texto",
+          "obligatorio": false,
+          "noNegativo": false,
+          "opciones": [
+            "Activa",
+            "Atendida",
+            "LoteBloqueado"
+          ],
+          "cifrado": false,
+          "inicial": "Activa"
+        },
+        {
+          "nombre": "motivo",
+          "etiqueta": "Motivo",
+          "tipo": "texto",
+          "obligatorio": false,
+          "noNegativo": false,
+          "opciones": null,
+          "cifrado": true,
+          "inicial": null
+        }
+      ],
+      "invariantes": [
+        "Regla FEFO innegociable: primero se usa lo que vence primero.",
+        "Lotes Vencidos o en Cuarentena no suman al inventario disponible y se bloquean automáticamente (hard stop)."
+      ],
+      "comandos": [
+        {
+          "nombre": "Evaluar Prioridad FEFO",
+          "ruta": "evaluar-prioridad-fefo",
+          "crea": true,
+          "evento": "Prioridad FEFO Calculada",
+          "restar": null,
+          "estado": null,
+          "requiere": [],
+          "desdeEstados": [],
+          "fechaFutura": []
+        },
+        {
+          "nombre": "Bloquear Lote Vencido",
+          "ruta": "bloquear-lote-vencido",
+          "crea": false,
+          "evento": "Lote Bloqueado",
+          "restar": null,
+          "estado": "LoteBloqueado",
+          "requiere": [],
+          "desdeEstados": [
+            "Activa"
+          ],
+          "fechaFutura": []
+        }
+      ]
+    }
+  ],
+  "funciones": [
+    {
+      "nombre": "Prioridad de uso de lotes (FEFO)",
+      "ruta": "prioridad-de-uso-de-lotes-fefo"
+    },
+    {
+      "nombre": "Validación de restricciones de uso",
+      "ruta": "validacion-de-restricciones-de-uso"
+    },
+    {
+      "nombre": "Notificación de lotes críticos",
+      "ruta": "notificacion-de-lotes-criticos"
+    }
+  ],
+  "componentes": [
+    "Gestión de alertas de vencimiento"
+  ],
+  "entidades": [
+    "Lote",
+    "Alerta de vencimiento",
+    "Restricción de uso"
+  ],
+  "relaciones": [
+    {
+      "con": "Seguridad y Auditoría",
+      "patron": "Open Host Service",
+      "sentido": "consume"
+    },
+    {
+      "con": "Inventario",
+      "patron": "Shared Kernel (núcleo compartido: Lote)",
+      "sentido": "consume"
+    }
+  ]
+}

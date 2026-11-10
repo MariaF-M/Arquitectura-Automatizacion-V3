@@ -1,0 +1,27 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": {{ titulo | tojson }},
+    "version": "1.0.0",
+    "description": {{ ("Contrato generado desde el modelo ArchiMate." ~ ((" Contexto " ~ ctx.dominio ~ " " ~ ctx.clasificacion ~ ".") if ctx else " Capa anticorrupción (V9).")) | tojson }}
+  },
+  "servers": [{"url": "http://localhost:{{ puerto }}"}],
+  "paths": {
+{% for grupo in rutas | groupby("ruta") %}
+    {{ grupo.grouper | tojson }}: {
+{% for r in grupo.list %}
+      {{ r.metodo | lower | tojson }}: {
+        "summary": {{ r.que | tojson }},
+{% if "{id}" in r.ruta %}
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+{% endif %}
+{% if r.metodo == "POST" %}
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "description": {{ (r.cuerpo | default("datos")) | tojson }}}}}},
+{% endif %}
+        "responses": {"200": {"description": "OK"}, "201": {"description": "Creado"}, "404": {"description": "No encontrado"}, "422": {"description": "Viola una invariante"}}
+      }{{ "," if not loop.last }}
+{% endfor %}
+    }{{ "," if not loop.last }}
+{% endfor %}
+  }
+}
