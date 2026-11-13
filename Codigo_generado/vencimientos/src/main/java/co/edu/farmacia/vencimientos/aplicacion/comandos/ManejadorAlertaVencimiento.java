@@ -32,6 +32,10 @@ public class ManejadorAlertaVencimiento {
         return a;
     }
 
+    /** Atributos que no se pueden repetir (spec.yaml -> unicos). */
+    private void verificarUnicos(AlertaVencimiento nuevo) {
+    }
+
     private Map<String, Object> confirmar(AlertaVencimiento a) {
         repo.guardar(a);
         a.extraerEventos().forEach(bus::publicar);
@@ -39,7 +43,9 @@ public class ManejadorAlertaVencimiento {
     }
 
     public Map<String, Object> manejar(EvaluarPrioridadFefo comando) {
-        return confirmar(AlertaVencimiento.evaluarPrioridadFefo(comando.datos()));
+        AlertaVencimiento nuevo = AlertaVencimiento.evaluarPrioridadFefo(comando.datos());
+        verificarUnicos(nuevo);
+        return confirmar(nuevo);
     }
 
     public Map<String, Object> manejar(BloquearLoteVencido comando) {

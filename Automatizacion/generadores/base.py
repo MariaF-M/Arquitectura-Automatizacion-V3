@@ -24,6 +24,7 @@ def entorno(subcarpeta: str) -> Environment:
                       keep_trailing_newline=True)
     for nombre in ("snake", "pascal", "camel", "kebab", "paquete", "sin_tildes"):
         env.filters[nombre] = getattr(n, nombre)
+    env.filters["py"] = repr          # literal Python válido (None, 'texto', 1.0)
     return env
 
 

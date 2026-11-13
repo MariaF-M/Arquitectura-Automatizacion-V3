@@ -29,6 +29,7 @@ Invariantes:
 - La cantidad de existencias nunca puede ser negativa.
 - Todo lote tiene Código, Descripción, Proveedor, Fecha de vencimiento y Registro sanitario desde la recepción técnica.
 - Un lote solo puede estar Disponible, en Cuarentena, Vencido o Bloqueado.
+- El código del lote es único.
 - No se recibe un lote vencido o que vence hoy (la fecha de vencimiento debe ser posterior a la recepción).
 
 ## Componentes y funciones (V5)

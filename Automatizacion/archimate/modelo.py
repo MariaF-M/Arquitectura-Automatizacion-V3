@@ -14,6 +14,12 @@ TIPOS_VALIDOS = {"texto", "entero", "decimal", "fecha", "booleano"}
 class Atributo:
     nombre: str
     tipo: str
+    # Reglas de formato (spec.yaml -> formatos). Se validan en backend y frontend.
+    patron: str | None = None       # expresión regular que debe cumplir el texto completo
+    mensaje: str | None = None      # explicación legible del patrón
+    minimo: float | None = None
+    maximo: float | None = None
+    max_largo: int | None = None    # largo máximo de un texto
 
     @property
     def snake(self): return n.snake(self.nombre)
@@ -65,6 +71,7 @@ class Agregado:
     no_negativos: list[str] = field(default_factory=list)
     valores_permitidos: dict = field(default_factory=dict)
     invariantes: list[str] = field(default_factory=list)
+    unicos: list[str] = field(default_factory=list)      # atributos que no se pueden repetir entre agregados
 
     @property
     def clase(self): return n.pascal(self.nombre)

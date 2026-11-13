@@ -22,7 +22,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": "^[0-9]{3,20}$",
+          "mensaje": "debe tener solo números, entre 3 y 20 dígitos",
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "descripcion",
@@ -32,7 +37,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": "^.{3,120}$",
+          "mensaje": "debe tener entre 3 y 120 caracteres",
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "proveedor",
@@ -42,7 +52,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": true,
-          "inicial": null
+          "inicial": null,
+          "patron": "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,&-]{3,100}$",
+          "mensaje": "debe tener entre 3 y 100 caracteres (letras, números, espacios y . , & -)",
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "fecha_vencimiento",
@@ -52,7 +67,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": null
         },
         {
           "nombre": "registro_sanitario",
@@ -62,7 +82,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": "^[A-Za-z0-9 -]{5,30}$",
+          "mensaje": "debe tener entre 5 y 30 caracteres: letras, números, espacios o guiones (ej: INVIMA 2024M-0001234)",
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "cantidad",
@@ -72,7 +97,12 @@
           "noNegativo": true,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": 0,
+          "maximo": 1000000,
+          "maxLargo": null
         },
         {
           "nombre": "estado",
@@ -87,13 +117,19 @@
             "Bloqueado"
           ],
           "cifrado": false,
-          "inicial": "Disponible"
+          "inicial": "Disponible",
+          "patron": null,
+          "mensaje": null,
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         }
       ],
       "invariantes": [
         "La cantidad de existencias nunca puede ser negativa.",
         "Todo lote tiene Código, Descripción, Proveedor, Fecha de vencimiento y Registro sanitario desde la recepción técnica.",
         "Un lote solo puede estar Disponible, en Cuarentena, Vencido o Bloqueado.",
+        "El código del lote es único.",
         "No se recibe un lote vencido o que vence hoy (la fecha de vencimiento debe ser posterior a la recepción)."
       ],
       "comandos": [

@@ -42,6 +42,15 @@ class Manejador{{ a.clase }}:
             raise NoEncontradoError(f"{{ a.clase }} {id} no existe")
         return agregado
 
+    def _verificar_unicos(self, agregado: {{ a.clase }}) -> None:
+        """Atributos que no se pueden repetir (spec.yaml -> unicos)."""
+{% for u in a.unicos %}
+        if any(o.{{ u | snake }} == agregado.{{ u | snake }} and o.id != agregado.id for o in self._repo.listar()):
+            raise ReglaNegocioError(f"Ya existe un {{ a.nombre }} con {{ u | snake }} '{agregado.{{ u | snake }}}'")
+{% else %}
+        return
+{% endfor %}
+
     def _confirmar(self, agregado: {{ a.clase }}) -> dict:
         self._repo.guardar(agregado)
         for evento in agregado.extraer_eventos():
@@ -52,6 +61,7 @@ class Manejador{{ a.clase }}:
     def manejar_{{ c.metodo_snake }}(self, comando: {{ c.clase }}) -> dict:
 {% if c.crea %}
         agregado = {{ a.clase }}.{{ c.metodo_snake }}(comando.datos)
+        self._verificar_unicos(agregado)
         return self._confirmar(agregado)
 {% else %}
         agregado = self._cargar(comando.id)

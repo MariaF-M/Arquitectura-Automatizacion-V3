@@ -53,15 +53,30 @@
           "atributos": [
             {
               "nombre": "codigo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "principio_activo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "concentracion",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -72,15 +87,30 @@
           "atributos": [
             {
               "nombre": "codigo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "fecha_vencimiento",
-              "tipo": "fecha"
+              "tipo": "fecha",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "estado",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": true
@@ -91,19 +121,39 @@
           "atributos": [
             {
               "nombre": "lote_codigo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "tipo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "cantidad",
-              "tipo": "entero"
+              "tipo": "entero",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "fecha",
-              "tipo": "fecha"
+              "tipo": "fecha",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -116,31 +166,66 @@
           "atributos": [
             {
               "nombre": "codigo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": "^[0-9]{3,20}$",
+              "mensaje": "debe tener solo números, entre 3 y 20 dígitos",
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "descripcion",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": "^.{3,120}$",
+              "mensaje": "debe tener entre 3 y 120 caracteres",
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "proveedor",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,&-]{3,100}$",
+              "mensaje": "debe tener entre 3 y 100 caracteres (letras, números, espacios y . , & -)",
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "fecha_vencimiento",
-              "tipo": "fecha"
+              "tipo": "fecha",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "registro_sanitario",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": "^[A-Za-z0-9 -]{5,30}$",
+              "mensaje": "debe tener entre 5 y 30 caracteres: letras, números, espacios o guiones (ej: INVIMA 2024M-0001234)",
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "cantidad",
-              "tipo": "entero"
+              "tipo": "entero",
+              "patron": null,
+              "mensaje": null,
+              "minimo": 0,
+              "maximo": 1000000,
+              "max_largo": null
             },
             {
               "nombre": "estado",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             }
           ],
           "comandos": [
@@ -212,7 +297,11 @@
             "La cantidad de existencias nunca puede ser negativa.",
             "Todo lote tiene Código, Descripción, Proveedor, Fecha de vencimiento y Registro sanitario desde la recepción técnica.",
             "Un lote solo puede estar Disponible, en Cuarentena, Vencido o Bloqueado.",
+            "El código del lote es único.",
             "No se recibe un lote vencido o que vence hoy (la fecha de vencimiento debe ser posterior a la recepción)."
+          ],
+          "unicos": [
+            "codigo"
           ]
         }
       ],
@@ -361,15 +450,30 @@
           "atributos": [
             {
               "nombre": "codigo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "fecha_vencimiento",
-              "tipo": "fecha"
+              "tipo": "fecha",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "estado",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": true
@@ -380,11 +484,21 @@
           "atributos": [
             {
               "nombre": "lote_codigo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "semaforo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -395,11 +509,21 @@
           "atributos": [
             {
               "nombre": "lote_codigo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "motivo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -412,31 +536,66 @@
           "atributos": [
             {
               "nombre": "lote_codigo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": "^[0-9]{3,20}$",
+              "mensaje": "debe tener solo números, entre 3 y 20 dígitos (el código del lote en Inventario)",
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "fecha_vencimiento",
-              "tipo": "fecha"
+              "tipo": "fecha",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "dias_para_vencer",
-              "tipo": "entero"
+              "tipo": "entero",
+              "patron": null,
+              "mensaje": null,
+              "minimo": -3650,
+              "maximo": 3650,
+              "max_largo": null
             },
             {
               "nombre": "prioridad_fefo",
-              "tipo": "entero"
+              "tipo": "entero",
+              "patron": null,
+              "mensaje": null,
+              "minimo": 1,
+              "maximo": 1000,
+              "max_largo": null
             },
             {
               "nombre": "semaforo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "estado",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "motivo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 200
             }
           ],
           "comandos": [
@@ -506,7 +665,8 @@
           "invariantes": [
             "Regla FEFO innegociable: primero se usa lo que vence primero.",
             "Lotes Vencidos o en Cuarentena no suman al inventario disponible y se bloquean automáticamente (hard stop)."
-          ]
+          ],
+          "unicos": []
         }
       ],
       "proveedores": [
@@ -597,11 +757,21 @@
           "atributos": [
             {
               "nombre": "codigo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "principio_activo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -612,11 +782,21 @@
           "atributos": [
             {
               "nombre": "procedimiento",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "fecha",
-              "tipo": "fecha"
+              "tipo": "fecha",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -627,15 +807,30 @@
           "atributos": [
             {
               "nombre": "medicamento",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "periodo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "cantidad",
-              "tipo": "entero"
+              "tipo": "entero",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -646,11 +841,21 @@
           "atributos": [
             {
               "nombre": "medicamento",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "cantidad_estimada",
-              "tipo": "entero"
+              "tipo": "entero",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -663,31 +868,66 @@
           "atributos": [
             {
               "nombre": "medicamento",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,()/-]{3,100}$",
+              "mensaje": "debe tener entre 3 y 100 caracteres (letras, números y signos básicos)",
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "periodo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+              "mensaje": "debe tener el formato AAAA-MM (ej: 2026-12)",
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "demanda_programada",
-              "tipo": "entero"
+              "tipo": "entero",
+              "patron": null,
+              "mensaje": null,
+              "minimo": 0,
+              "maximo": 1000000,
+              "max_largo": null
             },
             {
               "nombre": "demanda_no_programada",
-              "tipo": "entero"
+              "tipo": "entero",
+              "patron": null,
+              "mensaje": null,
+              "minimo": 0,
+              "maximo": 1000000,
+              "max_largo": null
             },
             {
               "nombre": "cantidad_estimada",
-              "tipo": "entero"
+              "tipo": "entero",
+              "patron": null,
+              "mensaje": null,
+              "minimo": 0,
+              "maximo": 1000000,
+              "max_largo": null
             },
             {
               "nombre": "estado",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "observaciones",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 500
             }
           ],
           "comandos": [
@@ -754,7 +994,8 @@
           "invariantes": [
             "La estimación considera demanda programada (cirugías, censo) y no programada (histórico de urgencias).",
             "Toda predicción es una sugerencia que un humano debe validar antes de pasar a abastecimiento."
-          ]
+          ],
+          "unicos": []
         }
       ],
       "proveedores": [
@@ -847,11 +1088,21 @@
           "atributos": [
             {
               "nombre": "codigo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "principio_activo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -862,11 +1113,21 @@
           "atributos": [
             {
               "nombre": "principio_activo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "cantidad",
-              "tipo": "entero"
+              "tipo": "entero",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -877,11 +1138,21 @@
           "atributos": [
             {
               "nombre": "autorizado_por",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "fecha",
-              "tipo": "fecha"
+              "tipo": "fecha",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -894,27 +1165,57 @@
           "atributos": [
             {
               "nombre": "principio_activo",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]{3,100}$",
+              "mensaje": "debe tener solo letras y espacios, entre 3 y 100 caracteres (ej: Cefazolina)",
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "concentracion",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": "^[0-9]+([.,][0-9]+)? ?[A-Za-zµ%/]+$",
+              "mensaje": "debe ser un número seguido de su unidad (ej: 500 mg, 1 g, 5%)",
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "cantidad",
-              "tipo": "entero"
+              "tipo": "entero",
+              "patron": null,
+              "mensaje": null,
+              "minimo": 1,
+              "maximo": 1000000,
+              "max_largo": null
             },
             {
               "nombre": "nivel_urgencia",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "estado",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             },
             {
               "nombre": "autorizado_por",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ .]{3,100}$",
+              "mensaje": "debe tener solo letras, espacios y puntos (ej: QF Laura Gómez)",
+              "minimo": null,
+              "maximo": null,
+              "max_largo": 255
             }
           ],
           "comandos": [
@@ -988,7 +1289,8 @@
           "invariantes": [
             "El requerimiento contiene principio activo (DCI), concentración, cantidad y nivel de urgencia.",
             "Ningún requerimiento viaja a Compras (ERP) sin autorización técnica previa del Químico Farmacéutico."
-          ]
+          ],
+          "unicos": []
         }
       ],
       "proveedores": [
@@ -1095,11 +1397,21 @@
           "atributos": [
             {
               "nombre": "usuario",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "nombre",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -1110,7 +1422,12 @@
           "atributos": [
             {
               "nombre": "nombre",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false
@@ -1121,15 +1438,30 @@
           "atributos": [
             {
               "nombre": "usuario",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "accion",
-              "tipo": "texto"
+              "tipo": "texto",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             },
             {
               "nombre": "fecha",
-              "tipo": "fecha"
+              "tipo": "fecha",
+              "patron": null,
+              "mensaje": null,
+              "minimo": null,
+              "maximo": null,
+              "max_largo": null
             }
           ],
           "compartida": false

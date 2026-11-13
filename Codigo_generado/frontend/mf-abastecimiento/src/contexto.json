@@ -22,7 +22,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]{3,100}$",
+          "mensaje": "debe tener solo letras y espacios, entre 3 y 100 caracteres (ej: Cefazolina)",
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "concentracion",
@@ -32,7 +37,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": "^[0-9]+([.,][0-9]+)? ?[A-Za-zµ%/]+$",
+          "mensaje": "debe ser un número seguido de su unidad (ej: 500 mg, 1 g, 5%)",
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "cantidad",
@@ -42,7 +52,12 @@
           "noNegativo": true,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": 1,
+          "maximo": 1000000,
+          "maxLargo": null
         },
         {
           "nombre": "nivel_urgencia",
@@ -57,7 +72,12 @@
             "Critica"
           ],
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "estado",
@@ -70,7 +90,12 @@
             "Autorizado"
           ],
           "cifrado": false,
-          "inicial": "Sugerido"
+          "inicial": "Sugerido",
+          "patron": null,
+          "mensaje": null,
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "autorizado_por",
@@ -80,7 +105,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": true,
-          "inicial": null
+          "inicial": null,
+          "patron": "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ .]{3,100}$",
+          "mensaje": "debe tener solo letras, espacios y puntos (ej: QF Laura Gómez)",
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         }
       ],
       "invariantes": [

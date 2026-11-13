@@ -74,7 +74,10 @@ public class {{ a.clase }}
 {% set at = a.atributos | selectattr("nombre", "equalto", c.restar) | first %}
         if (!datos.TryGetValue("{{ at.snake }}", out var resta))
             throw new ReglaNegocioException("«{{ c.nombre }}» requiere '{{ at.snake }}'");
-        {{ at.pascal }} = ({{ at.pascal }} ?? 0) - (Conversion.{{ "Entero" if at.tipo == "entero" else "Decimal" }}("{{ at.snake }}", resta) ?? 0);
+        var valorResta = Conversion.{{ "Entero" if at.tipo == "entero" else "Decimal" }}("{{ at.snake }}", resta);
+        if (valorResta is null || valorResta <= 0)
+            throw new ReglaNegocioException("«{{ c.nombre }}»: '{{ at.snake }}' debe ser mayor que cero");
+        {{ at.pascal }} = ({{ at.pascal }} ?? 0) - valorResta;
 {% else %}
         Aplicar(datos.Where(kv => kv.Key != "id").ToDictionary(kv => kv.Key, kv => kv.Value));
 {% endif %}
@@ -97,6 +100,7 @@ public class {{ a.clase }}
     // ------------------------------------------------------------ invariantes
     public void Validar()
     {
+        ValidarFormatos();
 {% for x in a.obligatorios %}
 {% set at = a.atributos | selectattr("nombre", "equalto", x) | first %}
         if ({{ at.pascal }} is null{% if at.tipo == "texto" %} || string.IsNullOrWhiteSpace({{ at.pascal }}){% endif %})
@@ -111,6 +115,32 @@ public class {{ a.clase }}
 {% set at = a.atributos | selectattr("nombre", "equalto", campo) | first %}
         if ({{ at.pascal }} is not null && !{{ campo | pascal }}Permitidos.Contains({{ at.pascal }}))
             throw new ReglaNegocioException($"'{{ at.snake }}' = '{{ '{' }}{{ at.pascal }}{{ '}' }}' no es válido. Permitidos: {string.Join(", ", {{ campo | pascal }}Permitidos)}");
+{% endfor %}
+    }
+
+    /// <summary>Reglas de formato por atributo (spec.yaml -> formatos): patrón, rango y largo máximo.</summary>
+    private void ValidarFormatos()
+    {
+{% for at in a.atributos %}
+{% if at.tipo == "texto" %}
+{% if at.max_largo %}
+        if ({{ at.pascal }} is not null && {{ at.pascal }}.Length > {{ at.max_largo }})
+            throw new ReglaNegocioException("'{{ at.snake }}' admite máximo {{ at.max_largo }} caracteres");
+{% endif %}
+{% if at.patron %}
+        if ({{ at.pascal }} is not null && !System.Text.RegularExpressions.Regex.IsMatch({{ at.pascal }}, {{ at.patron | tojson }}))
+            throw new ReglaNegocioException("'{{ at.snake }}' " + {{ at.mensaje | tojson }} + $" (recibido: '{{ '{' }}{{ at.pascal }}{{ '}' }}')");
+{% endif %}
+{% elif at.tipo in ("entero", "decimal") %}
+{% if at.minimo is not none %}
+        if ({{ at.pascal }} < {{ at.minimo }})
+            throw new ReglaNegocioException($"'{{ at.snake }}' debe ser mayor o igual a {{ '%g' % at.minimo }} (recibido: {{ '{' }}{{ at.pascal }}{{ '}' }})");
+{% endif %}
+{% if at.maximo is not none %}
+        if ({{ at.pascal }} > {{ at.maximo }})
+            throw new ReglaNegocioException($"'{{ at.snake }}' debe ser menor o igual a {{ '%g' % at.maximo }} (recibido: {{ '{' }}{{ at.pascal }}{{ '}' }})");
+{% endif %}
+{% endif %}
 {% endfor %}
     }
 

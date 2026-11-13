@@ -41,6 +41,10 @@ class ManejadorEstimacionDemanda:
             raise NoEncontradoError(f"EstimacionDemanda {id} no existe")
         return agregado
 
+    def _verificar_unicos(self, agregado: EstimacionDemanda) -> None:
+        """Atributos que no se pueden repetir (spec.yaml -> unicos)."""
+        return
+
     def _confirmar(self, agregado: EstimacionDemanda) -> dict:
         self._repo.guardar(agregado)
         for evento in agregado.extraer_eventos():
@@ -49,6 +53,7 @@ class ManejadorEstimacionDemanda:
 
     def manejar_calcular_demanda(self, comando: CalcularDemanda) -> dict:
         agregado = EstimacionDemanda.calcular_demanda(comando.datos)
+        self._verificar_unicos(agregado)
         return self._confirmar(agregado)
 
     def manejar_ajustar_prediccion(self, comando: AjustarPrediccion) -> dict:

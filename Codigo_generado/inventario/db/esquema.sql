@@ -5,7 +5,7 @@
 -- Agregado raíz «LoteMedicamento»
 CREATE TABLE IF NOT EXISTS lote_medicamento (
     id VARCHAR(36) PRIMARY KEY,
-    codigo VARCHAR(255) NOT NULL,
+    codigo VARCHAR(255) NOT NULL UNIQUE,
     descripcion VARCHAR(255) NOT NULL,
     proveedor TEXT NOT NULL,
     fecha_vencimiento DATE NOT NULL,

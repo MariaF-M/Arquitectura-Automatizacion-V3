@@ -32,6 +32,15 @@ public class Manejador{{ a.clase }} {
         return a;
     }
 
+    /** Atributos que no se pueden repetir (spec.yaml -> unicos). */
+    private void verificarUnicos({{ a.clase }} nuevo) {
+{% for u in a.unicos %}
+        Object valor = nuevo.aMapa().get("{{ u | snake }}");
+        if (valor != null && repo.listar().stream().anyMatch(o -> !o.getId().equals(nuevo.getId()) && valor.equals(o.aMapa().get("{{ u | snake }}"))))
+            throw new ReglaNegocioException("Ya existe un {{ a.nombre }} con {{ u | snake }} '" + valor + "'");
+{% endfor %}
+    }
+
     private Map<String, Object> confirmar({{ a.clase }} a) {
         repo.guardar(a);
         a.extraerEventos().forEach(bus::publicar);
@@ -41,7 +50,9 @@ public class Manejador{{ a.clase }} {
 
     public Map<String, Object> manejar({{ c.clase }} comando) {
 {% if c.crea %}
-        return confirmar({{ a.clase }}.{{ c.metodo_camel }}(comando.datos()));
+        {{ a.clase }} nuevo = {{ a.clase }}.{{ c.metodo_camel }}(comando.datos());
+        verificarUnicos(nuevo);
+        return confirmar(nuevo);
 {% else %}
         {{ a.clase }} a = cargar(comando.id());
         {{ a.clase }}Memento memento = a.crearMemento();

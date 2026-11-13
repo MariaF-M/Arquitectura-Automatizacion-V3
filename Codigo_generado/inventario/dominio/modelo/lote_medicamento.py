@@ -9,10 +9,12 @@ Invariantes que protege:
   * La cantidad de existencias nunca puede ser negativa.
   * Todo lote tiene Código, Descripción, Proveedor, Fecha de vencimiento y Registro sanitario desde la recepción técnica.
   * Un lote solo puede estar Disponible, en Cuarentena, Vencido o Bloqueado.
+  * El código del lote es único.
   * No se recibe un lote vencido o que vence hoy (la fecha de vencimiento debe ser posterior a la recepción).
 """
 from __future__ import annotations
 
+import re
 import uuid
 from dataclasses import dataclass
 from datetime import date
@@ -38,11 +40,42 @@ VALORES_PERMITIDOS = {
 }
 
 
+# Reglas de formato por atributo (spec.yaml -> formatos): patrón, rango y largo máximo
+FORMATOS = {
+    "codigo": {"patron": '^[0-9]{3,20}$', "mensaje": 'debe tener solo números, entre 3 y 20 dígitos', "minimo": None, "maximo": None, "max_largo": 255},
+    "descripcion": {"patron": '^.{3,120}$', "mensaje": 'debe tener entre 3 y 120 caracteres', "minimo": None, "maximo": None, "max_largo": 255},
+    "proveedor": {"patron": '^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,&-]{3,100}$', "mensaje": 'debe tener entre 3 y 100 caracteres (letras, números, espacios y . , & -)', "minimo": None, "maximo": None, "max_largo": 255},
+    "registro_sanitario": {"patron": '^[A-Za-z0-9 -]{5,30}$', "mensaje": 'debe tener entre 5 y 30 caracteres: letras, números, espacios o guiones (ej: INVIMA 2024M-0001234)', "minimo": None, "maximo": None, "max_largo": 255},
+    "cantidad": {"patron": None, "mensaje": None, "minimo": 0, "maximo": 1000000, "max_largo": None},
+    "estado": {"patron": None, "mensaje": None, "minimo": None, "maximo": None, "max_largo": 255},
+}
+
+
 def _convertir(tipo, valor):
-    if valor is None or isinstance(valor, tipo):
-        return valor
+    """Convierte un valor recibido al tipo del atributo. Lanza ValueError si no se puede."""
+    if valor is None:
+        return None
+    if tipo is str:
+        texto = str(valor).strip()          # se ignoran espacios al inicio y al final
+        return texto or None                # "   " cuenta como vacío
+    if isinstance(valor, str) and not valor.strip():
+        return None
+    if tipo is bool:
+        if isinstance(valor, bool):
+            return valor
+        if str(valor).strip().lower() in ("true", "false"):
+            return str(valor).strip().lower() == "true"
+        raise ValueError("se esperaba true o false")
+    if isinstance(valor, bool):              # True/False no son números válidos
+        raise ValueError("se esperaba un número")
+    if tipo is int:
+        if isinstance(valor, float) and not valor.is_integer():
+            raise ValueError("se esperaba un número entero")
+        return int(str(valor).strip()) if isinstance(valor, str) else int(valor)
+    if tipo is float:
+        return float(str(valor).strip().replace(",", ".")) if isinstance(valor, str) else float(valor)
     if tipo is date:
-        return date.fromisoformat(str(valor))
+        return valor if isinstance(valor, date) else date.fromisoformat(str(valor).strip())
     return tipo(valor)
 
 
@@ -89,7 +122,13 @@ class LoteMedicamento:
             raise ReglaNegocioError(f"«Descontar Existencias» no se permite con estado '{self.estado}'")
         if "cantidad" not in datos:
             raise ReglaNegocioError("«Descontar Existencias» requiere 'cantidad'")
-        self.cantidad = (self.cantidad or 0) - _convertir(CAMPOS["cantidad"], datos["cantidad"])
+        try:
+            resta = _convertir(CAMPOS["cantidad"], datos["cantidad"])
+        except (TypeError, ValueError) as error:
+            raise ReglaNegocioError(f"Valor inválido para 'cantidad': {datos['cantidad']!r}") from error
+        if resta is None or resta <= 0:
+            raise ReglaNegocioError("«Descontar Existencias»: 'cantidad' debe ser mayor que cero")
+        self.cantidad = (self.cantidad or 0) - resta
         self.validar()
         self._registrar(ExistenciasDescontadas(self.id, self.a_dict()))
 
@@ -106,6 +145,20 @@ class LoteMedicamento:
             valor = getattr(self, campo)
             if valor is not None and valor not in permitidos:
                 raise ReglaNegocioError(f"'{campo}' = '{valor}' no es válido. Permitidos: {permitidos}")
+        for campo, regla in FORMATOS.items():
+            valor = getattr(self, campo)
+            if valor is None:
+                continue
+            if isinstance(valor, str):
+                if regla["max_largo"] and len(valor) > regla["max_largo"]:
+                    raise ReglaNegocioError(f"'{campo}' admite máximo {regla['max_largo']} caracteres")
+                if regla["patron"] and not re.fullmatch(regla["patron"], valor):
+                    raise ReglaNegocioError(f"'{campo}' {regla['mensaje']} (recibido: '{valor}')")
+            else:
+                if regla["minimo"] is not None and valor < regla["minimo"]:
+                    raise ReglaNegocioError(f"'{campo}' debe ser mayor o igual a {regla['minimo']:g} (recibido: {valor})")
+                if regla["maximo"] is not None and valor > regla["maximo"]:
+                    raise ReglaNegocioError(f"'{campo}' debe ser menor o igual a {regla['maximo']:g} (recibido: {valor})")
 
     # ----------------------------------------------------------------- memento
     def crear_memento(self) -> LoteMedicamentoMemento:
@@ -127,7 +180,9 @@ class LoteMedicamento:
                 try:
                     setattr(self, campo, _convertir(CAMPOS[campo], valor))
                 except (TypeError, ValueError) as error:
-                    raise ReglaNegocioError(f"Valor inválido para '{campo}': {valor!r}") from error
+                    esperado = {"int": "un número entero", "float": "un número", "date": "una fecha AAAA-MM-DD",
+                                "bool": "true o false", "str": "un texto"}[CAMPOS[campo].__name__]
+                    raise ReglaNegocioError(f"Valor inválido para '{campo}': {valor!r} (se esperaba {esperado})") from error
 
     def _registrar(self, evento: EventoDominio) -> None:
         self._eventos.append(evento)

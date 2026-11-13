@@ -77,6 +77,8 @@ def servidor(app, puerto: int) -> ThreadingHTTPServer:
                 try:
                     largo = int(self.headers.get("Content-Length") or 0)
                     cuerpo = json.loads(self.rfile.read(largo) or b"{}") if largo else {}
+                    if not isinstance(cuerpo, dict):
+                        return self._responder(400, {"error": "El cuerpo debe ser un objeto JSON, por ejemplo {\"campo\": valor}"})
                     resultado = funcion({**coincidencia.groupdict(), "cuerpo": cuerpo})
                     return self._responder(201 if metodo == "POST" else 200, resultado)
                 except ReglaNegocioError as e:
@@ -85,8 +87,11 @@ def servidor(app, puerto: int) -> ThreadingHTTPServer:
                     return self._responder(404, {"error": str(e)})
                 except CasoDeUsoPendiente as e:
                     return self._responder(501, {"error": str(e)})
-                except json.JSONDecodeError:
-                    return self._responder(400, {"error": "JSON inválido"})
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    return self._responder(400, {"error": "El cuerpo de la petición no es un JSON válido"})
+                except Exception:  # noqa: BLE001 — último recurso: nunca se cae el servidor ni se filtran detalles
+                    log.exception("error inesperado en %s %s", metodo, ruta)
+                    return self._responder(500, {"error": "Error interno del servidor. El detalle quedó en el log del servicio."})
             self._responder(404, {"error": f"Ruta no encontrada: {metodo} {ruta}"})
 
         def do_GET(self):  # noqa: N802

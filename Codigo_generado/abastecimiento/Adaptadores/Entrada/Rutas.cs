@@ -20,6 +20,12 @@ public static class Rutas
         catch (ReglaNegocioException e) { return Results.Json(new { error = e.Message }, statusCode: 422); }
         catch (NoEncontradoException e) { return Results.Json(new { error = e.Message }, statusCode: 404); }
         catch (CasoDeUsoPendienteException e) { return Results.Json(new { error = e.Message }, statusCode: 501); }
+        catch (Exception e)
+        {
+            // Último recurso: nunca se devuelve una página de error ni se filtran detalles; el detalle va al log
+            Console.Error.WriteLine($"[error inesperado] {e}");
+            return Results.Json(new { error = "Error interno del servidor. El detalle quedó en el log del servicio." }, statusCode: 500);
+        }
     }
 
     /// <summary>Lee el cuerpo como JSON sin exigir el encabezado Content-Type (igual que los servicios Python y Java).</summary>
@@ -35,7 +41,7 @@ public static class Rutas
     private static async Task<IResult> ConCuerpo(HttpRequest req, Func<Dictionary<string, object?>, object?> accion, int codigo = 201)
     {
         var cuerpo = await Cuerpo(req);
-        return cuerpo is null ? Results.Json(new { error = "JSON inválido" }, statusCode: 400) : Ejecutar(() => accion(cuerpo), codigo);
+        return cuerpo is null ? Results.Json(new { error = "El cuerpo de la petición no es un objeto JSON válido" }, statusCode: 400) : Ejecutar(() => accion(cuerpo), codigo);
     }
 
     public static void Mapear(WebApplication app, Func<object> arquitectura)

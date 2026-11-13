@@ -12,6 +12,12 @@ export interface Atributo {
   opciones: string[] | null;
   cifrado: boolean;
   inicial: string | number | boolean | null;
+  /** Control de errores (spec.yaml -> formatos): se valida aquí y también en el backend. */
+  patron: string | null;
+  mensaje: string | null;
+  minimo: number | null;
+  maximo: number | null;
+  maxLargo: number | null;
 }
 
 /** Comando = Application Process de V6. */

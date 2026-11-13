@@ -19,6 +19,16 @@ public class Manejador{{ a.clase }}(IRepositorio{{ a.clase }} repo, BusEventos b
 {
     private {{ a.clase }} Cargar(string id) => repo.Obtener(id) ?? throw new NoEncontradoException($"{{ a.clase }} {id} no existe");
 
+    /// <summary>Atributos que no se pueden repetir (spec.yaml -> unicos).</summary>
+    private void VerificarUnicos({{ a.clase }} nuevo)
+    {
+{% for u in a.unicos %}
+        var valor{{ loop.index }} = nuevo.AMapa()["{{ u | snake }}"];
+        if (valor{{ loop.index }} is not null && repo.Listar().Any(o => o.Id != nuevo.Id && Equals(o.AMapa()["{{ u | snake }}"], valor{{ loop.index }})))
+            throw new ReglaNegocioException($"Ya existe un {{ a.nombre }} con {{ u | snake }} '{valor{{ loop.index }}}'");
+{% endfor %}
+    }
+
     private Dictionary<string, object?> Confirmar({{ a.clase }} a)
     {
         repo.Guardar(a);
@@ -30,7 +40,9 @@ public class Manejador{{ a.clase }}(IRepositorio{{ a.clase }} repo, BusEventos b
     public Dictionary<string, object?> Manejar({{ c.clase }}Comando comando)
     {
 {% if c.crea %}
-        return Confirmar({{ a.clase }}.{{ c.clase }}(comando.Datos));
+        var nuevo = {{ a.clase }}.{{ c.clase }}(comando.Datos);
+        VerificarUnicos(nuevo);
+        return Confirmar(nuevo);
 {% else %}
         var a = Cargar(comando.Id);
         var memento = a.CrearMemento();

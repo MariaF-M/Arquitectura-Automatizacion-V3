@@ -60,6 +60,7 @@ public class RequerimientoCompra
     // ------------------------------------------------------------ invariantes
     public void Validar()
     {
+        ValidarFormatos();
         if (PrincipioActivo is null || string.IsNullOrWhiteSpace(PrincipioActivo))
             throw new ReglaNegocioException("El campo 'principio_activo' es obligatorio en RequerimientoCompra");
         if (Concentracion is null || string.IsNullOrWhiteSpace(Concentracion))
@@ -74,6 +75,31 @@ public class RequerimientoCompra
             throw new ReglaNegocioException($"'nivel_urgencia' = '{NivelUrgencia}' no es válido. Permitidos: {string.Join(", ", NivelUrgenciaPermitidos)}");
         if (Estado is not null && !EstadoPermitidos.Contains(Estado))
             throw new ReglaNegocioException($"'estado' = '{Estado}' no es válido. Permitidos: {string.Join(", ", EstadoPermitidos)}");
+    }
+
+    /// <summary>Reglas de formato por atributo (spec.yaml -> formatos): patrón, rango y largo máximo.</summary>
+    private void ValidarFormatos()
+    {
+        if (PrincipioActivo is not null && PrincipioActivo.Length > 255)
+            throw new ReglaNegocioException("'principio_activo' admite máximo 255 caracteres");
+        if (PrincipioActivo is not null && !System.Text.RegularExpressions.Regex.IsMatch(PrincipioActivo, "^[A-Za-z\u00c1\u00c9\u00cd\u00d3\u00da\u00dc\u00d1\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc\u00f1 ]{3,100}$"))
+            throw new ReglaNegocioException("'principio_activo' " + "debe tener solo letras y espacios, entre 3 y 100 caracteres (ej: Cefazolina)" + $" (recibido: '{PrincipioActivo}')");
+        if (Concentracion is not null && Concentracion.Length > 255)
+            throw new ReglaNegocioException("'concentracion' admite máximo 255 caracteres");
+        if (Concentracion is not null && !System.Text.RegularExpressions.Regex.IsMatch(Concentracion, "^[0-9]+([.,][0-9]+)? ?[A-Za-z\u00b5%/]+$"))
+            throw new ReglaNegocioException("'concentracion' " + "debe ser un n\u00famero seguido de su unidad (ej: 500 mg, 1 g, 5%)" + $" (recibido: '{Concentracion}')");
+        if (Cantidad < 1)
+            throw new ReglaNegocioException($"'cantidad' debe ser mayor o igual a 1 (recibido: {Cantidad})");
+        if (Cantidad > 1000000)
+            throw new ReglaNegocioException($"'cantidad' debe ser menor o igual a 1e+06 (recibido: {Cantidad})");
+        if (NivelUrgencia is not null && NivelUrgencia.Length > 255)
+            throw new ReglaNegocioException("'nivel_urgencia' admite máximo 255 caracteres");
+        if (Estado is not null && Estado.Length > 255)
+            throw new ReglaNegocioException("'estado' admite máximo 255 caracteres");
+        if (AutorizadoPor is not null && AutorizadoPor.Length > 255)
+            throw new ReglaNegocioException("'autorizado_por' admite máximo 255 caracteres");
+        if (AutorizadoPor is not null && !System.Text.RegularExpressions.Regex.IsMatch(AutorizadoPor, "^[A-Za-z\u00c1\u00c9\u00cd\u00d3\u00da\u00dc\u00d1\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc\u00f1 .]{3,100}$"))
+            throw new ReglaNegocioException("'autorizado_por' " + "debe tener solo letras, espacios y puntos (ej: QF Laura G\u00f3mez)" + $" (recibido: '{AutorizadoPor}')");
     }
 
     // ------------------------------------------------------------ memento

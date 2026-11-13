@@ -69,6 +69,32 @@ class Extractor:
                     self._trazar(vista, e)
 
     @staticmethod
+    def _formatos(attrs, formatos: dict, no_negativos: list, donde: str) -> None:
+        """Aplica las reglas de formato del spec a los atributos (y los valores por defecto)."""
+        por_nombre = {a.nombre: a for a in attrs}
+        for campo, regla in formatos.items():
+            if campo not in por_nombre:
+                raise ErrorModelo(f"{donde}: 'formatos' usa el atributo inexistente '{campo}'")
+            at = por_nombre[campo]
+            if "patron" in regla:
+                try:
+                    re.compile(regla["patron"])
+                except re.error as e:
+                    raise ErrorModelo(f"{donde}: el patrón de '{campo}' no es una expresión regular válida: {e}")
+                if at.tipo != "texto":
+                    raise ErrorModelo(f"{donde}: 'patron' solo aplica a atributos de texto ('{campo}' es {at.tipo})")
+            at.patron = regla.get("patron")
+            at.mensaje = regla.get("mensaje") or (f"no tiene el formato esperado ({at.patron})" if at.patron else None)
+            at.minimo = regla.get("minimo")
+            at.maximo = regla.get("maximo")
+            at.max_largo = regla.get("max_largo")
+        for at in attrs:
+            if at.tipo == "texto" and at.max_largo is None:
+                at.max_largo = 255                      # igual al VARCHAR(255) de la base de datos
+            if at.nombre in no_negativos and at.minimo is None:
+                at.minimo = 0
+
+    @staticmethod
     def _texto(valor) -> str:
         """Una invariante escrita sin comillas con ':' llega de YAML como dict; se vuelve a texto."""
         if isinstance(valor, dict):
@@ -287,7 +313,8 @@ class Extractor:
                         s = {}
                     attrs = self._atributos(s.get("atributos"), f"{nombre}/{raiz.nombre}")
                     nombres_attr = {x.nombre for x in attrs}
-                    for clave in ("obligatorios", "no_negativos"):
+                    self._formatos(attrs, s.get("formatos", {}) or {}, s.get("no_negativos", []), f"{nombre}/{raiz.nombre}")
+                    for clave in ("obligatorios", "no_negativos", "unicos"):
                         malos = set(s.get(clave, [])) - nombres_attr
                         if malos:
                             raise ErrorModelo(f"spec: {raiz.nombre}.{clave} usa atributos inexistentes: {sorted(malos)}")
@@ -316,7 +343,8 @@ class Extractor:
                     ctx.agregados.append(Agregado(raiz.nombre, raiz.id, attrs, a["comandos"], a["eventos"],
                                                   s.get("valores_iniciales", {}), s.get("obligatorios", []),
                                                   s.get("no_negativos", []), s.get("valores_permitidos", {}),
-                                                  [self._texto(i) for i in s.get("invariantes", [])]))
+                                                  [self._texto(i) for i in s.get("invariantes", [])],
+                                                  s.get("unicos", [])))
                 for sobrante in set(spec_ag) - {a["elemento"].nombre for a in info6["agregados"]}:
                     raise ErrorModelo(f"spec: el agregado '{sobrante}' no existe en el grupo {cod} de {self.v6.nombre}")
             contextos[nombre] = ctx

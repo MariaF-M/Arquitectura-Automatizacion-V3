@@ -41,6 +41,11 @@ class ManejadorLoteMedicamento:
             raise NoEncontradoError(f"LoteMedicamento {id} no existe")
         return agregado
 
+    def _verificar_unicos(self, agregado: LoteMedicamento) -> None:
+        """Atributos que no se pueden repetir (spec.yaml -> unicos)."""
+        if any(o.codigo == agregado.codigo and o.id != agregado.id for o in self._repo.listar()):
+            raise ReglaNegocioError(f"Ya existe un LoteMedicamento con codigo '{agregado.codigo}'")
+
     def _confirmar(self, agregado: LoteMedicamento) -> dict:
         self._repo.guardar(agregado)
         for evento in agregado.extraer_eventos():
@@ -49,6 +54,7 @@ class ManejadorLoteMedicamento:
 
     def manejar_registrar_ingreso(self, comando: RegistrarIngreso) -> dict:
         agregado = LoteMedicamento.registrar_ingreso(comando.datos)
+        self._verificar_unicos(agregado)
         return self._confirmar(agregado)
 
     def manejar_descontar_existencias(self, comando: DescontarExistencias) -> dict:

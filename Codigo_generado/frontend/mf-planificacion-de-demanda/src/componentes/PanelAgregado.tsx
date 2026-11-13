@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { Agregado, Atributo, Comando, Fila } from '../tipos';
 import { llamar } from '../api';
 import { emitir } from '../eventos';
-import { Campo, convertir } from './Campo';
+import { Campo, convertir, validar } from './Campo';
 
 interface Props { agregado: Agregado; base: string; contexto: string; alCambiar: () => void }
 
@@ -118,7 +118,8 @@ export function PanelAgregado({ agregado, base, contexto, alCambiar }: Props) {
 /** Qué campos pide cada comando: el que se resta, los requeridos y, opcionalmente, el resto. */
 function camposDeAccion(atributos: Atributo[], c: Comando): { campos: Atributo[]; opcionales?: Atributo[] } {
   const por = (n: string) => atributos.find((a) => a.nombre === n);
-  if (c.restar) return { campos: [{ ...por(c.restar)!, obligatorio: true }] };
+  // la cantidad a restar debe ser positiva (el backend también lo exige)
+  if (c.restar) return { campos: [{ ...por(c.restar)!, obligatorio: true, minimo: 1 }] };
   const requeridos = c.requiere.map(por).filter((a): a is Atributo => !!a).map((a) => ({ ...a, obligatorio: true }));
   const opcionales = atributos
     .filter((a) => !c.requiere.includes(a.nombre) && !(c.estado && a.nombre === 'estado'))
@@ -139,10 +140,15 @@ function FormularioComando({ titulo, evento, campos, opcionales = [], fechaFutur
 }) {
   const [valores, setValores] = useState<Record<string, string>>({});
   const [enviando, setEnviando] = useState(false);
+  const [errores, setErrores] = useState<string[]>([]);
   const cambiar = (n: string) => (v: string) => setValores((x) => ({ ...x, [n]: v }));
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
+    const minimas = Object.fromEntries(fechaFutura.map((f) => [f, manana()]));
+    const encontrados = validar([...campos, ...opcionales], valores, minimas);
+    setErrores(encontrados);
+    if (encontrados.length > 0) return;          // no se envía nada al backend si hay errores
     setEnviando(true);
     const ok = await alEnviar(convertir([...campos, ...opcionales], valores));
     setEnviando(false);
@@ -150,7 +156,7 @@ function FormularioComando({ titulo, evento, campos, opcionales = [], fechaFutur
   }
 
   return (
-    <form className="mf-formulario" onSubmit={(e) => void enviar(e)}>
+    <form className="mf-formulario" noValidate onSubmit={(e) => void enviar(e)}>
       <h3>{titulo}{evento && <small> → emite «{evento}»</small>}</h3>
       <div className="mf-rejilla">
         {campos.map((a) => <Campo key={a.nombre} a={a} valor={valores[a.nombre] ?? ''} cambiar={cambiar(a.nombre)}
@@ -165,6 +171,11 @@ function FormularioComando({ titulo, evento, campos, opcionales = [], fechaFutur
           minimo={fechaFutura.includes(a.nombre) ? manana() : undefined} />)}
           </div>
         </details>
+      )}
+      {errores.length > 0 && (
+        <ul className="mf-mensaje mf-error mf-errores" role="alert">
+          {errores.map((x) => <li key={x}>{x}</li>)}
+        </ul>
       )}
       <div className="mf-botonera">
         {alCancelar && <button type="button" className="mf-boton mf-secundario" onClick={alCancelar}>Cancelar</button>}

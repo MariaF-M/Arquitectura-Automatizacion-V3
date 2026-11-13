@@ -25,6 +25,12 @@ modelo:
     interoperabilidad: V9_Interoperabilidad_anticorrupcion
 
 # Tipos de atributo admitidos: texto | entero | decimal | fecha | booleano
+#
+# formatos (control de errores, se valida en backend Y frontend):
+#   patron:    expresión regular que debe cumplir TODO el texto (solo atributos de texto)
+#   mensaje:   explicación que ve el usuario cuando no se cumple
+#   minimo / maximo: rango permitido para números
+#   max_largo: largo máximo de un texto (por defecto 255, igual que la columna de la BD)
 contextos:
 
   Inventario:                             # nombre del Application Component en V8
@@ -53,13 +59,21 @@ contextos:
           estado: texto
         valores_iniciales: {estado: Disponible}
         obligatorios: [codigo, descripcion, proveedor, fecha_vencimiento, registro_sanitario]
+        unicos: [codigo]                 # no puede haber dos lotes con el mismo código
         no_negativos: [cantidad]
         valores_permitidos:
           estado: [Disponible, Cuarentena, Vencido, Bloqueado]
+        formatos:
+          codigo: {patron: '^[0-9]{3,20}$', mensaje: 'debe tener solo números, entre 3 y 20 dígitos'}
+          descripcion: {patron: '^.{3,120}$', mensaje: 'debe tener entre 3 y 120 caracteres'}
+          proveedor: {patron: "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,&-]{3,100}$", mensaje: 'debe tener entre 3 y 100 caracteres (letras, números, espacios y . , & -)'}
+          registro_sanitario: {patron: '^[A-Za-z0-9 -]{5,30}$', mensaje: 'debe tener entre 5 y 30 caracteres: letras, números, espacios o guiones (ej: INVIMA 2024M-0001234)'}
+          cantidad: {maximo: 1000000}
         invariantes:
           - La cantidad de existencias nunca puede ser negativa.
           - Todo lote tiene Código, Descripción, Proveedor, Fecha de vencimiento y Registro sanitario desde la recepción técnica.
           - Un lote solo puede estar Disponible, en Cuarentena, Vencido o Bloqueado.
+          - El código del lote es único.
           - No se recibe un lote vencido o que vence hoy (la fecha de vencimiento debe ser posterior a la recepción).
         comandos:
           Registrar Ingreso: {crea: true, fecha_futura: [fecha_vencimiento]}   # no se recibe un lote vencido
@@ -97,6 +111,11 @@ contextos:
         valores_iniciales: {estado: Activa}
         obligatorios: [lote_codigo, fecha_vencimiento]
         no_negativos: [prioridad_fefo]
+        formatos:
+          lote_codigo: {patron: '^[0-9]{3,20}$', mensaje: 'debe tener solo números, entre 3 y 20 dígitos (el código del lote en Inventario)'}
+          dias_para_vencer: {minimo: -3650, maximo: 3650}
+          prioridad_fefo: {minimo: 1, maximo: 1000}
+          motivo: {max_largo: 200}
         valores_permitidos:
           semaforo: [Verde, Amarillo, Rojo]
           estado: [Activa, Atendida, LoteBloqueado]
@@ -138,6 +157,13 @@ contextos:
         valores_iniciales: {estado: Sugerida}
         obligatorios: [medicamento, periodo]
         no_negativos: [demanda_programada, demanda_no_programada, cantidad_estimada]
+        formatos:
+          medicamento: {patron: "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,()/-]{3,100}$", mensaje: 'debe tener entre 3 y 100 caracteres (letras, números y signos básicos)'}
+          periodo: {patron: '^[0-9]{4}-(0[1-9]|1[0-2])$', mensaje: 'debe tener el formato AAAA-MM (ej: 2026-12)'}
+          demanda_programada: {maximo: 1000000}
+          demanda_no_programada: {maximo: 1000000}
+          cantidad_estimada: {maximo: 1000000}
+          observaciones: {max_largo: 500}
         valores_permitidos:
           estado: [Sugerida, Ajustada, Validada]
         invariantes:
@@ -181,6 +207,11 @@ contextos:
         valores_permitidos:
           nivel_urgencia: [Baja, Media, Alta, Critica]
           estado: [Sugerido, Autorizado]
+        formatos:
+          principio_activo: {patron: "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]{3,100}$", mensaje: 'debe tener solo letras y espacios, entre 3 y 100 caracteres (ej: Cefazolina)'}
+          concentracion: {patron: '^[0-9]+([.,][0-9]+)? ?[A-Za-zµ%/]+$', mensaje: 'debe ser un número seguido de su unidad (ej: 500 mg, 1 g, 5%)'}
+          cantidad: {minimo: 1, maximo: 1000000}
+          autorizado_por: {patron: "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ .]{3,100}$", mensaje: 'debe tener solo letras, espacios y puntos (ej: QF Laura Gómez)'}
         invariantes:
           - El requerimiento contiene principio activo (DCI), concentración, cantidad y nivel de urgencia.
           - Ningún requerimiento viaja a Compras (ERP) sin autorización técnica previa del Químico Farmacéutico.

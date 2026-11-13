@@ -62,7 +62,9 @@ class GeneradorFrontend(GeneradorBase):
             return [{"nombre": at.snake, "etiqueta": at.nombre.replace("_", " ").capitalize(), "tipo": at.tipo,
                      "obligatorio": at.nombre in a.obligatorios, "noNegativo": at.nombre in a.no_negativos,
                      "opciones": a.valores_permitidos.get(at.nombre), "cifrado": at.snake in cifrados,
-                     "inicial": a.valores_iniciales.get(at.nombre)} for at in a.atributos]
+                     "inicial": a.valores_iniciales.get(at.nombre),
+                     "patron": at.patron, "mensaje": at.mensaje, "minimo": at.minimo, "maximo": at.maximo,
+                     "maxLargo": at.max_largo} for at in a.atributos]
 
         return {
             "tipo": "contexto", "nombre": ctx.nombre, "carpeta": ctx.carpeta, "puerto": ctx.puerto,

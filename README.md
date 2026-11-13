@@ -336,6 +336,36 @@ Antes de escribir un solo archivo, el generador revisa la coherencia del modelo 
 | Tipo de atributo inválido | `el atributo 'cantidad' tiene tipo 'numero'` |
 | Comando sin evento, relación de V8 sin patrón, externo sin INT-xx, V9 incoherente con V8 | Avisos en consola y en `TRAZABILIDAD.md` |
 
+## Control de errores
+
+El sistema valida en **tres capas**, todas generadas desde las mismas reglas de `spec.yaml` (`obligatorios`,
+`no_negativos`, `valores_permitidos`, `unicos`, `fecha_futura` y `formatos`):
+
+| Capa | Qué controla | Respuesta |
+|---|---|---|
+| **Frontend** (`Campo.tsx → validar()`) | Obligatorios, números enteros y decimales, rangos, largo máximo, patrones (p. ej. código de lote solo números), fecha posterior a hoy | Lista de errores en español; **no envía** la petición |
+| **Backend — dominio** (agregado en Python, Java y C#) | Las mismas reglas + conversión de tipos (`"diez"` o `2.5` en un entero), espacios sobrantes, cantidad a restar mayor que cero, estados permitidos y códigos únicos | **422** con el mensaje exacto |
+| **Backend — API** | JSON roto, cuerpo que no es un objeto, ruta inexistente, error inesperado | **400**, **404** o **500** con mensaje JSON (nunca una página de error; el detalle va al log) |
+| **Base de datos** | `NOT NULL`, `CHECK` (no negativos y valores permitidos) y `UNIQUE` | Última barrera |
+
+Las reglas de formato actuales:
+
+| Agregado | Atributo | Regla |
+|---|---|---|
+| LoteMedicamento | `codigo` | Solo números, de 3 a 20 dígitos, y **único** |
+| LoteMedicamento | `registro_sanitario` | Letras, números, espacios o guiones (5 a 30) |
+| LoteMedicamento | `cantidad` | Entre 0 y 1.000.000; lo que se descuenta debe ser mayor que 0 |
+| AlertaVencimiento | `lote_codigo` | Solo números (el código del lote en Inventario) |
+| AlertaVencimiento | `prioridad_fefo` | Entre 1 y 1000 |
+| EstimacionDemanda | `periodo` | Formato `AAAA-MM` |
+| RequerimientoCompra | `principio_activo` | Solo letras y espacios |
+| RequerimientoCompra | `concentracion` | Número y unidad (`500 mg`, `1 g`, `5%`) |
+| RequerimientoCompra | `cantidad` | Entre 1 y 1.000.000 |
+| RequerimientoCompra | `autorizado_por` | Solo letras, espacios y puntos |
+
+Para agregar una regla nueva: se escribe en `formatos` de `spec.yaml` y se regenera. Queda validada en los tres
+lenguajes y en el frontend al mismo tiempo.
+
 ## 13. Qué se verificó y cómo
 
 | Parte | Cómo se verificó |

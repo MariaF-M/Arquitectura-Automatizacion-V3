@@ -22,7 +22,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,()/-]{3,100}$",
+          "mensaje": "debe tener entre 3 y 100 caracteres (letras, números y signos básicos)",
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "periodo",
@@ -32,7 +37,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+          "mensaje": "debe tener el formato AAAA-MM (ej: 2026-12)",
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "demanda_programada",
@@ -42,7 +52,12 @@
           "noNegativo": true,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": 0,
+          "maximo": 1000000,
+          "maxLargo": null
         },
         {
           "nombre": "demanda_no_programada",
@@ -52,7 +67,12 @@
           "noNegativo": true,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": 0,
+          "maximo": 1000000,
+          "maxLargo": null
         },
         {
           "nombre": "cantidad_estimada",
@@ -62,7 +82,12 @@
           "noNegativo": true,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": 0,
+          "maximo": 1000000,
+          "maxLargo": null
         },
         {
           "nombre": "estado",
@@ -76,7 +101,12 @@
             "Validada"
           ],
           "cifrado": false,
-          "inicial": "Sugerida"
+          "inicial": "Sugerida",
+          "patron": null,
+          "mensaje": null,
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "observaciones",
@@ -86,7 +116,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": true,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 500
         }
       ],
       "invariantes": [

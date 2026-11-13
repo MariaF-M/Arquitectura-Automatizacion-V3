@@ -108,7 +108,11 @@ public class ServidorHttp {
         } catch (CasoDeUsoPendienteException e) {
             responder(ex, 501, Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
-            responder(ex, 400, Map.of("error", e.getMessage()));
+            responder(ex, 400, Map.of("error", e.getMessage() == null ? "Petición inválida" : e.getMessage()));
+        } catch (RuntimeException e) {
+            // Último recurso: el servidor nunca se cae ni devuelve una página de error; el detalle va al log
+            java.util.logging.Logger.getLogger("api").log(java.util.logging.Level.SEVERE, "error inesperado en " + metodo + " " + ruta, e);
+            responder(ex, 500, Map.of("error", "Error interno del servidor. El detalle quedó en el log del servicio."));
         }
     }
 

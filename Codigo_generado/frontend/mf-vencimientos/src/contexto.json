@@ -22,7 +22,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": "^[0-9]{3,20}$",
+          "mensaje": "debe tener solo números, entre 3 y 20 dígitos (el código del lote en Inventario)",
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "fecha_vencimiento",
@@ -32,7 +37,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": null
         },
         {
           "nombre": "dias_para_vencer",
@@ -42,7 +52,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": -3650,
+          "maximo": 3650,
+          "maxLargo": null
         },
         {
           "nombre": "prioridad_fefo",
@@ -52,7 +67,12 @@
           "noNegativo": true,
           "opciones": null,
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": 1,
+          "maximo": 1000,
+          "maxLargo": null
         },
         {
           "nombre": "semaforo",
@@ -66,7 +86,12 @@
             "Rojo"
           ],
           "cifrado": false,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "estado",
@@ -80,7 +105,12 @@
             "LoteBloqueado"
           ],
           "cifrado": false,
-          "inicial": "Activa"
+          "inicial": "Activa",
+          "patron": null,
+          "mensaje": null,
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 255
         },
         {
           "nombre": "motivo",
@@ -90,7 +120,12 @@
           "noNegativo": false,
           "opciones": null,
           "cifrado": true,
-          "inicial": null
+          "inicial": null,
+          "patron": null,
+          "mensaje": null,
+          "minimo": null,
+          "maximo": null,
+          "maxLargo": 200
         }
       ],
       "invariantes": [

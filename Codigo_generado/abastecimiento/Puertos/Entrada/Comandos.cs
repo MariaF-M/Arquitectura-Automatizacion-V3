@@ -19,6 +19,11 @@ public class ManejadorRequerimientoCompra(IRepositorioRequerimientoCompra repo, 
 {
     private RequerimientoCompra Cargar(string id) => repo.Obtener(id) ?? throw new NoEncontradoException($"RequerimientoCompra {id} no existe");
 
+    /// <summary>Atributos que no se pueden repetir (spec.yaml -> unicos).</summary>
+    private void VerificarUnicos(RequerimientoCompra nuevo)
+    {
+    }
+
     private Dictionary<string, object?> Confirmar(RequerimientoCompra a)
     {
         repo.Guardar(a);
@@ -28,7 +33,9 @@ public class ManejadorRequerimientoCompra(IRepositorioRequerimientoCompra repo, 
 
     public Dictionary<string, object?> Manejar(GenerarRequisicionComando comando)
     {
-        return Confirmar(RequerimientoCompra.GenerarRequisicion(comando.Datos));
+        var nuevo = RequerimientoCompra.GenerarRequisicion(comando.Datos);
+        VerificarUnicos(nuevo);
+        return Confirmar(nuevo);
     }
 
     public Dictionary<string, object?> Manejar(AutorizarRequisicionComando comando)

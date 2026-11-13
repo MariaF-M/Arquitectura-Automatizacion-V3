@@ -82,7 +82,10 @@ public class {{ a.clase }} {
         if (!datos.containsKey("{{ c.restar | snake }}"))
             throw new ReglaNegocioException("«{{ c.nombre }}» requiere '{{ c.restar | snake }}'");
 {% set at = a.atributos | selectattr("nombre", "equalto", c.restar) | first %}
-        {{ at.camel }} = ({{ at.camel }} == null ? 0 : {{ at.camel }}) - {{ "aEntero" if at.tipo == "entero" else "aDecimal" }}("{{ at.snake }}", datos.get("{{ at.snake }}"));
+        var resta = {{ "aEntero" if at.tipo == "entero" else "aDecimal" }}("{{ at.snake }}", datos.get("{{ at.snake }}"));
+        if (resta == null || resta <= 0)
+            throw new ReglaNegocioException("«{{ c.nombre }}»: '{{ at.snake }}' debe ser mayor que cero");
+        {{ at.camel }} = ({{ at.camel }} == null ? 0 : {{ at.camel }}) - resta;
 {% else %}
         Map<String, Object> d = new LinkedHashMap<>(datos);
         d.remove("id");
@@ -106,6 +109,7 @@ public class {{ a.clase }} {
 {% endfor %}
     // ------------------------------------------------------------------ invariantes
     public void validar() {
+        validarFormatos();
 {% for x in a.obligatorios %}
 {% set at = a.atributos | selectattr("nombre", "equalto", x) | first %}
         if ({{ at.camel }} == null{% if at.tipo == "texto" %} || {{ at.camel }}.isBlank(){% endif %})
@@ -120,6 +124,31 @@ public class {{ a.clase }} {
 {% set at = a.atributos | selectattr("nombre", "equalto", campo) | first %}
         if ({{ at.camel }} != null && !{{ campo | snake | upper }}_PERMITIDOS.contains({{ at.camel }}))
             throw new ReglaNegocioException("'{{ at.snake }}' = '" + {{ at.camel }} + "' no es válido. Permitidos: " + {{ campo | snake | upper }}_PERMITIDOS);
+{% endfor %}
+    }
+
+    /** Reglas de formato por atributo (spec.yaml -> formatos): patrón, rango y largo máximo. */
+    private void validarFormatos() {
+{% for at in a.atributos %}
+{% if at.tipo == "texto" %}
+{% if at.max_largo %}
+        if ({{ at.camel }} != null && {{ at.camel }}.length() > {{ at.max_largo }})
+            throw new ReglaNegocioException("'{{ at.snake }}' admite máximo {{ at.max_largo }} caracteres");
+{% endif %}
+{% if at.patron %}
+        if ({{ at.camel }} != null && !java.util.regex.Pattern.matches({{ at.patron | tojson }}, {{ at.camel }}))
+            throw new ReglaNegocioException("'{{ at.snake }}' " + {{ at.mensaje | tojson }} + " (recibido: '" + {{ at.camel }} + "')");
+{% endif %}
+{% elif at.tipo in ("entero", "decimal") %}
+{% if at.minimo is not none %}
+        if ({{ at.camel }} != null && {{ at.camel }} < {{ at.minimo }})
+            throw new ReglaNegocioException("'{{ at.snake }}' debe ser mayor o igual a {{ '%g' % at.minimo }} (recibido: " + {{ at.camel }} + ")");
+{% endif %}
+{% if at.maximo is not none %}
+        if ({{ at.camel }} != null && {{ at.camel }} > {{ at.maximo }})
+            throw new ReglaNegocioException("'{{ at.snake }}' debe ser menor o igual a {{ '%g' % at.maximo }} (recibido: " + {{ at.camel }} + ")");
+{% endif %}
+{% endif %}
 {% endfor %}
     }
 
@@ -147,24 +176,36 @@ public class {{ a.clase }} {
         }
     }
 
-    private static String aTexto(String c, Object v) { return v == null ? null : String.valueOf(v); }
+    /** Texto sin espacios al inicio/final; "   " cuenta como vacío. */
+    private static String aTexto(String c, Object v) {
+        if (v == null) return null;
+        String t = String.valueOf(v).strip();
+        return t.isEmpty() ? null : t;
+    }
 
     private static Integer aEntero(String c, Object v) {
         if (v == null) return null;
-        try { return v instanceof Number n ? n.intValue() : Integer.parseInt(String.valueOf(v)); }
-        catch (NumberFormatException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v); }
+        if (v instanceof Boolean) throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v + " (se esperaba un número entero)");
+        if (v instanceof Number n && n.doubleValue() % 1 != 0)
+            throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v + " (se esperaba un número entero)");
+        if (v instanceof String s && s.isBlank()) return null;
+        try { return v instanceof Number n ? n.intValue() : Integer.parseInt(String.valueOf(v).strip()); }
+        catch (NumberFormatException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v + " (se esperaba un número entero)"); }
     }
 
     private static Double aDecimal(String c, Object v) {
         if (v == null) return null;
-        try { return v instanceof Number n ? n.doubleValue() : Double.parseDouble(String.valueOf(v)); }
-        catch (NumberFormatException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v); }
+        if (v instanceof Boolean) throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v + " (se esperaba un número)");
+        if (v instanceof String s && s.isBlank()) return null;
+        try { return v instanceof Number n ? n.doubleValue() : Double.parseDouble(String.valueOf(v).strip().replace(',', '.')); }
+        catch (NumberFormatException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v + " (se esperaba un número)"); }
     }
 
     private static LocalDate aFecha(String c, Object v) {
         if (v == null) return null;
-        try { return v instanceof LocalDate f ? f : LocalDate.parse(String.valueOf(v)); }
-        catch (RuntimeException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v); }
+        if (v instanceof String s && s.isBlank()) return null;
+        try { return v instanceof LocalDate f ? f : LocalDate.parse(String.valueOf(v).strip()); }
+        catch (RuntimeException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v + " (se esperaba una fecha AAAA-MM-DD)"); }
     }
 
     private static Boolean aBooleano(String c, Object v) {

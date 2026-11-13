@@ -66,6 +66,7 @@ public class AlertaVencimiento {
 
     // ------------------------------------------------------------------ invariantes
     public void validar() {
+        validarFormatos();
         if (loteCodigo == null || loteCodigo.isBlank())
             throw new ReglaNegocioException("El campo 'lote_codigo' es obligatorio en AlertaVencimiento");
         if (fechaVencimiento == null)
@@ -76,6 +77,28 @@ public class AlertaVencimiento {
             throw new ReglaNegocioException("'semaforo' = '" + semaforo + "' no es válido. Permitidos: " + SEMAFORO_PERMITIDOS);
         if (estado != null && !ESTADO_PERMITIDOS.contains(estado))
             throw new ReglaNegocioException("'estado' = '" + estado + "' no es válido. Permitidos: " + ESTADO_PERMITIDOS);
+    }
+
+    /** Reglas de formato por atributo (spec.yaml -> formatos): patrón, rango y largo máximo. */
+    private void validarFormatos() {
+        if (loteCodigo != null && loteCodigo.length() > 255)
+            throw new ReglaNegocioException("'lote_codigo' admite máximo 255 caracteres");
+        if (loteCodigo != null && !java.util.regex.Pattern.matches("^[0-9]{3,20}$", loteCodigo))
+            throw new ReglaNegocioException("'lote_codigo' " + "debe tener solo n\u00fameros, entre 3 y 20 d\u00edgitos (el c\u00f3digo del lote en Inventario)" + " (recibido: '" + loteCodigo + "')");
+        if (diasParaVencer != null && diasParaVencer < -3650)
+            throw new ReglaNegocioException("'dias_para_vencer' debe ser mayor o igual a -3650 (recibido: " + diasParaVencer + ")");
+        if (diasParaVencer != null && diasParaVencer > 3650)
+            throw new ReglaNegocioException("'dias_para_vencer' debe ser menor o igual a 3650 (recibido: " + diasParaVencer + ")");
+        if (prioridadFefo != null && prioridadFefo < 1)
+            throw new ReglaNegocioException("'prioridad_fefo' debe ser mayor o igual a 1 (recibido: " + prioridadFefo + ")");
+        if (prioridadFefo != null && prioridadFefo > 1000)
+            throw new ReglaNegocioException("'prioridad_fefo' debe ser menor o igual a 1000 (recibido: " + prioridadFefo + ")");
+        if (semaforo != null && semaforo.length() > 255)
+            throw new ReglaNegocioException("'semaforo' admite máximo 255 caracteres");
+        if (estado != null && estado.length() > 255)
+            throw new ReglaNegocioException("'estado' admite máximo 255 caracteres");
+        if (motivo != null && motivo.length() > 200)
+            throw new ReglaNegocioException("'motivo' admite máximo 200 caracteres");
     }
 
     // ------------------------------------------------------------------ memento
@@ -110,24 +133,36 @@ public class AlertaVencimiento {
         }
     }
 
-    private static String aTexto(String c, Object v) { return v == null ? null : String.valueOf(v); }
+    /** Texto sin espacios al inicio/final; "   " cuenta como vacío. */
+    private static String aTexto(String c, Object v) {
+        if (v == null) return null;
+        String t = String.valueOf(v).strip();
+        return t.isEmpty() ? null : t;
+    }
 
     private static Integer aEntero(String c, Object v) {
         if (v == null) return null;
-        try { return v instanceof Number n ? n.intValue() : Integer.parseInt(String.valueOf(v)); }
-        catch (NumberFormatException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v); }
+        if (v instanceof Boolean) throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v + " (se esperaba un número entero)");
+        if (v instanceof Number n && n.doubleValue() % 1 != 0)
+            throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v + " (se esperaba un número entero)");
+        if (v instanceof String s && s.isBlank()) return null;
+        try { return v instanceof Number n ? n.intValue() : Integer.parseInt(String.valueOf(v).strip()); }
+        catch (NumberFormatException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v + " (se esperaba un número entero)"); }
     }
 
     private static Double aDecimal(String c, Object v) {
         if (v == null) return null;
-        try { return v instanceof Number n ? n.doubleValue() : Double.parseDouble(String.valueOf(v)); }
-        catch (NumberFormatException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v); }
+        if (v instanceof Boolean) throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v + " (se esperaba un número)");
+        if (v instanceof String s && s.isBlank()) return null;
+        try { return v instanceof Number n ? n.doubleValue() : Double.parseDouble(String.valueOf(v).strip().replace(',', '.')); }
+        catch (NumberFormatException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v + " (se esperaba un número)"); }
     }
 
     private static LocalDate aFecha(String c, Object v) {
         if (v == null) return null;
-        try { return v instanceof LocalDate f ? f : LocalDate.parse(String.valueOf(v)); }
-        catch (RuntimeException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v); }
+        if (v instanceof String s && s.isBlank()) return null;
+        try { return v instanceof LocalDate f ? f : LocalDate.parse(String.valueOf(v).strip()); }
+        catch (RuntimeException e) { throw new ReglaNegocioException("Valor inválido para '" + c + "': " + v + " (se esperaba una fecha AAAA-MM-DD)"); }
     }
 
     private static Boolean aBooleano(String c, Object v) {
