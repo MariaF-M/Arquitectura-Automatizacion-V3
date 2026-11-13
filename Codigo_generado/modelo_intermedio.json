@@ -243,7 +243,10 @@
               "desde_estados": [],
               "fecha_futura": [
                 "fecha_vencimiento"
-              ]
+              ],
+              "minimos": {
+                "cantidad": 1
+              }
             },
             {
               "nombre": "Descontar Existencias",
@@ -259,7 +262,8 @@
               "desde_estados": [
                 "Disponible"
               ],
-              "fecha_futura": []
+              "fecha_futura": [],
+              "minimos": {}
             }
           ],
           "eventos": [
@@ -298,6 +302,7 @@
             "Todo lote tiene Código, Descripción, Proveedor, Fecha de vencimiento y Registro sanitario desde la recepción técnica.",
             "Un lote solo puede estar Disponible, en Cuarentena, Vencido o Bloqueado.",
             "El código del lote es único.",
+            "Al recibir un lote, la cantidad debe ser al menos 1 (después puede llegar a 0 al dispensarlo todo).",
             "No se recibe un lote vencido o que vence hoy (la fecha de vencimiento debe ser posterior a la recepción)."
           ],
           "unicos": [
@@ -611,7 +616,8 @@
               "nuevo_estado": null,
               "requiere": [],
               "desde_estados": [],
-              "fecha_futura": []
+              "fecha_futura": [],
+              "minimos": {}
             },
             {
               "nombre": "Bloquear Lote Vencido",
@@ -623,11 +629,14 @@
               "crea": false,
               "restar": null,
               "nuevo_estado": "LoteBloqueado",
-              "requiere": [],
+              "requiere": [
+                "motivo"
+              ],
               "desde_estados": [
                 "Activa"
               ],
-              "fecha_futura": []
+              "fecha_futura": [],
+              "minimos": {}
             }
           ],
           "eventos": [
@@ -645,7 +654,9 @@
           },
           "obligatorios": [
             "lote_codigo",
-            "fecha_vencimiento"
+            "fecha_vencimiento",
+            "prioridad_fefo",
+            "semaforo"
           ],
           "no_negativos": [
             "prioridad_fefo"
@@ -943,7 +954,8 @@
               "nuevo_estado": null,
               "requiere": [],
               "desde_estados": [],
-              "fecha_futura": []
+              "fecha_futura": [],
+              "minimos": {}
             },
             {
               "nombre": "Ajustar Predicción",
@@ -959,7 +971,10 @@
                 "observaciones"
               ],
               "desde_estados": [],
-              "fecha_futura": []
+              "fecha_futura": [],
+              "minimos": {
+                "cantidad_estimada": 1
+              }
             }
           ],
           "eventos": [
@@ -977,7 +992,8 @@
           },
           "obligatorios": [
             "medicamento",
-            "periodo"
+            "periodo",
+            "demanda_programada"
           ],
           "no_negativos": [
             "demanda_programada",
@@ -1231,7 +1247,8 @@
               "nuevo_estado": null,
               "requiere": [],
               "desde_estados": [],
-              "fecha_futura": []
+              "fecha_futura": [],
+              "minimos": {}
             },
             {
               "nombre": "Autorizar Requisición",
@@ -1249,7 +1266,8 @@
               "desde_estados": [
                 "Sugerido"
               ],
-              "fecha_futura": []
+              "fecha_futura": [],
+              "minimos": {}
             }
           ],
           "eventos": [

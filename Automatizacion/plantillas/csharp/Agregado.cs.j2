@@ -43,6 +43,11 @@ public class {{ a.clase }}
     public static {{ a.clase }} {{ c.clase }}(IDictionary<string, object?> datos)
     {
         var agregado = new {{ a.clase }}(null, datos.Where(kv => kv.Key != "id").ToDictionary(kv => kv.Key, kv => kv.Value));
+{% for campo, minimo in c.minimos.items() %}
+{% set at = a.atributos | selectattr("nombre", "equalto", campo) | first %}
+        if (agregado.{{ at.pascal }} is null || agregado.{{ at.pascal }} < {{ minimo }})
+            throw new ReglaNegocioException("«{{ c.nombre }}»: '{{ at.snake }}' es obligatorio y debe ser mayor o igual a {{ minimo }}");
+{% endfor %}
 {% for f in c.fecha_futura %}
 {% set at = a.atributos | selectattr("nombre", "equalto", f) | first %}
         if (agregado.{{ at.pascal }} is not null && agregado.{{ at.pascal }} <= DateOnly.FromDateTime(DateTime.Today))

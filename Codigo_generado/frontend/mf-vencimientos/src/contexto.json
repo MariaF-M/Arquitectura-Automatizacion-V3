@@ -63,7 +63,7 @@
           "nombre": "prioridad_fefo",
           "etiqueta": "Prioridad fefo",
           "tipo": "entero",
-          "obligatorio": false,
+          "obligatorio": true,
           "noNegativo": true,
           "opciones": null,
           "cifrado": false,
@@ -78,7 +78,7 @@
           "nombre": "semaforo",
           "etiqueta": "Semaforo",
           "tipo": "texto",
-          "obligatorio": false,
+          "obligatorio": true,
           "noNegativo": false,
           "opciones": [
             "Verde",
@@ -142,7 +142,8 @@
           "estado": null,
           "requiere": [],
           "desdeEstados": [],
-          "fechaFutura": []
+          "fechaFutura": [],
+          "minimos": {}
         },
         {
           "nombre": "Bloquear Lote Vencido",
@@ -151,11 +152,14 @@
           "evento": "Lote Bloqueado",
           "restar": null,
           "estado": "LoteBloqueado",
-          "requiere": [],
+          "requiere": [
+            "motivo"
+          ],
           "desdeEstados": [
             "Activa"
           ],
-          "fechaFutura": []
+          "fechaFutura": [],
+          "minimos": {}
         }
       ]
     }

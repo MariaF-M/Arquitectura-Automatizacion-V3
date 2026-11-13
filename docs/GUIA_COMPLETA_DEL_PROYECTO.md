@@ -223,7 +223,7 @@ Ejemplo: "Descontar 30 unidades del lote X" en Inventario.
 | POST | `/<agregado>/<comando-que-crea>` | Crea, por ejemplo `/lote-medicamento/registrar-ingreso` |
 | POST | `/<agregado>/{id}/<comando>` | Ejecuta un comando sobre uno existente |
 | POST | `/<agregado>/{id}/deshacer` | Deshace el último cambio (memento) |
-| GET | `/eventos` | Eventos publicados (con su contrato V1) |
+| GET | `/eventos` | Eventos publicados (con su contrato V1); útil para revisar con `curl` |
 | GET | `/arquitectura` | Componentes, funciones y estadísticas de la caché |
 | POST | `/funciones/<funcion>` | Funciones de V5 (responden 501: pendientes) |
 
@@ -276,6 +276,10 @@ O con DBeaver o pgAdmin (`localhost:5432`, usuario y clave `farmacia`) y con Mon
 | `CustomEvent('farmacia:evento')` | El microfrontend, cuando un comando sale bien | `mf-*/src/eventos.ts` → lo escucha `shell/src/App.tsx` | Avisar; el shell lo muestra en "Actividad" |
 
 Los microfrontends **no se llaman entre sí ni comparten estado**. Si necesitan datos, los piden al backend.
+
+Cada pantalla de contexto muestra solo lo útil para el usuario: el encabezado (dominio, clasificación, tecnología),
+sus relaciones y un panel por agregado con su formulario, tabla, comandos y "Deshacer". Las funciones de V5 (aún sin
+lógica) y el listado técnico de eventos no se muestran; los eventos se ven en el panel **"Actividad"** del shell.
 
 **Generados del diagrama:** cada microfrontend tiene un `src/contexto.json` con sus agregados, comandos, atributos y
 reglas. El código React (`src/componentes/`) es genérico y arma formularios, tablas y botones a partir de ese archivo.
@@ -382,6 +386,7 @@ Cada regla se escribe una sola vez en `spec.yaml` y el generador la valida en **
    - Quita espacios sobrantes, de modo que un texto de solo espacios cuenta como vacío.
    - Aplica los patrones: por ejemplo, el **código de lote solo acepta números** y no puede repetirse.
    - Aplica los rangos, exige que la cantidad a descontar sea **mayor que cero** y revisa los estados permitidos.
+   - Aplica los mínimos de cada comando: un lote se registra con **al menos 1 unidad** (luego puede llegar a 0).
 
    Si algo falla, responde **422** con el mensaje.
 3. **API:**

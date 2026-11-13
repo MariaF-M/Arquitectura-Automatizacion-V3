@@ -6,7 +6,7 @@
       "validator": {
         "$jsonSchema": {
           "bsonType": "object",
-          "required": ["_id", "lote_codigo", "fecha_vencimiento"],
+          "required": ["_id", "lote_codigo", "fecha_vencimiento", "prioridad_fefo", "semaforo"],
           "properties": {
             "_id": {"bsonType": "string"},
             "lote_codigo": {"bsonType": ["string","null"]},

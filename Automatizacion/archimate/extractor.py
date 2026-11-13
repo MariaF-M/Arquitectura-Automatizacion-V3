@@ -327,6 +327,11 @@ class Extractor:
                         c.requiere = cc.get("requiere", [])
                         c.desde_estados = cc.get("desde_estados", [])
                         c.fecha_futura = cc.get("fecha_futura", [])
+                        c.minimos = cc.get("minimos", {}) or {}
+                        for campo in c.minimos:
+                            at = next((x for x in attrs if x.nombre == campo), None)
+                            if not at or at.tipo not in ("entero", "decimal"):
+                                raise ErrorModelo(f"spec: '{c.nombre}' define un mínimo para '{campo}', que no es un atributo numérico de {raiz.nombre}")
                         for campo in c.fecha_futura:
                             at = next((x for x in attrs if x.nombre == campo), None)
                             if not at or at.tipo != "fecha":

@@ -6,7 +6,7 @@
       "validator": {
         "$jsonSchema": {
           "bsonType": "object",
-          "required": ["_id", "medicamento", "periodo"],
+          "required": ["_id", "medicamento", "periodo", "demanda_programada"],
           "properties": {
             "_id": {"bsonType": "string"},
             "medicamento": {"bsonType": ["string","null"]},

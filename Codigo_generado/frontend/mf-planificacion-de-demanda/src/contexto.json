@@ -48,7 +48,7 @@
           "nombre": "demanda_programada",
           "etiqueta": "Demanda programada",
           "tipo": "entero",
-          "obligatorio": false,
+          "obligatorio": true,
           "noNegativo": true,
           "opciones": null,
           "cifrado": false,
@@ -138,7 +138,8 @@
           "estado": null,
           "requiere": [],
           "desdeEstados": [],
-          "fechaFutura": []
+          "fechaFutura": [],
+          "minimos": {}
         },
         {
           "nombre": "Ajustar Predicción",
@@ -151,7 +152,10 @@
             "observaciones"
           ],
           "desdeEstados": [],
-          "fechaFutura": []
+          "fechaFutura": [],
+          "minimos": {
+            "cantidad_estimada": 1
+          }
         }
       ]
     }

@@ -56,6 +56,8 @@ public class AlertaVencimiento {
     public void bloquearLoteVencido(Map<String, Object> datos) {
         if (!Set.of("Activa").contains(estado))
             throw new ReglaNegocioException("«Bloquear Lote Vencido» no se permite con estado '" + estado + "'");
+        if (datos.get("motivo") == null || String.valueOf(datos.get("motivo")).isBlank())
+            throw new ReglaNegocioException("«Bloquear Lote Vencido» requiere 'motivo'");
         Map<String, Object> d = new LinkedHashMap<>(datos);
         d.remove("id");
         aplicar(d);
@@ -71,6 +73,10 @@ public class AlertaVencimiento {
             throw new ReglaNegocioException("El campo 'lote_codigo' es obligatorio en AlertaVencimiento");
         if (fechaVencimiento == null)
             throw new ReglaNegocioException("El campo 'fecha_vencimiento' es obligatorio en AlertaVencimiento");
+        if (prioridadFefo == null)
+            throw new ReglaNegocioException("El campo 'prioridad_fefo' es obligatorio en AlertaVencimiento");
+        if (semaforo == null || semaforo.isBlank())
+            throw new ReglaNegocioException("El campo 'semaforo' es obligatorio en AlertaVencimiento");
         if (prioridadFefo != null && prioridadFefo < 0)
             throw new ReglaNegocioException("'prioridad_fefo' no puede ser negativo (valor: " + prioridadFefo + ")");
         if (semaforo != null && !SEMAFORO_PERMITIDOS.contains(semaforo))

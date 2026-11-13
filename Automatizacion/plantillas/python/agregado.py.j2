@@ -102,6 +102,10 @@ class {{ a.clase }}:
     def {{ c.metodo_snake }}(cls, datos: dict) -> "{{ a.clase }}":
         """Comando «{{ c.nombre }}»: crea el agregado."""
         agregado = cls(**{k: v for k, v in datos.items() if k != "id"})
+{% for campo, minimo in c.minimos.items() %}
+        if agregado.{{ campo | snake }} is None or agregado.{{ campo | snake }} < {{ minimo }}:
+            raise ReglaNegocioError("«{{ c.nombre }}»: '{{ campo | snake }}' es obligatorio y debe ser mayor o igual a {{ minimo }}")
+{% endfor %}
 {% for f in c.fecha_futura %}
         if agregado.{{ f | snake }} is not None and agregado.{{ f | snake }} <= date.today():
             raise ReglaNegocioError("«{{ c.nombre }}»: '{{ f | snake }}' debe ser posterior a hoy")

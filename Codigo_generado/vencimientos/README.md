@@ -23,7 +23,7 @@ Atributos: `lote_codigo` (texto), `fecha_vencimiento` (fecha), `dias_para_vencer
 | Comando | Evento que emite | Regla |
 |---|---|---|
 | Evaluar Prioridad FEFO | Prioridad FEFO Calculada | crea el agregado |
-| Bloquear Lote Vencido | Lote Bloqueado |  estado → LoteBloqueado; solo desde Activa |
+| Bloquear Lote Vencido | Lote Bloqueado |  estado → LoteBloqueado; solo desde Activa; requiere motivo |
 
 Invariantes:
 - Regla FEFO innegociable: primero se usa lo que vence primero.

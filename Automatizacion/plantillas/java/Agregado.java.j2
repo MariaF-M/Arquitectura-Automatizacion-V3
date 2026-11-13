@@ -52,6 +52,11 @@ public class {{ a.clase }} {
         Map<String, Object> d = new LinkedHashMap<>(datos);
         d.remove("id");
         {{ a.clase }} agregado = new {{ a.clase }}(null, d);
+{% for campo, minimo in c.minimos.items() %}
+{% set at = a.atributos | selectattr("nombre", "equalto", campo) | first %}
+        if (agregado.{{ at.camel }} == null || agregado.{{ at.camel }} < {{ minimo }})
+            throw new ReglaNegocioException("«{{ c.nombre }}»: '{{ at.snake }}' es obligatorio y debe ser mayor o igual a {{ minimo }}");
+{% endfor %}
 {% for f in c.fecha_futura %}
 {% set at = a.atributos | selectattr("nombre", "equalto", f) | first %}
         if (agregado.{{ at.camel }} != null && !agregado.{{ at.camel }}.isAfter(LocalDate.now()))

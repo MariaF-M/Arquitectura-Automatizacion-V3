@@ -74,9 +74,10 @@ contextos:
           - Todo lote tiene Código, Descripción, Proveedor, Fecha de vencimiento y Registro sanitario desde la recepción técnica.
           - Un lote solo puede estar Disponible, en Cuarentena, Vencido o Bloqueado.
           - El código del lote es único.
+          - Al recibir un lote, la cantidad debe ser al menos 1 (después puede llegar a 0 al dispensarlo todo).
           - No se recibe un lote vencido o que vence hoy (la fecha de vencimiento debe ser posterior a la recepción).
         comandos:
-          Registrar Ingreso: {crea: true, fecha_futura: [fecha_vencimiento]}   # no se recibe un lote vencido
+          Registrar Ingreso: {crea: true, fecha_futura: [fecha_vencimiento], minimos: {cantidad: 1}}   # no se recibe un lote vencido ni vacío
           Descontar Existencias: {restar: cantidad, desde_estados: [Disponible]}
     entidades:
       Medicamento: {codigo: texto, principio_activo: texto, concentracion: texto}
@@ -109,7 +110,7 @@ contextos:
           estado: texto
           motivo: texto
         valores_iniciales: {estado: Activa}
-        obligatorios: [lote_codigo, fecha_vencimiento]
+        obligatorios: [lote_codigo, fecha_vencimiento, prioridad_fefo, semaforo]
         no_negativos: [prioridad_fefo]
         formatos:
           lote_codigo: {patron: '^[0-9]{3,20}$', mensaje: 'debe tener solo números, entre 3 y 20 dígitos (el código del lote en Inventario)'}
@@ -124,7 +125,7 @@ contextos:
           - Lotes Vencidos o en Cuarentena no suman al inventario disponible y se bloquean automáticamente (hard stop).
         comandos:
           Evaluar Prioridad FEFO: {crea: true}
-          Bloquear Lote Vencido: {estado: LoteBloqueado, desde_estados: [Activa]}
+          Bloquear Lote Vencido: {estado: LoteBloqueado, desde_estados: [Activa], requiere: [motivo]}
     entidades:
       Lote: {codigo: texto, fecha_vencimiento: fecha, estado: texto}
       Alerta de vencimiento: {lote_codigo: texto, semaforo: texto}
@@ -155,7 +156,7 @@ contextos:
           estado: texto
           observaciones: texto
         valores_iniciales: {estado: Sugerida}
-        obligatorios: [medicamento, periodo]
+        obligatorios: [medicamento, periodo, demanda_programada]
         no_negativos: [demanda_programada, demanda_no_programada, cantidad_estimada]
         formatos:
           medicamento: {patron: "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,()/-]{3,100}$", mensaje: 'debe tener entre 3 y 100 caracteres (letras, números y signos básicos)'}
@@ -171,7 +172,7 @@ contextos:
           - Toda predicción es una sugerencia que un humano debe validar antes de pasar a abastecimiento.
         comandos:
           Calcular Demanda: {crea: true}
-          Ajustar Predicción: {estado: Ajustada, requiere: [observaciones]}
+          Ajustar Predicción: {estado: Ajustada, requiere: [observaciones], minimos: {cantidad_estimada: 1}}
     entidades:
       Medicamento: {codigo: texto, principio_activo: texto}
       Agenda quirúrgica: {procedimiento: texto, fecha: fecha}

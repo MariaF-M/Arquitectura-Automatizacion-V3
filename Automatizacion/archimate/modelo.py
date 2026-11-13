@@ -48,6 +48,7 @@ class Comando:
     requiere: list[str] = field(default_factory=list)
     desde_estados: list[str] = field(default_factory=list)
     fecha_futura: list[str] = field(default_factory=list)   # fechas que deben ser posteriores a hoy
+    minimos: dict = field(default_factory=dict)             # mínimos propios del comando, p. ej. {cantidad: 1}
 
     @property
     def clase(self): return n.pascal(self.nombre)

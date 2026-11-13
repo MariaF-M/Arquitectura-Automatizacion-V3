@@ -30,6 +30,7 @@ Invariantes:
 - Todo lote tiene Código, Descripción, Proveedor, Fecha de vencimiento y Registro sanitario desde la recepción técnica.
 - Un lote solo puede estar Disponible, en Cuarentena, Vencido o Bloqueado.
 - El código del lote es único.
+- Al recibir un lote, la cantidad debe ser al menos 1 (después puede llegar a 0 al dispensarlo todo).
 - No se recibe un lote vencido o que vence hoy (la fecha de vencimiento debe ser posterior a la recepción).
 
 ## Componentes y funciones (V5)

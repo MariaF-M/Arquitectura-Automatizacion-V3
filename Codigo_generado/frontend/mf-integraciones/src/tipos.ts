@@ -32,6 +32,8 @@ export interface Comando {
   desdeEstados: string[];
   /** Atributos fecha que deben ser posteriores a hoy (validado también en el backend). */
   fechaFutura: string[];
+  /** Mínimos propios del comando, p. ej. { cantidad: 1 } al registrar un lote. */
+  minimos: Record<string, number>;
 }
 
 /** Agregado = Data Object raíz de V6. */

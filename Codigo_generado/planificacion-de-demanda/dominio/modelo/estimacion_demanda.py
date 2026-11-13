@@ -30,7 +30,7 @@ CAMPOS = {
     "observaciones": str,
 }
 VALORES_INICIALES = {"estado": "Sugerida"}
-OBLIGATORIOS = ("medicamento", "periodo", )
+OBLIGATORIOS = ("medicamento", "periodo", "demanda_programada", )
 NO_NEGATIVOS = ("demanda_programada", "demanda_no_programada", "cantidad_estimada", )
 VALORES_PERMITIDOS = {
     "estado": ["Sugerida", "Ajustada", "Validada"],

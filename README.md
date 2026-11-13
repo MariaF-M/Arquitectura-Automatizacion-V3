@@ -140,14 +140,14 @@ V1 a V4, V7, V10 y V11 justifican el diseño, pero no producen código.
 | Grupo D-0X (V5) | Clasificación del servicio | Insignia CORE / SUPPORTING / GENERIC en el menú |
 | Data Object raíz (V6) | Agregado con invariantes, memento y eventos + tabla o colección | Panel con la tabla de instancias |
 | Application Process (V6) | Comando + manejador + `POST` | Formulario o botón del comando |
-| Application Event (V6) | Evento de dominio publicado en el bus | Mensaje "→ evento «…»" y panel de actividad del shell |
+| Application Event (V6) | Evento de dominio publicado en el bus | Mensaje "→ evento «…»" y panel "Actividad" del shell |
 | Data Object anidado (V8) | Entidad del contexto | — |
 | Relación *Customer / Supplier* | Puerto + cliente HTTP | Texto "consume a / le sirve a" en el encabezado |
 | Relación *Shared Kernel (Lote)* | `shared_kernel` en ambos contextos + JSON Schema | — |
 | Relación *Open Host Service* | Contrato OpenAPI publicado | — |
 | Relación *ACL* + `INT-xx` (V9) | DTO + traductor en la ACL-01 | Tarjeta del simulador de integraciones |
 | Application Component (V5) | Clase de servicio de aplicación | Lista de componentes |
-| Application Function (V5) | Caso de uso (responde 501 hasta implementarlo) | Botón "Probar" |
+| Application Function (V5) | Caso de uso en el backend (responde 501 hasta implementarlo) | — (no se muestra en la interfaz) |
 
 ## 5. Especificaciones complementarias (spec.yaml)
 
@@ -317,7 +317,6 @@ En http://localhost:5100:
 4. **Abastecimiento** (C#): generar una requisición e intentar autorizarla sin químico (la rechaza). Luego
    autorizarla con químico: el evento viaja solo a la ACL, que lo traduce al formato del ERP (se ve en el log de
    `acl-01-anticorrupcion`).
-5. **Seguridad**: *Probar* una función, que responde "pendiente (501)": la lógica no está en el diagrama.
 6. **Resiliencia**: detener un microfrontend (por ejemplo, `docker compose stop mf-vencimientos`) y ver que el resto
    de la aplicación sigue funcionando.
 7. **"El diagrama manda"**: renombrar en Archi un comando de V6 y ejecutar `generar.py --validar`. El generador
@@ -354,7 +353,9 @@ Las reglas de formato actuales:
 |---|---|---|
 | LoteMedicamento | `codigo` | Solo números, de 3 a 20 dígitos, y **único** |
 | LoteMedicamento | `registro_sanitario` | Letras, números, espacios o guiones (5 a 30) |
-| LoteMedicamento | `cantidad` | Entre 0 y 1.000.000; lo que se descuenta debe ser mayor que 0 |
+| LoteMedicamento | `cantidad` | Obligatoria y **al menos 1 al registrar** el lote; después puede llegar a 0 al dispensarlo todo; lo que se descuenta debe ser mayor que 0; máximo 1.000.000 |
+| AlertaVencimiento | `prioridad_fefo`, `semaforo` | Obligatorios; bloquear un lote exige un `motivo` |
+| EstimacionDemanda | `demanda_programada` | Obligatoria; al ajustar, `cantidad_estimada` debe ser al menos 1 |
 | AlertaVencimiento | `lote_codigo` | Solo números (el código del lote en Inventario) |
 | AlertaVencimiento | `prioridad_fefo` | Entre 1 y 1000 |
 | EstimacionDemanda | `periodo` | Formato `AAAA-MM` |

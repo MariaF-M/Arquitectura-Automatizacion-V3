@@ -4,10 +4,10 @@ import { llamar } from '../api';
 import { emitir } from '../eventos';
 import { Campo, convertir, validar } from './Campo';
 
-interface Props { agregado: Agregado; base: string; contexto: string; alCambiar: () => void }
+interface Props { agregado: Agregado; base: string; contexto: string }
 
 /** Un agregado de V6: tabla de instancias, formulario del comando que lo crea y acciones del resto de comandos. */
-export function PanelAgregado({ agregado, base, contexto, alCambiar }: Props) {
+export function PanelAgregado({ agregado, base, contexto }: Props) {
   const [filas, setFilas] = useState<Fila[]>([]);
   const [mensaje, setMensaje] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null);
   const [abierto, setAbierto] = useState<{ fila: Fila; comando: Comando } | null>(null);
@@ -16,7 +16,9 @@ export function PanelAgregado({ agregado, base, contexto, alCambiar }: Props) {
   const creador = agregado.comandos.find((c) => c.crea);
   const acciones = agregado.comandos.filter((c) => !c.crea);
   // En la creación no se piden los campos que el dominio inicializa (p. ej. estado = Disponible)
-  const camposCrear = agregado.atributos.filter((a) => a.inicial === null || a.inicial === undefined);
+  const camposCrear = agregado.atributos
+    .filter((a) => a.inicial === null || a.inicial === undefined)
+    .map((a) => conMinimo(a, creador));
 
   const cargar = useCallback(async () => {
     const r = await llamar<Fila[]>(base, recurso);
@@ -33,7 +35,6 @@ export function PanelAgregado({ agregado, base, contexto, alCambiar }: Props) {
       if (comando.evento) emitir(contexto, comando.evento, `${agregado.nombre} ${r.datos?.id?.slice(0, 8) ?? ''}`);
       setAbierto(null);
       await cargar();
-      alCambiar();
       return true;
     }
     setMensaje({ tipo: 'error', texto: r.error ?? 'Error' });
@@ -115,15 +116,21 @@ export function PanelAgregado({ agregado, base, contexto, alCambiar }: Props) {
   );
 }
 
+/** Aplica el mínimo propio del comando (p. ej. cantidad >= 1 al registrar), que además vuelve obligatorio el campo. */
+function conMinimo(a: Atributo, c?: Comando): Atributo {
+  const minimo = c?.minimos?.[a.nombre];
+  return minimo === undefined ? a : { ...a, obligatorio: true, minimo: Math.max(minimo, a.minimo ?? minimo) };
+}
+
 /** Qué campos pide cada comando: el que se resta, los requeridos y, opcionalmente, el resto. */
 function camposDeAccion(atributos: Atributo[], c: Comando): { campos: Atributo[]; opcionales?: Atributo[] } {
   const por = (n: string) => atributos.find((a) => a.nombre === n);
   // la cantidad a restar debe ser positiva (el backend también lo exige)
   if (c.restar) return { campos: [{ ...por(c.restar)!, obligatorio: true, minimo: 1 }] };
-  const requeridos = c.requiere.map(por).filter((a): a is Atributo => !!a).map((a) => ({ ...a, obligatorio: true }));
+  const requeridos = c.requiere.map(por).filter((a): a is Atributo => !!a).map((a) => conMinimo({ ...a, obligatorio: true }, c));
   const opcionales = atributos
     .filter((a) => !c.requiere.includes(a.nombre) && !(c.estado && a.nombre === 'estado'))
-    .map((a) => ({ ...a, obligatorio: false }));
+    .map((a) => conMinimo({ ...a, obligatorio: false }, c));
   return { campos: requeridos, opcionales };
 }
 

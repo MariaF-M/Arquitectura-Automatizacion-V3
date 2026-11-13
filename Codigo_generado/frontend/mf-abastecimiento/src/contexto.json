@@ -127,7 +127,8 @@
           "estado": null,
           "requiere": [],
           "desdeEstados": [],
-          "fechaFutura": []
+          "fechaFutura": [],
+          "minimos": {}
         },
         {
           "nombre": "Autorizar Requisición",
@@ -142,7 +143,8 @@
           "desdeEstados": [
             "Sugerido"
           ],
-          "fechaFutura": []
+          "fechaFutura": [],
+          "minimos": {}
         }
       ]
     }

@@ -1,15 +1,10 @@
-import { useState } from 'react';
 import type { DescriptorContexto } from '../tipos';
 import { urlServicio } from '../api';
 import { PanelAgregado } from './PanelAgregado';
-import { PanelEventos } from './PanelEventos';
-import { PanelFunciones } from './PanelFunciones';
 
-/** Vista de un contexto delimitado: encabezado (V5/V8), un panel por agregado (V6), funciones (V5) y eventos. */
+/** Vista de un contexto delimitado: encabezado (V5/V8) y un panel por agregado (V6). */
 export function VistaContexto({ d }: { d: DescriptorContexto }) {
   const base = urlServicio(d.carpeta, d.puerto);
-  const [version, setVersion] = useState(0);   // sube después de cada comando para refrescar los eventos
-  const refrescar = () => setVersion((v) => v + 1);
 
   return (
     <>
@@ -39,20 +34,15 @@ export function VistaContexto({ d }: { d: DescriptorContexto }) {
       {d.agregados.length === 0 && (
         <section className="mf-tarjeta">
           <h2>Componentes del dominio</h2>
-          <p className="mf-nota">Este dominio no tiene agregados en V6; expone componentes y funciones.</p>
+          <p className="mf-nota">Este dominio es genérico y no tiene agregados en V6. Expone sus servicios a los demás contextos (Open Host Service).</p>
           <ul className="mf-lista">{d.componentes.map((c) => <li key={c}>{c}</li>)}</ul>
           <p className="mf-nota">Entidades: {d.entidades.join(', ')}</p>
         </section>
       )}
 
       {d.agregados.map((a) => (
-        <PanelAgregado key={a.recurso} agregado={a} base={base} contexto={d.nombre} alCambiar={refrescar} />
+        <PanelAgregado key={a.recurso} agregado={a} base={base} contexto={d.nombre} />
       ))}
-
-      <div className="mf-columnas">
-        <PanelFunciones funciones={d.funciones} base={base} />
-        <PanelEventos base={base} version={version} />
-      </div>
     </>
   );
 }

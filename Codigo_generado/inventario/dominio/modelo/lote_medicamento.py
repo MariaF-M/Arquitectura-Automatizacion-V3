@@ -10,6 +10,7 @@ Invariantes que protege:
   * Todo lote tiene Código, Descripción, Proveedor, Fecha de vencimiento y Registro sanitario desde la recepción técnica.
   * Un lote solo puede estar Disponible, en Cuarentena, Vencido o Bloqueado.
   * El código del lote es único.
+  * Al recibir un lote, la cantidad debe ser al menos 1 (después puede llegar a 0 al dispensarlo todo).
   * No se recibe un lote vencido o que vence hoy (la fecha de vencimiento debe ser posterior a la recepción).
 """
 from __future__ import annotations
@@ -110,6 +111,8 @@ class LoteMedicamento:
     def registrar_ingreso(cls, datos: dict) -> "LoteMedicamento":
         """Comando «Registrar Ingreso»: crea el agregado."""
         agregado = cls(**{k: v for k, v in datos.items() if k != "id"})
+        if agregado.cantidad is None or agregado.cantidad < 1:
+            raise ReglaNegocioError("«Registrar Ingreso»: 'cantidad' es obligatorio y debe ser mayor o igual a 1")
         if agregado.fecha_vencimiento is not None and agregado.fecha_vencimiento <= date.today():
             raise ReglaNegocioError("«Registrar Ingreso»: 'fecha_vencimiento' debe ser posterior a hoy")
         agregado.validar()
