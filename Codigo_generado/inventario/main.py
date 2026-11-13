@@ -28,13 +28,14 @@ from adaptadores.salida.transversal.cifrado import Cifrador
 from contratos.eventos_v1 import a_contrato
 from puertos.entrada.comandos import ManejadorLoteMedicamento
 from adaptadores.salida.persistencia.memoria import RepositorioLoteMedicamentoMemoria
-from adaptadores.salida.persistencia.base_datos import RepositorioLoteMedicamentoBaseDatos
 
 
 def construir_app() -> SimpleNamespace:
     bus = BusEventos(a_contrato)
     cifrador = Cifrador()
     usar_bd = os.getenv("PERSISTENCIA", "memoria") == "bd"
+    if usar_bd:
+        from adaptadores.salida.persistencia.base_datos import RepositorioLoteMedicamentoBaseDatos
     app = SimpleNamespace(bus=bus, manejadores={}, caches={}, clientes={})
 
     repo_lote_medicamento = RepositorioConCache(

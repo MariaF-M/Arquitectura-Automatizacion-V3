@@ -32,7 +32,6 @@ from {{ L.contratos }}.eventos_v1 import a_contrato
 {% for a in ctx.agregados %}
 from {{ L.comandos }}.comandos import Manejador{{ a.clase }}
 from {{ L.persistencia }}.memoria import Repositorio{{ a.clase }}Memoria
-from {{ L.persistencia }}.base_datos import Repositorio{{ a.clase }}BaseDatos
 {% endfor %}
 
 
@@ -40,6 +39,12 @@ def construir_app() -> SimpleNamespace:
     bus = BusEventos(a_contrato)
     cifrador = Cifrador()
     usar_bd = os.getenv("PERSISTENCIA", "memoria") == "bd"
+{% if ctx.agregados %}
+    if usar_bd:
+{% for a in ctx.agregados %}
+        from {{ L.persistencia }}.base_datos import Repositorio{{ a.clase }}BaseDatos
+{% endfor %}
+{% endif %}
     app = SimpleNamespace(bus=bus, manejadores={}, caches={}, clientes={})
 {% for a in ctx.agregados %}
 

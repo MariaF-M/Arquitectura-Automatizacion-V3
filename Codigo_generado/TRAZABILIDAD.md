@@ -1,6 +1,6 @@
 # Trazabilidad modelo → código
 
-Modelo: `Modelo_Farmacia_mejorado.archimate` · Generado: 2026-11-10 14:36
+Modelo: `Modelo_Farmacia_mejorado.archimate` · Generado: 2026-11-13 07:32
 
 **88 de 88** elementos de la capa de aplicación de las vistas V5, V6, V8 y V9
 produjeron código (100 %).

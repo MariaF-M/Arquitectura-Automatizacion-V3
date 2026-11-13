@@ -24,13 +24,14 @@ from infraestructura.transversal.cifrado import Cifrador
 from contratos.eventos_v1 import a_contrato
 from aplicacion.comandos.comandos import ManejadorEstimacionDemanda
 from infraestructura.persistencia.memoria import RepositorioEstimacionDemandaMemoria
-from infraestructura.persistencia.base_datos import RepositorioEstimacionDemandaBaseDatos
 
 
 def construir_app() -> SimpleNamespace:
     bus = BusEventos(a_contrato)
     cifrador = Cifrador()
     usar_bd = os.getenv("PERSISTENCIA", "memoria") == "bd"
+    if usar_bd:
+        from infraestructura.persistencia.base_datos import RepositorioEstimacionDemandaBaseDatos
     app = SimpleNamespace(bus=bus, manejadores={}, caches={}, clientes={})
 
     repo_estimacion_demanda = RepositorioConCache(
